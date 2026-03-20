@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CXI SLT Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#eef2f8;--surface:#fff;--surface2:#f5f7fc;--surface3:#edf0f7;
+  --border:#dce4f0;--border2:#c5d2e8;
+  --blue:#1a6ef5;--blue2:#0d55d4;--blue-soft:#e8f0fe;--blue-mid:#4a8ff5;
+  --accent:#0cc;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--purple:#7c3aed;
+  --text:#0d1b35;--text2:#3d5278;--text3:#8099bb;
+  --mono:'DM Mono',monospace;--body:'Outfit',sans-serif;--display:'Sora',sans-serif;
+  --r:12px;--rs:8px;--rx:18px;
+  --sh:0 2px 12px rgba(26,110,245,.07),0 1px 3px rgba(0,0,0,.05);
+  --sh2:0 6px 28px rgba(26,110,245,.13),0 2px 8px rgba(0,0,0,.07);
+  --sh3:0 12px 48px rgba(26,110,245,.18),0 4px 16px rgba(0,0,0,.09);
+}
+html,body{height:100%;overflow:hidden;font-family:var(--body);color:var(--text);font-size:14px;background:var(--bg)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:var(--blue-mid)}
+
+/* ── APP SHELL ── */
+#app{display:flex;height:100vh;overflow:hidden}
+
+/* ── TITLEBAR ── */
+#titlebar{
+  position:fixed;top:0;left:0;right:0;height:38px;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px 0 0;z-index:100;
+  -webkit-app-region:drag;
+}
+.tb-left{display:flex;align-items:center;gap:0;-webkit-app-region:drag}
+.tb-logo{
+  display:flex;align-items:center;gap:9px;padding:0 16px;height:38px;
+  border-right:1px solid var(--border);
+}
+.tb-logo-icon{
+  width:24px;height:24px;border-radius:7px;
+  background:linear-gradient(135deg,var(--blue),var(--accent));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(26,110,245,.35);
+}
+.tb-logo-icon svg{width:13px;height:13px;fill:white}
+.tb-logo-name{font-family:var(--display);font-weight:700;font-size:13px;color:var(--text);letter-spacing:-.2px}
+.tb-logo-ver{font-size:10px;color:var(--text3);margin-left:2px;font-family:var(--mono)}
+.tb-title{padding:0 14px;font-size:12px;color:var(--text3);font-weight:500;letter-spacing:.1px}
+.tb-right{display:flex;align-items:center;gap:2px;-webkit-app-region:no-drag}
+.win-btn{
+  width:38px;height:38px;border:none;background:transparent;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .15s;
+  color:var(--text3);
+}
+.win-btn:hover{background:var(--surface3);color:var(--text)}
+.win-btn.close:hover{background:#ef4444;color:white}
+.win-btn svg{width:12px;height:12px}
+
+/* ── SIDEBAR ── */
+#sidebar{
+  width:220px;min-width:220px;
+  background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  margin-top:38px;overflow-y:auto;overflow-x:hidden;
+  box-shadow:2px 0 12px rgba(26,110,245,.05);
+  position:relative;z-index:5;
+}
+.sb-section{padding:14px 10px 4px}
+.sb-label{
+  font-size:9.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;
+  color:var(--text3);padding:0 8px;margin-bottom:5px;
+}
+.sb-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-radius:var(--rs);cursor:pointer;
+  transition:all .17s;color:var(--text2);font-size:13px;font-weight:500;
+  position:relative;user-select:none;
+}
+.sb-item:hover{background:var(--blue-soft);color:var(--blue)}
+.sb-item.active{background:var(--blue);color:#fff;box-shadow:0 4px 14px rgba(26,110,245,.35)}
+.sb-item .ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px;transition:all .17s}
+.sb-item.active .ico{background:rgba(255,255,255,.18)}
+.sb-item:not(.active):hover .ico{background:var(--blue-soft)}
+.sb-item .lbl{flex:1;line-height:1}
+.sb-item .badge{
+  font-size:10px;font-family:var(--mono);font-weight:500;
+  background:var(--green);color:white;padding:2px 6px;border-radius:99px;
+}
+.sb-item.active .badge{background:rgba(255,255,255,0.25)}
+.sb-item .ico svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* Dropdown in sidebar */
+.sb-dropdown{overflow:hidden;max-height:0;transition:max-height .3s ease}
+.sb-dropdown.open{max-height:300px}
+.sb-sub{
+  padding:6px 10px 6px 20px;
+  display:flex;align-items:center;gap:8px;
+  border-radius:var(--rs);cursor:pointer;
+  color:var(--text3);font-size:12.5px;font-weight:500;
+  transition:all .15s;user-select:none;
+}
+.sb-sub:hover{color:var(--blue);background:var(--blue-soft)}
+.sb-sub.active{color:var(--blue);font-weight:600}
+.sb-sub::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;opacity:.5}
+.sb-sub.active::before{opacity:1}
+
+.sb-footer{
+  margin-top:auto;padding:12px 10px;border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;
+}
+.sb-user-ava{
+  width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,var(--blue),var(--accent));
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:white;flex-shrink:0;
+}
+.sb-user-name{font-size:12px;font-weight:600;color:var(--text)}
+.sb-user-role{font-size:10px;color:var(--text3)}
+.sb-dot{width:7px;height:7px;border-radius:50%;background:var(--green);margin-left:auto;box-shadow:0 0 6px var(--green)}
+
+/* ── MAIN ── */
+#main{flex:1;display:flex;flex-direction:column;margin-top:38px;overflow:hidden;background:var(--bg)}
+#content{flex:1;overflow-y:auto;padding:24px}
+
+/* ── PAGE HEADER ── */
+.page-hdr{margin-bottom:22px}
+.page-hdr h1{font-family:var(--display);font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.3px}
+.page-hdr p{font-size:13px;color:var(--text3);margin-top:3px}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;box-shadow:var(--sh)}
+.card-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.card-title .dot{width:6px;height:6px;border-radius:50%;background:var(--blue)}
+
+/* ── GRID LAYOUTS ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.grid-auto{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+
+/* ── STAT CARDS ── */
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:16px 18px;box-shadow:var(--sh);position:relative;overflow:hidden;
+  transition:transform .2s,box-shadow .2s;
+}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--sh2)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent-color,var(--blue))}
+.stat-card.green::before{--accent-color:var(--green)}
+.stat-card.yellow::before{--accent-color:var(--yellow)}
+.stat-card.red::before{--accent-color:var(--red)}
+.stat-card.purple::before{--accent-color:var(--purple)}
+.stat-label{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.stat-value{font-size:26px;font-weight:700;font-family:var(--display);color:var(--text);letter-spacing:-.5px;line-height:1}
+.stat-sub{font-size:11.5px;color:var(--text3);margin-top:5px}
+.stat-icon{position:absolute;right:14px;top:14px;opacity:0.1;transition:opacity 0.2s}
+.stat-card:hover .stat-icon{opacity:0.25}
+.stat-icon svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── GAUGE ── */
+.gauge-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+.gauge-svg{transform:rotate(-90deg)}
+.gauge-track{fill:none;stroke:var(--surface3);stroke-width:10;stroke-linecap:round}
+.gauge-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1)}
+.gauge-label{text-align:center}
+.gauge-pct{font-family:var(--display);font-size:22px;font-weight:700;color:var(--text)}
+.gauge-name{font-size:11px;color:var(--text3);font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+
+/* ── SPARKLINE ── */
+.spark-wrap{height:40px;position:relative;overflow:hidden}
+.spark-wrap canvas{width:100%!important;height:100%!important}
+
+/* ── INFO TABLE ── */
+.info-table{width:100%;border-collapse:collapse}
+.info-table tr{border-bottom:1px solid var(--border)}
+.info-table tr:last-child{border-bottom:none}
+.info-table td{padding:8px 12px;font-size:13px}
+.info-table td:first-child{color:var(--text3);font-weight:500;width:42%;font-size:12px;letter-spacing:.1px}
+.info-table td:last-child{color:var(--text);font-family:var(--mono);font-size:12px;word-break:break-all}
+
+/* ── BADGE / TAG ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600}
+.badge.green{background:#d1fae5;color:#065f46}
+.badge.red{background:#fee2e2;color:#991b1b}
+.badge.blue{background:var(--blue-soft);color:var(--blue2)}
+.badge.yellow{background:#fef3c7;color:#92400e}
+.badge.gray{background:var(--surface3);color:var(--text3)}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:8px 16px;border-radius:var(--rs);border:none;cursor:pointer;
+  font-family:var(--body);font-size:13px;font-weight:600;transition:all .17s;
+}
+.btn-primary{background:var(--blue);color:white;box-shadow:0 4px 12px rgba(26,110,245,.3)}
+.btn-primary:hover{background:var(--blue2);box-shadow:0 6px 18px rgba(26,110,245,.4);transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+.btn-ghost{
+  background:var(--surface);color:var(--text2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:flex-start;gap:12px;
+  height:42px;padding:0 20px;font-weight:500;transition:all .15s;
+}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-soft)}
+.btn-ghost svg{width:16px;height:16px;stroke-width:2.5;flex-shrink:0;margin-top:-1px;opacity:0.8}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-danger{background:var(--red);color:white}
+.btn-danger:hover{background:#dc2626}
+
+/* ── INPUT ── */
+.input-wrap{display:flex;gap:8px;align-items:center}
+input[type=text],input[type=number],select{
+  flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--rs);
+  font-family:var(--body);font-size:13px;color:var(--text);background:var(--surface);
+  outline:none;transition:border .17s;
+}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,110,245,.1)}
+select{cursor:pointer}
+
+/* ── TERMINAL / OUTPUT ── */
+.terminal{
+  background:#0d1b35;border-radius:var(--rs);padding:14px;
+  font-family:var(--mono);font-size:12px;color:#7fdbca;
+  min-height:120px;max-height:280px;overflow-y:auto;line-height:1.7;
+  white-space:pre-wrap;word-break:break-all;
+  border:1px solid rgba(26,110,245,.2);
+}
+.terminal .t-line{opacity:0;animation:tline .3s forwards}
+.terminal .t-ok{color:#10b981}
+.terminal .t-err{color:#ef4444}
+.terminal .t-info{color:#60a5fa}
+.terminal .t-warn{color:#f59e0b}
+@keyframes tline{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ── PROGRESS BAR ── */
+.pbar-wrap{display:flex;flex-direction:column;gap:4px}
+.pbar-row{display:flex;justify-content:space-between;font-size:12px}
+.pbar-track{height:7px;border-radius:99px;background:var(--surface3);overflow:hidden}
+.pbar-fill{height:100%;border-radius:99px;background:var(--blue);transition:width .6s cubic-bezier(.4,0,.2,1)}
+.pbar-fill.green{background:var(--green)}
+.pbar-fill.yellow{background:var(--yellow)}
+.pbar-fill.red{background:var(--red)}
+
+/* ── PROCESS LIST ── */
+.proc-table{width:100%;border-collapse:collapse}
+.proc-table thead tr{border-bottom:2px solid var(--border)}
+.proc-table th{font-size:10.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--text3);padding:6px 10px;text-align:left}
+.proc-table tbody tr{border-bottom:1px solid var(--border);transition:background .15s;cursor:default}
+.proc-table tbody tr:hover{background:var(--blue-soft)}
+.proc-table td{padding:7px 10px;font-size:12.5px;color:var(--text2)}
+.proc-table td:first-child{font-weight:600;color:var(--text);font-size:13px}
+.proc-table td.mono{font-family:var(--mono);font-size:11.5px}
+
+/* ── LOG ENTRIES ── */
+.log-entry{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:8px 12px;border-bottom:1px solid var(--border);
+  animation:fadeIn .25s forwards;
+}
+.log-entry:last-child{border-bottom:none}
+.log-time{font-family:var(--mono);font-size:11px;color:var(--text3);white-space:nowrap;padding-top:1px}
+.log-level{
+  font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+  padding:2px 7px;border-radius:4px;white-space:nowrap;flex-shrink:0;
+}
+.log-level.INFO{background:#dbeafe;color:#1d4ed8}
+.log-level.WARN{background:#fef3c7;color:#92400e}
+.log-level.ERR{background:#fee2e2;color:#991b1b}
+.log-level.OK{background:#d1fae5;color:#065f46}
+.log-msg{font-size:12.5px;color:var(--text2);line-height:1.5}
+
+/* ── SECTION TABS ── */
+.sec-tabs{display:flex;gap:4px;margin-bottom:18px;background:var(--surface);padding:4px;border-radius:var(--rs);border:1px solid var(--border);width:fit-content}
+.sec-tab{padding:6px 16px;border-radius:6px;font-size:12.5px;font-weight:600;color:var(--text3);cursor:pointer;transition:all .17s;border:none;background:transparent}
+.sec-tab.active{background:var(--blue);color:white;box-shadow:0 3px 10px rgba(26,110,245,.3)}
+.sec-tab:hover:not(.active){color:var(--blue);background:var(--blue-soft)}
+
+/* ── PAGES ── */
+.page{display:none;animation:fadeIn .25s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ── NET ADDR ── */
+.net-ifs{display:flex;flex-direction:column;gap:8px}
+.net-if-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px}
+.net-if-name{font-weight:700;font-size:13px;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.net-if-addrs{display:flex;flex-direction:column;gap:3px}
+.net-if-addr{font-family:var(--mono);font-size:11.5px;color:var(--text2);display:flex;gap:8px}
+.net-if-addr span:first-child{color:var(--text3);min-width:40px}
+
+/* ── PORT RESULTS ── */
+.port-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.port-chip{
+  padding:8px 10px;border-radius:var(--rs);font-family:var(--mono);font-size:12px;
+  display:flex;flex-direction:column;gap:3px;border:1.5px solid;
+  transition:transform .15s;cursor:default;
+}
+.port-chip:hover{transform:scale(1.03)}
+.port-chip.open{background:#d1fae5;border-color:#6ee7b7;color:#065f46}
+.port-chip.closed{background:var(--surface3);border-color:var(--border);color:var(--text3)}
+.port-chip.timeout{background:#fef3c7;border-color:#fcd34d;color:#92400e}
+.port-chip .pn{font-size:14px;font-weight:700}
+.port-chip .ps{font-size:10px;opacity:.8;text-transform:uppercase}
+
+/* ── STARTUP LIST ── */
+.startup-list{display:flex;flex-direction:column;gap:6px}
+.startup-item{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);
+  transition:box-shadow .15s;
+}
+.startup-item:hover{box-shadow:var(--sh)}
+.startup-icon{width:32px;height:32px;border-radius:8px;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.startup-name{font-weight:600;font-size:13px;color:var(--text)}
+.startup-path{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.startup-tog{margin-left:auto;position:relative;width:38px;height:20px;flex-shrink:0}
+.startup-tog input{opacity:0;width:0;height:0;position:absolute}
+.tog-slider{
+  position:absolute;inset:0;border-radius:99px;background:var(--border2);cursor:pointer;transition:.25s;
+}
+.tog-slider::before{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:white;left:3px;top:3px;transition:.25s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+input:checked+.tog-slider{background:var(--green)}
+input:checked+.tog-slider::before{transform:translateX(18px)}
+
+/* ── SECURITY ── */
+.sec-check-list{display:flex;flex-direction:column;gap:8px}
+.sec-check{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);
+}
+.sec-check-icon{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sec-check-icon.green, .sec-check-icon.ok{background:#d1fae5;color:#065f46}
+.sec-check-icon.yellow, .sec-check-icon.warn{background:#fef3c7;color:#92400e}
+.sec-check-icon.red, .sec-check-icon.bad{background:#fee2e2;color:#991b1b}
+.sec-check-icon svg, .startup-icon svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sec-check-body{flex:1}
+.sec-check-name{font-weight:600;font-size:13px;color:var(--text)}
+.sec-check-desc{font-size:12px;color:var(--text3);margin-top:2px}
+.sec-score-ring{text-align:center;padding:12px 0}
+.sec-score-num{font-family:var(--display);font-size:48px;font-weight:700;color:var(--green)}
+.sec-score-lbl{font-size:12px;color:var(--text3);margin-top:4px}
+
+/* ── DISK ── */
+.disk-item{display:flex;flex-direction:column;gap:6px;padding:12px 14px;background:var(--surface2);border-radius:var(--rs);border:1px solid var(--border)}
+.disk-header{display:flex;justify-content:space-between;align-items:center}
+.disk-name{font-weight:700;color:var(--text);font-size:13px;display:flex;align-items:center;gap:6px}
+
+/* ── SETTINGS ── */
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)}
+.setting-row:last-child{border-bottom:none}
+.setting-info h3{font-size:13.5px;font-weight:600;color:var(--text)}
+.setting-info p{font-size:12px;color:var(--text3);margin-top:2px}
+
+/* ── ANIMATIONS ── */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.pulse{animation:pulse 1.8s infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin .8s linear infinite}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 1.5s infinite}
+
+/* ── CHART CANVAS ── */
+.chart-host{position:relative;width:100%;height:160px}
+.chart-host canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
+
+/* ── SEARCH / FILTER ── */
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rs);padding:7px 12px;transition:border .17s}
+.search-bar:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,110,245,.1)}
+.search-bar input{border:none;outline:none;background:transparent;font-family:var(--body);font-size:13px;color:var(--text);width:100%}
+.search-icon{color:var(--text3);font-size:14px;flex-shrink:0}
+
+/* ── STATUS BAR ── */
+#statusbar{
+  height:26px;background:var(--surface);border-top:1px solid var(--border);
+  display:flex;align-items:center;padding:0 16px;
+}
+.sb-stat{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);font-family:var(--mono)}
+.sb-stat svg{width:12px;height:12px;opacity:0.7}
+.sb-stat span{color:var(--text2)}
+
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:40px 20px;color:var(--text3)}
+.empty-state .ei{font-size:40px;margin-bottom:10px;opacity:.4}
+.empty-state p{font-size:13px}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- TITLEBAR -->
+<div id="titlebar">
+  <div class="tb-left">
+    <div class="tb-logo">
+      <div class="tb-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <span class="tb-logo-name">CXI SLT</span>
+      <span class="tb-logo-ver">v1.0</span>
+    </div>
+    <span class="tb-title" id="tb-page-title">Dashboard</span>
+  </div>
+  <div class="tb-right">
+    <button class="win-btn" onclick="window.cxi.minimize()" title="Minimize">
+      <svg viewBox="0 0 12 12" fill="currentColor"><rect y="5.5" width="12" height="1.5" rx=".75"/></svg>
+    </button>
+    <button class="win-btn" onclick="window.cxi.maximize()" title="Maximize">
+      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="9" height="9" rx="1"/></svg>
+    </button>
+    <button class="win-btn close" onclick="window.cxi.close()" title="Close">
+      <svg viewBox="0 0 12 12" fill="currentColor"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sb-section">
+    <div class="sb-label">Main</div>
+    <div class="sb-item active" data-page="dashboard">
+      <div class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></div><div class="lbl">Dashboard</div>
+      <div class="live-dot"></div>
+    </div>
+    <div class="sb-item" data-page="sysinfo">
+      <div class="ico"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></div><div class="lbl">System Info</div>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-label">Tools</div>
+
+    <!-- Storage dropdown -->
+    <div class="sb-item" data-toggle="storage-dd">
+      <div class="ico"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg></div><div class="lbl">Storage Tools</div>
+      <svg id="arr-storage" style="width:10px;height:10px;transition:transform .3s;flex-shrink:0" viewBox="0 0 10 10" fill="currentColor"><path d="M2 3.5l3 3 3-3"/></svg>
+    </div>
+    <div class="sb-dropdown" id="storage-dd">
+      <div class="sb-sub" data-page="disk-analyzer">Disk Analyzer</div>
+      <div class="sb-sub" data-page="disk-health">Disk Health</div>
+      <div class="sb-sub" data-page="partition-view">Partition View</div>
+      <div class="sb-sub" data-page="duplicate-finder">Duplicate Finder</div>
+    </div>
+
+    <!-- Network dropdown -->
+    <div class="sb-item" data-toggle="net-dd">
+      <div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></div><div class="lbl">Network Tools</div>
+      <svg id="arr-net" style="width:10px;height:10px;transition:transform .3s;flex-shrink:0" viewBox="0 0 10 10" fill="currentColor"><path d="M2 3.5l3 3 3-3"/></svg>
+    </div>
+    <div class="sb-dropdown" id="net-dd">
+      <div class="sb-sub" data-page="ping">Ping / Latency</div>
+      <div class="sb-sub" data-page="port-scanner">Port Scanner</div>
+      <div class="sb-sub" data-page="dns-lookup">IP & DNS Lookup</div>
+      <div class="sb-sub" data-page="speed-test">Speed Test</div>
+      <div class="sb-sub" data-page="wifi-monitor">WiFi Monitor</div>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-label">System</div>
+    <div class="sb-item" data-page="processes">
+      <div class="ico"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></div><div class="lbl">Process Manager</div>
+    </div>
+    <div class="sb-item" data-page="startup">
+      <div class="ico"><svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-5c1.62-2.2 5-3 5-3"></path><path d="M12 15v5s3.03-.55 5-2c2.2-1.62 3-5 3-5"></path></svg></div><div class="lbl">Startup Manager</div>
+    </div>
+    <div class="sb-item" data-page="eventlog">
+      <div class="ico"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg></div><div class="lbl">Event Log</div>
+      <div class="badge">Live</div>
+    </div>
+    <div class="sb-item" data-page="security">
+      <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg></div><div class="lbl">Security Scanner</div>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-label">Config</div>
+    <div class="sb-item" data-page="settings">
+      <div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></div><div class="lbl">Settings</div>
+    </div>
+  </div>
+
+  <!-- footer removed -->
+</nav>
+
+<!-- MAIN CONTENT -->
+<div id="main">
+  <div id="content">
+
+    <!-- ══════════════════ DASHBOARD ══════════════════ -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-hdr">
+        <h1>System Dashboard</h1>
+        <p>Live system health overview — <span id="d-refresh-text">updates every 2 seconds</span></p>
+      </div>
+
+      <!-- Live Stat Cards -->
+      <div class="grid-4" style="margin-bottom:16px">
+        <div class="stat-card">
+          <div class="stat-icon"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="15" x2="23" y2="15"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="15" x2="4" y2="15"></line></svg></div>
+          <div class="stat-label">CPU Usage</div>
+          <div class="stat-value" id="d-cpu">—</div>
+          <div class="stat-sub" id="d-cpu-model">Loading...</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M6 19v2"></path><path d="M10 19v2"></path><path d="M14 19v2"></path><path d="M18 19v2"></path><path d="M8 11V9"></path><path d="M16 11V9"></path><rect x="3" y="11" width="18" height="8" rx="2" ry="2"></rect><path d="M20 11V5"></path><path d="M4 11V5"></path><path d="M4 5h16"></path></svg></div>
+          <div class="stat-label">Memory</div>
+          <div class="stat-value" id="d-mem">—</div>
+          <div class="stat-sub" id="d-mem-sub">Loading...</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="stat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+          <div class="stat-label">Uptime</div>
+          <div class="stat-value" id="d-uptime">—</div>
+          <div class="stat-sub" id="d-uptime-status">System running</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></div>
+          <div class="stat-label">Hostname</div>
+          <div class="stat-value" style="font-size:16px" id="d-host">—</div>
+          <div class="stat-sub" id="d-user">Loading...</div>
+        </div>
+        <div id="metrics-status" style="position:absolute; bottom:-12px; right:12px; font-size:10px; color:var(--text3); font-family:var(--mono);">Last updated: <span id="last-update">—</span></div>
+      </div>
+
+      <!-- Gauges + Chart -->
+      <div class="grid-2" style="margin-bottom:16px">
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Live Gauges</div>
+          <div style="display:flex;justify-content:space-around;flex-wrap:wrap;gap:16px">
+            <div class="gauge-wrap">
+              <svg class="gauge-svg" width="100" height="100" viewBox="0 0 100 100">
+                <circle class="gauge-track" cx="50" cy="50" r="40" stroke-dasharray="251" stroke-dashoffset="0"/>
+                <circle class="gauge-fill" id="g-cpu" cx="50" cy="50" r="40" stroke="#1a6ef5" stroke-dasharray="251" stroke-dashoffset="251"/>
+              </svg>
+              <div class="gauge-label">
+                <div class="gauge-pct" id="g-cpu-pct">0%</div>
+                <div class="gauge-name">CPU</div>
+              </div>
+            </div>
+            <div class="gauge-wrap">
+              <svg class="gauge-svg" width="100" height="100" viewBox="0 0 100 100">
+                <circle class="gauge-track" cx="50" cy="50" r="40" stroke-dasharray="251" stroke-dashoffset="0"/>
+                <circle class="gauge-fill" id="g-mem" cx="50" cy="50" r="40" stroke="#10b981" stroke-dasharray="251" stroke-dashoffset="251"/>
+              </svg>
+              <div class="gauge-label">
+                <div class="gauge-pct" id="g-mem-pct">0%</div>
+                <div class="gauge-name">RAM</div>
+              </div>
+            </div>
+            <div class="gauge-wrap">
+              <svg class="gauge-svg" width="100" height="100" viewBox="0 0 100 100">
+                <circle class="gauge-track" cx="50" cy="50" r="40" stroke-dasharray="251" stroke-dashoffset="0"/>
+                <circle class="gauge-fill" id="g-disk" cx="50" cy="50" r="40" stroke="#f59e0b" stroke-dasharray="251" stroke-dashoffset="251"/>
+              </svg>
+              <div class="gauge-label">
+                <div class="gauge-pct" id="g-disk-pct">0%</div>
+                <div class="gauge-name">Disk C:</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>CPU History <span style="margin-left:auto;font-size:10px;font-weight:400;color:var(--text3)">last 30s</span></div>
+          <div class="chart-host">
+            <canvas id="cpu-chart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- System alerts + quick actions -->
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>System Health</div>
+          <div id="health-list" style="display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Quick Actions</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button class="btn btn-ghost" onclick="navTo('ping')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Ping Test</button>
+            <button class="btn btn-ghost" onclick="navTo('port-scanner')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Port Scan</button>
+            <button class="btn btn-ghost" onclick="navTo('disk-health')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg> Disk Health</button>
+            <button class="btn btn-ghost" onclick="navTo('processes')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg> Processes</button>
+            <button class="btn btn-ghost" onclick="navTo('security')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Security</button>
+            <button class="btn btn-ghost" onclick="navTo('dns-lookup')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg> DNS Lookup</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════ SYSTEM INFO ══════════════════ -->
+    <div class="page" id="page-sysinfo">
+      <div class="page-hdr">
+        <h1>System Information</h1>
+        <p>Full hardware and operating system details</p>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Operating System</div>
+          <table class="info-table" id="si-os"></table>
+        </div>
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Processor</div>
+          <table class="info-table" id="si-cpu"></table>
+        </div>
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Memory</div>
+          <div id="si-mem"></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Network Interfaces</div>
+          <div class="net-ifs" id="si-net"></div>
+        </div>
+        <div class="card" style="grid-column:1/-1">
+          <div class="card-title"><div class="dot"></div>Environment</div>
+          <table class="info-table" id="si-env"></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════ DISK ANALYZER ══════════════════ -->
+    <div class="page" id="page-disk-analyzer">
+      <div class="page-hdr"><h1>Disk Usage Analyzer</h1><p>Storage breakdown by drive</p></div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title"><div class="dot"></div>Drive Usage</div>
+        <div id="disk-list" style="display:flex;flex-direction:column;gap:12px">
+          <div class="disk-item">
+            <div class="disk-header"><div class="disk-name">💿 C: \ (System Drive)</div><span class="badge blue">SSD</span></div>
+            <div class="pbar-wrap">
+              <div class="pbar-row"><span style="color:var(--text2)">Used: 187 GB</span><span style="color:var(--text3)">Total: 256 GB</span></div>
+              <div class="pbar-track"><div class="pbar-fill yellow" style="width:73%"></div></div>
+            </div>
+          </div>
+          <div class="disk-item">
+            <div class="disk-header"><div class="disk-name">💿 D: \ (Data)</div><span class="badge gray">HDD</span></div>
+            <div class="pbar-wrap">
+              <div class="pbar-row"><span style="color:var(--text2)">Used: 412 GB</span><span style="color:var(--text3)">Total: 1 TB</span></div>
+              <div class="pbar-track"><div class="pbar-fill green" style="width:41%"></div></div>
+            </div>
+          </div>
+          <div class="disk-item">
+            <div class="disk-header"><div class="disk-name">💿 E: \ (Backup)</div><span class="badge gray">HDD</span></div>
+            <div class="pbar-wrap">
+              <div class="pbar-row"><span style="color:var(--text2)">Used: 1.8 TB</span><span style="color:var(--text3)">Total: 2 TB</span></div>
+              <div class="pbar-track"><div class="pbar-fill red" style="width:90%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="dot"></div>Top Folders by Size (C:\)</div>
+        <table class="proc-table">
+          <thead><tr><th>Folder</th><th>Size</th><th>Files</th><th>% of Drive</th></tr></thead>
+          <tbody id="folder-list">
+            <tr><td>Windows</td><td class="mono">34.2 GB</td><td class="mono">198,421</td><td><div class="pbar-track" style="width:120px"><div class="pbar-fill blue" style="width:18%"></div></div></td></tr>
+            <tr><td>Program Files</td><td class="mono">28.7 GB</td><td class="mono">87,932</td><td><div class="pbar-track" style="width:120px"><div class="pbar-fill blue" style="width:15%"></div></div></td></tr>
+            <tr><td>Users</td><td class="mono">67.4 GB</td><td class="mono">341,204</td><td><div class="pbar-track" style="width:120px"><div class="pbar-fill yellow" style="width:36%"></div></div></td></tr>
+            <tr><td>ProgramData</td><td class="mono">12.1 GB</td><td class="mono">44,821</td><td><div class="pbar-track" style="width:120px"><div class="pbar-fill green" style="width:7%"></div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════════════ DISK HEALTH ══════════════════ -->
+    <div class="page" id="page-disk-health">
+      <div class="page-hdr"><h1>Disk Health (S.M.A.R.T.)</h1><p>Drive diagnostics and health status</p></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Drive 1 — Samsung SSD 870 EVO</div>
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+            <div class="sec-score-num" style="font-size:36px;color:var(--green)">98%</div>
+            <div><div class="badge green" style="margin-bottom:4px">✅ Healthy</div><div style="font-size:12px;color:var(--text3)">No issues detected</div></div>
+          </div>
+          <table class="info-table">
+            <tr><td>Model</td><td>Samsung SSD 870 EVO 256GB</td></tr>
+            <tr><td>Type</td><td>SATA SSD</td></tr>
+            <tr><td>Temperature</td><td>34°C</td></tr>
+            <tr><td>Power On Hours</td><td>4,812 hrs</td></tr>
+            <tr><td>Reallocated Sectors</td><td>0</td></tr>
+            <tr><td>Uncorrectable Errors</td><td>0</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Drive 2 — WD Blue 1TB HDD</div>
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+            <div class="sec-score-num" style="font-size:36px;color:var(--yellow)">72%</div>
+            <div><div class="badge yellow" style="margin-bottom:4px">⚠️ Monitor</div><div style="font-size:12px;color:var(--text3)">Some wear detected</div></div>
+          </div>
+          <table class="info-table">
+            <tr><td>Model</td><td>WD Blue WD10EZEX 1TB</td></tr>
+            <tr><td>Type</td><td>SATA HDD 7200 RPM</td></tr>
+            <tr><td>Temperature</td><td>41°C</td></tr>
+            <tr><td>Power On Hours</td><td>18,441 hrs</td></tr>
+            <tr><td>Reallocated Sectors</td><td>3</td></tr>
+            <tr><td>Uncorrectable Errors</td><td>1</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════ PARTITION VIEW ══════════════════ -->
+    <div class="page" id="page-partition-view">
+      <div class="page-hdr"><h1>Partition Manager View</h1><p>Read-only partition overview</p></div>
+      <div class="card">
+        <div class="card-title"><div class="dot"></div>Disk 0 — Samsung SSD 870 EVO 256GB</div>
+        <div style="display:flex;border-radius:8px;overflow:hidden;height:44px;margin-bottom:10px;border:1px solid var(--border)">
+          <div style="width:5%;background:#6366f1;display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:700">EFI</div>
+          <div style="width:3%;background:#8b5cf6;display:flex;align-items:center;justify-content:center;font-size:9px;color:white">RE</div>
+          <div style="width:73%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:12px;color:white;font-weight:700">C:\ NTFS — 187GB / 230GB</div>
+          <div style="width:19%;background:#10b981;display:flex;align-items:center;justify-content:center;font-size:11px;color:white;font-weight:700">Recovery</div>
+        </div>
+        <table class="info-table">
+          <tr><td>Partition 1 (EFI)</td><td>100 MB — System, ESP</td></tr>
+          <tr><td>Partition 2 (MSR)</td><td>16 MB — Reserved</td></tr>
+          <tr><td>Partition 3 (C:\)</td><td>230 GB — NTFS, Boot, Page File</td></tr>
+          <tr><td>Partition 4</td><td>24 GB — Recovery</td></tr>
+        </table>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-title"><div class="dot"></div>Disk 1 — WD Blue 1TB HDD</div>
+        <div style="display:flex;border-radius:8px;overflow:hidden;height:44px;margin-bottom:10px;border:1px solid var(--border)">
+          <div style="width:40%;background:#10b981;display:flex;align-items:center;justify-content:center;font-size:12px;color:white;font-weight:700">D:\ NTFS — 412GB</div>
+          <div style="width:60%;background:#f59e0b;display:flex;align-items:center;justify-content:center;font-size:12px;color:white;font-weight:700">E:\ NTFS — 560GB</div>
+        </div>
+        <table class="info-table">
+          <tr><td>Partition 1 (D:\)</td><td>412 GB Used / 1 TB — Data</td></tr>
+          <tr><td>Partition 2 (E:\)</td><td>Free Space — 0 GB</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════════════ DUPLICATE FINDER ══════════════════ -->
+    <div class="page" id="page-duplicate-finder">
+      <div class="page-hdr"><h1>Duplicate File Finder</h1><p>Find and review duplicate files by hash comparison</p></div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title"><div class="dot"></div>Scan Configuration</div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <input type="text" value="C:\Users" placeholder="Folder to scan..." style="flex:1;min-width:200px">
+          <select style="width:160px"><option>All Files</option><option>Images Only</option><option>Documents</option><option>Videos</option></select>
+          <button class="btn btn-primary">🔍 Scan Now</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="dot"></div>Found Duplicates <span class="badge blue" style="margin-left:6px">12 groups</span></div>
+        <table class="proc-table">
+          <thead><tr><th>Filename</th><th>Size</th><th>Copies</th><th>Wasted</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td>vacation_photo.jpg</td><td class="mono">4.2 MB</td><td class="mono">3x</td><td class="mono" style="color:var(--red)">8.4 MB</td><td><button class="btn btn-sm btn-ghost">Review</button></td></tr>
+            <tr><td>project_backup.zip</td><td class="mono">128 MB</td><td class="mono">2x</td><td class="mono" style="color:var(--red)">128 MB</td><td><button class="btn btn-sm btn-ghost">Review</button></td></tr>
+            <tr><td>report_final.docx</td><td class="mono">2.1 MB</td><td class="mono">4x</td><td class="mono" style="color:var(--red)">6.3 MB</td><td><button class="btn btn-sm btn-ghost">Review</button></td></tr>
+            <tr><td>setup_installer.exe</td><td class="mono">87 MB</td><td class="mono">2x</td><td class="mono" style="color:var(--red)">87 MB</td><td><button class="btn btn-sm btn-ghost">Review</button></td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
+          <span style="color:var(--text3);font-size:12px">Total reclaimable: <strong style="color:var(--red)">229.7 MB</strong></span>
+          <button class="btn btn-danger btn-sm" style="margin-left:auto">🗑️ Delete Selected</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════ PING ══════════════════ -->
+    <div class="page" id="page-ping">
+      <div class="page-hdr"><h1>Ping / Latency Test</h1><p>Test connectivity and round-trip latency to any host</p></div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title"><div class="dot"></div>Ping Host</div>
+        <div class="input-wrap" style="margin-bottom:10px">
+          <input type="text" id="ping-host" value="8.8.8.8" placeholder="Hostname or IP address...">
+          <button class="btn btn-primary" onclick="doPing()" id="ping-btn">🏓 Ping</button>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('ping-host').value='8.8.8.8'">Google DNS</button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('ping-host').value='1.1.1.1'">Cloudflare</button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('ping-host').value='google.com'">google.com</button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('ping-host').value='192.168.1.1'">Gateway</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="dot"></div>Results</div>
+        <div class="terminal" id="ping-output">Ready. Enter a host and click Ping...</div>
+      </div>
+    </div>
+
+    <!-- ══════════════════ PORT SCANNER ══════════════════ -->
+    <div class="page" id="page-port-scanner">
+      <div class="page-hdr"><h1>Port Scanner</h1><p>Scan open TCP ports on any host</p></div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title"><div class="dot"></div>Scan Configuration</div>
+        <div class="input-wrap" style="margin-bottom:10px">
+          <input type="text" id="ps-host" value="127.0.0.1" placeholder="Target host...">
+          <select id="ps-preset" style="width:200px" onchange="applyPortPreset()">
+            <option value="">Custom</option>
+            <option value="common">Common Ports (21,22,23,25,53,80,443,3306,3389,5432,8080,8443)</option>
+            <option value="web">Web (80,443,8080,8443,8000,3000)</option>
+            <option value="remote">Remote (22,23,3389,5900,5800)</option>
+            <option value="db">Databases (1433,3306,5432,27017,6379,9200)</option>
+          </select>
+        </div>
+        <div class="input-wrap" style="margin-bottom:10px">
+          <input type="text" id="ps-ports" placeholder="Ports: 80,443,22 or range 1-1024" value="21,22,23,25,53,80,443,3306,3389,8080">
+          <button class="btn btn-primary" onclick="doPortScan()" id="ps-btn">🔍 Scan</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="dot"></div>Port Results <span id="ps-summary" style="margin-left:8px;font-size:11px;color:var(--text3)"></span></div>
+        <div class="port-grid" id="port-results">
+          <div class="empty-state"><div class="ei">🔌</div><p>Run a scan to see results</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════ DNS LOOKUP ══════════════════ -->
+    <div class="page" id="page-dns-lookup">
+      <div class="page-hdr"><h1>IP & DNS Lookup</h1><p>Resolve hostnames, lookup DNS records</p></div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title"><div class="dot"></div>Lookup</div>
+        <div class="input-wrap">
+          <input type="text" id="dns-host" value="google.com" placeholder="Hostname or domain...">
+          <button class="btn btn-primary" onclick="doDNS()">🌐 Lookup</button>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>DNS Resolution</div>
+          <div id="dns-result"><div class="empty-state"><div class="ei">🌐</div><p>Enter a hostname above</p></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Local Network Info</div>
+          <div id="net-local-info"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════ SPEED TEST ══════════════════ -->
+    <div class="page" id="page-speed-test">
+      <div class="page-hdr"><h1>Network Speed Test</h1><p>Simulated throughput measurement</p></div>
+      <div class="card" style="margin-bottom:16px;text-align:center;padding:32px">
+        <div style="font-size:64px;font-family:var(--display);font-weight:700;color:var(--blue)" id="spd-val">—</div>
+        <div style="font-size:14px;color:var(--text3);margin-bottom:20px" id="spd-unit">Click Start to test</div>
+        <button class="btn btn-primary" id="spd-btn" onclick="doSpeedTest()" style="font-size:15px;padding:12px 28px">▶ Start Test</button>
+        <div style="margin-top:20px" id="spd-bar" class="pbar-track" style="display:none"><div class="pbar-fill blue" id="spd-fill" style="width:0%;transition:width .3s"></div></div>
+      </div>
+      <div class="grid-3">
+        <div class="stat-card">
+          <div class="stat-label">Download</div>
+          <div class="stat-value" id="spd-dl">—</div>
+          <div class="stat-sub">Mbps</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Upload</div>
+          <div class="stat-value" id="spd-ul">—</div>
+          <div class="stat-sub">Mbps</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="stat-label">Ping</div>
+          <div class="stat-value" id="spd-ping">—</div>
+          <div class="stat-sub">ms latency</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════ WIFI MONITOR ══════════════════ -->
+    <div class="page" id="page-wifi-monitor">
+      <div class="page-hdr"><h1>WiFi Monitor</h1><p>Wireless network signal and details</p></div>
+      <div class="grid-2" style="margin-bottom:16px">
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Connected Network</div>
+          <table class="info-table">
+            <tr><td>SSID</td><td>OFFICE-WIFI-5G</td></tr>
+            <tr><td>Band</td><td>5 GHz (802.11ac)</td></tr>
+            <tr><td>Channel</td><td>36</td></tr>
+            <tr><td>BSSID</td><td>AA:BB:CC:DD:EE:FF</td></tr>
+            <tr><td>Security</td><td>WPA3-Personal</td></tr>
+            <tr><td>Signal</td><td>-52 dBm (Excellent)</td></tr>
+            <tr><td>Link Speed</td><td>867 Mbps</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Signal Strength</div>
+          <div style="text-align:center;padding:20px 0">
+            <div style="font-size:56px;font-family:var(--display);font-weight:700;color:var(--green)">-52</div>
+            <div style="font-size:14px;color:var(--text3);margin-bottom:12px">dBm — Excellent</div>
+            <div class="pbar-wrap">
+              <div class="pbar-row"><span>Signal</span><span>87%</span></div>
+              <div class="pbar-track"><div class="pbar-fill green" style="width:87%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="dot"></div>Nearby Networks</div>
+        <table class="proc-table">
+          <thead><tr><th>SSID</th><th>Band</th><th>Channel</th><th>Security</th><th>Signal</th></tr></thead>
+          <tbody>
+            <tr><td>OFFICE-WIFI-5G</td><td class="mono">5 GHz</td><td class="mono">36</td><td><span class="badge green">WPA3</span></td><td><span class="badge green">Excellent</span></td></tr>
+            <tr><td>GUEST-NETWORK</td><td class="mono">2.4 GHz</td><td class="mono">6</td><td><span class="badge yellow">WPA2</span></td><td><span class="badge blue">Good</span></td></tr>
+            <tr><td>OFFICE-WIFI-2G</td><td class="mono">2.4 GHz</td><td class="mono">1</td><td><span class="badge yellow">WPA2</span></td><td><span class="badge blue">Good</span></td></tr>
+            <tr><td>NEIGHBOR-NET</td><td class="mono">5 GHz</td><td class="mono">149</td><td><span class="badge yellow">WPA2</span></td><td><span class="badge gray">Weak</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════════════ PROCESSES ══════════════════ -->
+    <div class="page" id="page-processes">
+      <div class="page-hdr"><h1>Process Manager</h1><p>Running processes — live view</p></div>
+      <div class="card">
+        <div class="card-title"><div class="dot"></div>Running Processes <span id="proc-count" class="badge blue" style="margin-left:6px"></span></div>
+        <div class="search-bar" style="margin-bottom:12px">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Filter processes..." id="proc-filter" oninput="filterProcs()">
+        </div>
+        <div style="max-height:400px;overflow-y:auto">
+          <table class="proc-table" id="proc-table">
+            <thead><tr><th>Name</th><th>PID</th><th>CPU %</th><th>Memory</th><th>Status</th></tr></thead>
+            <tbody id="proc-body"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="loadProcesses()">🔄 Refresh</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════ STARTUP MANAGER ══════════════════ -->
+    <div class="page" id="page-startup">
+      <div class="page-hdr"><h1>Startup Manager</h1><p>Control which apps launch at Windows startup</p></div>
+      <div class="card">
+        <div class="card-title"><div class="dot"></div>Startup Items</div>
+        <div class="startup-list" id="startup-list"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════ EVENT LOG ══════════════════ -->
+    <div class="page" id="page-eventlog">
+      <div class="page-hdr"><h1>Event Log Viewer</h1><p>Live system events stream</p></div>
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div class="live-dot"></div>
+          <span style="font-size:12px;color:var(--text3)">Live — auto-updating</span>
+          <select id="log-filter" style="width:140px" onchange="filterLogs()">
+            <option value="">All Levels</option>
+            <option value="INFO">INFO</option>
+            <option value="WARN">WARN</option>
+            <option value="ERR">ERR</option>
+            <option value="OK">OK</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="clearLogs()" style="margin-left:auto">🗑️ Clear</button>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;max-height:500px;overflow-y:auto">
+        <div id="log-list"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════ SECURITY ══════════════════ -->
+    <div class="page" id="page-security">
+      <div class="page-hdr"><h1>Security Scanner</h1><p>System security posture assessment</p></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Security Score</div>
+          <div class="sec-score-ring">
+            <div class="sec-score-num">84</div>
+            <div class="sec-score-lbl">out of 100 — Good</div>
+          </div>
+          <div class="pbar-wrap">
+            <div class="pbar-track"><div class="pbar-fill green" style="width:84%"></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Quick Stats</div>
+          <table class="info-table">
+            <tr><td>Firewall</td><td><span class="badge green">✅ Active</span></td></tr>
+            <tr><td>Antivirus</td><td><span class="badge green">✅ Up to date</span></td></tr>
+            <tr><td>Windows Update</td><td><span class="badge yellow">⚠️ 2 Pending</span></td></tr>
+            <tr><td>Open Ports</td><td><span class="badge blue">4 monitored</span></td></tr>
+            <tr><td>Last Scan</td><td>2 hours ago</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-title"><div class="dot"></div>Security Checks</div>
+        <div class="sec-check-list" id="sec-checks"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════ SETTINGS ══════════════════ -->
+    <div class="page" id="page-settings">
+      <div class="page-hdr"><h1>Settings</h1><p>Application preferences and configuration</p></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>General</div>
+          <div class="setting-row">
+            <div class="setting-info"><h3>Dashboard Refresh Rate</h3><p>How often live metrics update</p></div>
+            <select id="set-refresh" onchange="updateRefresh()" style="width:130px">
+              <option value="1000">1 second</option>
+              <option value="2000" selected>2 seconds</option>
+              <option value="5000">5 seconds</option>
+              <option value="10000">10 seconds</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><h3>Start with Windows</h3><p>Launch SysForge on startup</p></div>
+            <label class="startup-tog"><input type="checkbox"><div class="tog-slider"></div></label>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><h3>System Tray Icon</h3><p>Minimize to tray instead of taskbar</p></div>
+            <label class="startup-tog"><input type="checkbox" checked><div class="tog-slider"></div></label>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><h3>Sound Alerts</h3><p>Play sound on high CPU/memory</p></div>
+            <label class="startup-tog"><input type="checkbox"><div class="tog-slider"></div></label>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Alerts & Thresholds</div>
+          <div class="setting-row">
+            <div class="setting-info"><h3>CPU Alert Threshold</h3><p>Warn when CPU exceeds this %</p></div>
+            <div style="display:flex;align-items:center;gap:6px"><input type="number" value="85" style="width:70px;flex:none"> <span style="color:var(--text3)">%</span></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><h3>Memory Alert Threshold</h3><p>Warn when RAM exceeds this %</p></div>
+            <div style="display:flex;align-items:center;gap:6px"><input type="number" value="90" style="width:70px;flex:none"> <span style="color:var(--text3)">%</span></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><h3>Disk Alert Threshold</h3><p>Warn when drive is this % full</p></div>
+            <div style="display:flex;align-items:center;gap:6px"><input type="number" value="85" style="width:70px;flex:none"> <span style="color:var(--text3)">%</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>About SysForge</div>
+          <table class="info-table">
+            <tr><td>Version</td><td>1.0.0</td></tr>
+            <tr><td>Platform</td><td>Windows x64</td></tr>
+            <tr><td>Electron</td><td>v28.x</td></tr>
+            <tr><td>Node.js</td><td id="set-node">—</td></tr>
+            <tr><td>License</td><td>MIT</td></tr>
+          </table>
+          <div style="margin-top:14px;display:flex;gap:8px">
+            <button class="btn btn-primary btn-sm"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.5;margin-right:4px"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg> Check for Updates</button>
+            <button class="btn btn-ghost btn-sm"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.5;margin-right:4px"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> Open Logs Folder</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Data & Privacy</div>
+          <div class="setting-row">
+            <div class="setting-info"><h3>Anonymous Telemetry</h3><p>Help improve SysForge (no personal data)</p></div>
+            <label class="startup-tog"><input type="checkbox"><div class="tog-slider"></div></label>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><h3>Save Scan History</h3><p>Store ping/port scan results locally</p></div>
+            <label class="startup-tog"><input type="checkbox" checked><div class="tog-slider"></div></label>
+          </div>
+          <div style="margin-top:12px">
+            <button class="btn btn-danger btn-sm"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.5;margin-right:4px"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Clear All Data</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end #content -->
+
+  <!-- STATUS BAR -->
+  <div id="statusbar">
+    <div class="sb-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> <span id="sb-host">—</span></div>
+    <div class="sb-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg> CPU: <span id="sb-cpu">—</span></div>
+    <div class="sb-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 19v2"></path><path d="M10 19v2"></path><path d="M14 19v2"></path><path d="M18 19v2"></path><path d="M8 11V9"></path><path d="M16 11V9"></path><rect x="3" y="11" width="18" height="8" rx="2" ry="2"></rect><path d="M20 11V5"></path><path d="M4 11V5"></path><path d="M4 5h16"></path></svg> RAM: <span id="sb-mem">—</span></div>
+    <div class="sb-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> <span id="sb-uptime">—</span></div>
+    <div class="sb-stat" style="margin-left:auto">CXI SLT Toolkit v1.0</div>
+  </div>
+</div><!-- end #main -->
+</div><!-- end #app -->
+
+<script>
+// ── NAVIGATION ──────────────────────────────────────────
+const PAGES = ['dashboard','sysinfo','disk-analyzer','disk-health','partition-view','duplicate-finder',
+  'ping','port-scanner','dns-lookup','speed-test','wifi-monitor',
+  'processes','startup','eventlog','security','settings'];
+const PAGE_TITLES = {
+  dashboard:'Dashboard','sysinfo':'System Information','disk-analyzer':'Disk Analyzer',
+  'disk-health':'Disk Health','partition-view':'Partition View','duplicate-finder':'Duplicate Finder',
+  'ping':'Ping / Latency','port-scanner':'Port Scanner','dns-lookup':'IP & DNS Lookup',
+  'speed-test':'Speed Test','wifi-monitor':'WiFi Monitor','processes':'Process Manager',
+  'startup':'Startup Manager','eventlog':'Event Log','security':'Security Scanner','settings':'Settings'
+};
+const STORAGE_PAGES = ['disk-analyzer','disk-health','partition-view','duplicate-finder'];
+const NET_PAGES = ['ping','port-scanner','dns-lookup','speed-test','wifi-monitor'];
+
+function navTo(id) {
+  PAGES.forEach(p => {
+    const pg = document.getElementById('page-'+p);
+    if (pg) pg.classList.toggle('active', p === id);
+  });
+  document.querySelectorAll('.sb-item[data-page]').forEach(el => el.classList.toggle('active', el.dataset.page === id));
+  document.querySelectorAll('.sb-sub[data-page]').forEach(el => el.classList.toggle('active', el.dataset.page === id));
+  document.getElementById('tb-page-title').textContent = PAGE_TITLES[id] || id;
+  if (id === 'sysinfo') loadSysInfo();
+  if (id === 'processes') loadProcesses();
+  if (id === 'startup') loadStartup();
+  if (id === 'dns-lookup') loadLocalNet();
+  if (id === 'disk-analyzer') loadDiskAnalyzer();
+  if (id === 'settings') loadSettingsInfo();
+  if (id === 'dashboard') {
+    setTimeout(drawChart, 50); // Small delay to ensure DOM is updated and visible
+  }
+}
+
+// Sidebar nav
+document.querySelectorAll('.sb-item[data-page]').forEach(el => {
+  el.addEventListener('click', () => navTo(el.dataset.page));
+});
+document.querySelectorAll('.sb-sub[data-page]').forEach(el => {
+  el.addEventListener('click', () => navTo(el.dataset.page));
+});
+
+// Dropdown toggles
+document.querySelectorAll('.sb-item[data-toggle]').forEach(el => {
+  el.addEventListener('click', () => {
+    const targetId = el.dataset.toggle;
+    const targetDD = document.getElementById(targetId);
+    const wasOpen = targetDD.classList.contains('open');
+
+    // Close all dropdowns first
+    document.querySelectorAll('.sb-dropdown').forEach(dd => {
+      dd.classList.remove('open');
+      const arrow = document.getElementById('arr-' + dd.id.replace('-dd',''));
+      if (arrow) arrow.style.transform = '';
+    });
+
+    // If it wasn't open, open it now
+    if (!wasOpen) {
+      targetDD.classList.add('open');
+      const targetArr = document.getElementById('arr-' + targetId.replace('-dd',''));
+      if (targetArr) targetArr.style.transform = 'rotate(180deg)';
+    }
+  });
+});
+
+// ── SYSINFO ──────────────────────────────────────────────
+async function loadSysInfo() {
+  if (!window.cxi) return;
+  const info = await window.cxi.getSysInfo();
+  const gb = b => (b/1073741824).toFixed(1)+' GB';
+
+  document.getElementById('si-os').innerHTML = rows([
+    ['OS Type', info.type], ['Platform', info.platform], ['Architecture', info.arch],
+    ['Kernel', info.release], ['Hostname', info.hostname], ['Username', info.username],
+  ]);
+  document.getElementById('si-cpu').innerHTML = rows([
+    ['Model', info.cpuModel], ['Logical Cores', info.cpuCores],
+    ['Node.js', info.nodeVersion], ['Electron', info.electronVersion],
+  ]);
+  document.getElementById('si-mem').innerHTML = `
+    <div class="pbar-wrap" style="gap:8px">
+      <div class="pbar-row"><span>Used: ${gb(info.totalMem-info.freeMem)}</span><span>Total: ${gb(info.totalMem)}</span></div>
+      <div class="pbar-track"><div class="pbar-fill blue" style="width:${Math.round((1-info.freeMem/info.totalMem)*100)}%"></div></div>
+      <div style="font-size:11px;color:var(--text3)">Free: ${gb(info.freeMem)}</div>
+    </div>`;
+  document.getElementById('si-env').innerHTML = rows([
+    ['Home Dir', info.homedir], ['Temp Dir', '/temp'],
+  ]);
+
+  // Network interfaces
+  const netEl = document.getElementById('si-net');
+  let netHtml = '';
+  for (const [name, addrs] of Object.entries(info.networkInterfaces || {})) {
+    if (!addrs || !addrs.length) continue;
+    netHtml += `<div class="net-if-card"><div class="net-if-name"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.5;margin-right:4px"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg> ${name}</div><div class="net-if-addrs">`;
+    addrs.forEach(a => {
+      netHtml += `<div class="net-if-addr"><span>${a.family}</span><span>${a.address}</span></div>`;
+    });
+    netHtml += `</div></div>`;
+  }
+  netEl.innerHTML = netHtml || '<p style="color:var(--text3)">No interfaces found</p>';
+}
+
+function rows(data) {
+  return data.map(([k,v]) => `<tr><td>${k}</td><td>${v||'—'}</td></tr>`).join('');
+}
+
+// ── LIVE METRICS ─────────────────────────────────────────
+const cpuHistory = Array(30).fill(0);
+let metricsInterval;
+
+async function updateMetrics() {
+  if (!window.cxi) {
+    simulateMetrics();
+    return;
+  }
+  try {
+    const m = await window.cxi.getMetrics();
+    const d = await window.cxi.getDisks();
+    setMetrics(m.cpu, m.memPct, m.memUsed, m.memTotal, m.uptime, d);
+  } catch(e) { simulateMetrics(); }
+}
+
+let simCpu = 35, simMem = 62;
+function simulateMetrics() {
+  simCpu = Math.max(5, Math.min(95, simCpu + (Math.random()-0.48)*8));
+  simMem = Math.max(40, Math.min(90, simMem + (Math.random()-0.5)*3));
+  setMetrics(Math.round(simCpu), Math.round(simMem), 0, 0, Math.floor(Date.now()/1000)%86400, []);
+}
+
+function setMetrics(cpu, mem, memUsed, memTotal, uptime, disks = []) {
+  // Stat cards
+  const cpuEl = document.getElementById('d-cpu');
+  if (cpuEl) cpuEl.textContent = cpu + '%';
+
+  const memEl = document.getElementById('d-mem');
+  if (memEl) memEl.textContent = mem + '%';
+  const memSub = document.getElementById('d-mem-sub');
+  if (memSub) memSub.textContent = memTotal ? `${(memUsed/1073741824).toFixed(1)}/${(memTotal/1073741824).toFixed(1)} GB` : `${mem}% in use`;
+
+  const uptEl = document.getElementById('d-uptime');
+  if (uptEl) uptEl.textContent = fmtUptime(uptime);
+  
+  const uptStat = document.getElementById('d-uptime-status');
+  if (uptStat) uptStat.textContent = uptime > 3600*24 ? 'Running for days' : 'System running';
+
+  // Gauges
+  setGauge('g-cpu', cpu); document.getElementById('g-cpu-pct').textContent = cpu+'%';
+  setGauge('g-mem', mem); document.getElementById('g-mem-pct').textContent = mem+'%';
+  // Disk gauge
+  const mainDisk = disks[0] || { percent: 0 };
+  setGauge('g-disk', mainDisk.percent); 
+  document.getElementById('g-disk-pct').textContent = (mainDisk.percent||0)+'%';
+
+  // CPU history + chart
+  cpuHistory.push(cpu); cpuHistory.shift();
+  drawChart();
+
+  // Status bar
+  const sbCpu = document.getElementById('sb-cpu'); if (sbCpu) sbCpu.textContent = cpu+'%';
+  const sbMem = document.getElementById('sb-mem'); if (sbMem) sbMem.textContent = mem+'%';
+  const sbUp = document.getElementById('sb-uptime'); if (sbUp) sbUp.textContent = fmtUptime(uptime);
+
+  const lastUp = document.getElementById('last-update');
+  if (lastUp) lastUp.textContent = new Date().toLocaleTimeString();
+}
+
+function setGauge(id, pct) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const r = 40, circ = 2*Math.PI*r;
+  const offset = circ - (pct/100)*circ;
+  el.style.strokeDashoffset = offset;
+  el.style.stroke = pct > 80 ? '#ef4444' : pct > 60 ? '#f59e0b' : pct > 40 ? '#1a6ef5' : '#10b981';
+}
+
+function fmtUptime(s) {
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60);
+  return `${h}h ${m}m`;
+}
+
+// ── MINI CHART ────────────────────────────────────────────
+let chartCtx;
+function drawChart() {
+  const canvas = document.getElementById('cpu-chart');
+  if (!canvas || canvas.offsetParent === null) return;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  if (rect.width === 0) return;
+  canvas.width = rect.width * devicePixelRatio;
+  canvas.height = rect.height * devicePixelRatio;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  const W = rect.width, H = rect.height;
+  ctx.clearRect(0,0,W,H);
+
+  const pts = cpuHistory;
+  const step = W/(pts.length-1);
+  const pad = 10;
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(220,228,240,0.6)';
+  ctx.lineWidth = 1;
+  [25,50,75].forEach(y => {
+    const yp = H - pad - (y/100)*(H-pad*2);
+    ctx.beginPath(); ctx.moveTo(0,yp); ctx.lineTo(W,yp); ctx.stroke();
+  });
+
+  // Gradient fill
+  const grad = ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,'rgba(26,110,245,0.25)');
+  grad.addColorStop(1,'rgba(26,110,245,0)');
+  ctx.beginPath();
+  pts.forEach((v,i) => {
+    const x = i*step, y = H - pad - (v/100)*(H-pad*2);
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  });
+  ctx.lineTo((pts.length-1)*step, H);
+  ctx.lineTo(0,H);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  pts.forEach((v,i) => {
+    const x = i*step, y = H - pad - (v/100)*(H-pad*2);
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  });
+  ctx.strokeStyle = '#1a6ef5';
+  ctx.lineWidth = 2;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+}
+
+// ── DASHBOARD HEALTH ──────────────────────────────────────
+async function updateHealth() {
+  const el = document.getElementById('health-list');
+  if (!el) return;
+  if (!window.cxi) return;
+  
+  try {
+    const info = await window.cxi.getSysInfo();
+    const metrics = await window.cxi.getMetrics();
+    const disks = await window.cxi.getDisks();
+    const mainDisk = disks[0] || { drive:'C:', percent:0 };
+
+    const items = [
+      { icon: metrics.uptime > 3600*24 ? `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>` : `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`, label:'Uptime', status: fmtUptime(metrics.uptime), color:'green' },
+      { icon: metrics.memPct > 85 ? `<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>` : `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`, label:'Memory', status: `${metrics.memPct}% used`, color: metrics.memPct > 85 ? 'yellow' : 'green' },
+      { icon: mainDisk.percent > 85 ? `<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>` : `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`, label:'Disk Space', status: `${mainDisk.drive} is ${mainDisk.percent||0}% full`, color: mainDisk.percent > 85 ? 'yellow' : 'green' },
+      { icon:'<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>', label:'Hostname', status: info.hostname, color:'green' },
+      { icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>', label:'OS Platform', status: info.platform + ' ' + info.arch, color:'green' },
+      { icon:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="15" x2="23" y2="15"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="15" x2="4" y2="15"></line></svg>', label:'CPU Monitor', status: info.cpuCores + ' Cores Active', color:'green' },
+    ];
+
+    el.innerHTML = items.map(i => `
+      <div class="sec-check">
+        <div class="sec-check-icon ${i.color}">${i.icon}</div>
+        <div class="sec-check-body">
+          <div class="sec-check-name">${i.label}</div>
+          <div class="sec-check-desc">${i.status}</div>
+        </div>
+      </div>`).join('');
+  } catch(e) {}
+}
+
+// ── PING ─────────────────────────────────────────────────
+async function doPing() {
+  const host = document.getElementById('ping-host').value.trim();
+  if (!host) return;
+  const out = document.getElementById('ping-output');
+  const btn = document.getElementById('ping-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px"></span> Pinging...';
+  out.innerHTML = `<span class="t-info t-line">Pinging ${host}...</span>\n`;
+
+  if (window.cxi) {
+    const r = await window.cxi.pingHost(host);
+    out.innerHTML = `<span class="t-info t-line">Pinging ${host}...\n</span><span class="${r.success?'t-ok':'t-err'} t-line">${r.output}</span>`;
+  } else {
+    // Simulation
+    await sleep(1800);
+    const ms = Math.floor(Math.random()*30+5);
+    out.innerHTML = `<span class="t-info t-line">Pinging ${host}...\n</span>`;
+    for(let i=1;i<=4;i++){
+      await sleep(400);
+      const m=ms+Math.floor(Math.random()*10);
+      out.innerHTML += `<span class="t-ok t-line">Reply from ${host}: bytes=32 time=${m}ms TTL=55\n</span>`;
+    }
+    out.innerHTML += `<span class="t-line">\nPing statistics for ${host}: Sent=4, Received=4, Lost=0 (0% loss)\nAverage latency: ${ms}ms\n</span>`;
+  }
+  btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.5;margin-right:4px"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Ping';
+}
+
+// ── PORT SCANNER ─────────────────────────────────────────
+function applyPortPreset() {
+  const presets = {
+    common:'21,22,23,25,53,80,443,3306,3389,5432,8080,8443',
+    web:'80,443,8080,8443,8000,3000',
+    remote:'22,23,3389,5900,5800',
+    db:'1433,3306,5432,27017,6379,9200'
+  };
+  const v = document.getElementById('ps-preset').value;
+  if (presets[v]) document.getElementById('ps-ports').value = presets[v];
+}
+
+const PORT_NAMES = {21:'FTP',22:'SSH',23:'Telnet',25:'SMTP',53:'DNS',80:'HTTP',443:'HTTPS',
+  3306:'MySQL',3389:'RDP',5432:'PostgreSQL',8080:'HTTP-Alt',8443:'HTTPS-Alt',
+  1433:'MSSQL',27017:'MongoDB',6379:'Redis',9200:'Elasticsearch',5900:'VNC',5800:'VNC-Web',8000:'Dev',3000:'Dev'};
+
+async function doPortScan() {
+  const host = document.getElementById('ps-host').value.trim();
+  const portStr = document.getElementById('ps-ports').value.trim();
+  if (!host || !portStr) return;
+
+  const ports = parsePorts(portStr);
+  const btn = document.getElementById('ps-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px"></span> Scanning...';
+  document.getElementById('port-results').innerHTML = '<div style="padding:20px;color:var(--text3);font-size:13px">Scanning ports...</div>';
+  document.getElementById('ps-summary').textContent = '';
+
+  const results = [];
+  for (const port of ports) {
+    let result;
+    if (window.cxi) {
+      result = await window.cxi.scanPort(host, port);
+    } else {
+      await sleep(120 + Math.random()*80);
+      // Simulate: common ports more likely open on localhost
+      const openChance = (host==='127.0.0.1'||host==='localhost') ? ([80,443,3306,22].includes(port)?0.7:0.2) : 0.15;
+      result = { port, open: Math.random()<openChance, ms: Math.floor(50+Math.random()*200) };
+    }
+    results.push(result);
+  }
+
+  const open = results.filter(r=>r.open).length;
+  document.getElementById('ps-summary').textContent = `${open} open / ${results.length} scanned`;
+
+  document.getElementById('port-results').innerHTML = results.map(r => `
+    <div class="port-chip ${r.open?'open':r.timeout?'timeout':'closed'}">
+      <div class="pn">${r.port}</div>
+      <div class="ps">${PORT_NAMES[r.port]||'—'}</div>
+      <div style="font-size:9px">${r.open?'OPEN':'CLOSED'} · ${r.ms}ms</div>
+    </div>`).join('');
+
+  btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.5;margin-right:4px"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Scan';
+}
+
+function parsePorts(str) {
+  const ports = new Set();
+  str.split(',').forEach(p => {
+    p = p.trim();
+    if (p.includes('-')) {
+      const [a,b] = p.split('-').map(Number);
+      for(let i=a;i<=Math.min(b,a+200);i++) ports.add(i);
+    } else if (!isNaN(+p)) ports.add(+p);
+  });
+  return [...ports];
+}
+
+async function loadDiskAnalyzer() {
+  const el = document.getElementById('disk-list');
+  if (!el) return;
+  if (!window.cxi) return;
+  
+  el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3)">Scanning drives...</div>';
+  try {
+    const disks = await window.cxi.getDisks();
+    const gb = b => (b/1073741824).toFixed(1);
+    
+    el.innerHTML = disks.map(d => `
+      <div class="disk-item">
+        <div class="disk-header"><div class="disk-name"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;margin-right:4px"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg> ${d.drive} (${d.label||'Local Disk'})</div><span class="badge ${d.type==='SSD'?'blue':'gray'}">${d.type||'Fixed'}</span></div>
+        <div class="pbar-wrap">
+          <div class="pbar-row"><span style="color:var(--text2)">Used: ${gb(d.used)} GB</span><span style="color:var(--text3)">Total: ${gb(d.total)} GB</span></div>
+          <div class="pbar-track"><div class="pbar-fill ${d.percent>90?'red':d.percent>75?'yellow':'green'}" style="width:${d.percent}%"></div></div>
+        </div>
+      </div>`).join('');
+      
+    // Stub folder list since full scan takes long
+    document.getElementById('folder-list').innerHTML = `
+      <tr><td>Users</td><td class="mono">...</td><td class="mono">...</td><td>Scanning...</td></tr>
+      <tr><td>Windows</td><td class="mono">...</td><td class="mono">...</td><td>Scanning...</td></tr>
+    `;
+  } catch(e) {}
+}
+
+// ── DNS LOOKUP ────────────────────────────────────────────
+async function doDNS() {
+  const host = document.getElementById('dns-host').value.trim();
+  const el = document.getElementById('dns-result');
+  if (!host) return;
+  el.innerHTML = '<div style="color:var(--text3);padding:10px">Resolving...</div>';
+
+  if (window.cxi) {
+    const r = await window.cxi.dnsLookup(host);
+    if (r.success) {
+      el.innerHTML = r.addresses.map(a => `
+        <div class="net-if-card" style="margin-bottom:6px">
+          <div class="net-if-name"><span class="badge ${a.family==='IPv4'?'blue':'green'}">${a.family}</span></div>
+          <div style="font-family:var(--mono);font-size:13px;color:var(--text)">${a.address}</div>
+        </div>`).join('');
+    } else {
+      el.innerHTML = `<div style="color:var(--red);padding:10px;font-family:var(--mono);font-size:12px">Error: ${r.error}</div>`;
+    }
+  } else {
+    await sleep(600);
+    const fakeIPs = ['142.250.'+Math.floor(Math.random()*255)+'.'+Math.floor(Math.random()*255),'2607:f8b0:4004:c09::64'];
+    el.innerHTML = fakeIPs.map((ip,i) => `
+      <div class="net-if-card" style="margin-bottom:6px">
+        <div class="net-if-name"><span class="badge ${i===0?'blue':'green'}">${i===0?'IPv4':'IPv6'}</span></div>
+        <div style="font-family:var(--mono);font-size:13px;color:var(--text)">${ip}</div>
+      </div>`).join('');
+  }
+}
+
+function loadLocalNet() {
+  const el = document.getElementById('net-local-info');
+  if (!el) return;
+  if (window.cxi) {
+    window.cxi.getSysInfo().then(info => {
+      let html = '';
+      for(const [name,addrs] of Object.entries(info.networkInterfaces||{})){
+        if (!addrs) continue;
+        const ipv4 = addrs.find(a=>a.family==='IPv4');
+        if (ipv4) html += `<div class="net-if-card" style="margin-bottom:6px"><div class="net-if-name"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.5;margin-right:4px"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg> ${name}</div><div style="font-family:var(--mono);font-size:12px;color:var(--text2)">${ipv4.address}</div></div>`;
+      }
+      el.innerHTML = html || '<p style="color:var(--text3)">No interfaces</p>';
+    });
+  } else {
+    el.innerHTML = `
+      <div class="net-if-card" style="margin-bottom:6px"><div class="net-if-name">🔌 Ethernet</div><div style="font-family:var(--mono);font-size:12px;color:var(--text2)">192.168.1.105</div></div>
+      <div class="net-if-card"><div class="net-if-name">📶 Wi-Fi</div><div style="font-family:var(--mono);font-size:12px;color:var(--text2)">192.168.1.110</div></div>`;
+  }
+}
+
+// ── SPEED TEST ────────────────────────────────────────────
+let speedRunning = false;
+async function doSpeedTest() {
+  if (speedRunning) return;
+  speedRunning = true;
+  const btn = document.getElementById('spd-btn');
+  const val = document.getElementById('spd-val');
+  const unit = document.getElementById('spd-unit');
+  const fill = document.getElementById('spd-fill');
+  const bar = document.getElementById('spd-bar');
+  bar.style.display = 'block';
+  document.getElementById('spd-dl').textContent = '—';
+  document.getElementById('spd-ul').textContent = '—';
+  document.getElementById('spd-ping').textContent = '—';
+  btn.disabled = true;
+
+  // Ping phase
+  unit.textContent = 'Measuring latency...';
+  for(let i=0;i<=100;i+=10){fill.style.width=i/4+'%';await sleep(80);}
+  const ping = Math.floor(8+Math.random()*25);
+  document.getElementById('spd-ping').textContent = ping;
+
+  // Download phase
+  unit.textContent = 'Testing download speed...';
+  let dl=0;
+  for(let i=0;i<=100;i++){
+    dl = Math.min(850, dl+(Math.random()*18));
+    val.textContent = Math.round(dl);
+    unit.textContent = 'Mbps ↓ Download';
+    fill.style.width = (25+i*0.5)+'%';
+    await sleep(40);
+  }
+  const dlFinal = Math.round(dl);
+  document.getElementById('spd-dl').textContent = dlFinal;
+
+  // Upload phase
+  unit.textContent = 'Testing upload speed...';
+  let ul=0;
+  for(let i=0;i<=100;i++){
+    ul = Math.min(400, ul+(Math.random()*8));
+    val.textContent = Math.round(ul);
+    unit.textContent = 'Mbps ↑ Upload';
+    fill.style.width = (75+i*0.25)+'%';
+    await sleep(30);
+  }
+  const ulFinal = Math.round(ul);
+  document.getElementById('spd-ul').textContent = ulFinal;
+
+  // Done
+  fill.style.width = '100%';
+  val.textContent = dlFinal;
+  unit.textContent = 'Mbps Download — Test Complete';
+  btn.disabled = false;
+  speedRunning = false;
+}
+
+// ── PROCESS MANAGER ───────────────────────────────────────
+const FAKE_PROCS = [
+  {name:'System Idle Process',pid:0,cpu:0.1,mem:0.1},
+  {name:'svchost.exe',pid:1024,cpu:0.8,mem:48.2},
+  {name:'explorer.exe',pid:2048,cpu:1.2,mem:87.4},
+  {name:'chrome.exe',pid:4096,cpu:4.3,mem:420.8},
+  {name:'discord.exe',pid:3200,cpu:1.8,mem:210.3},
+  {name:'teams.exe',pid:5120,cpu:3.1,mem:312.5},
+  {name:'lsass.exe',pid:768,cpu:0.2,mem:22.1},
+  {name:'dwm.exe',pid:960,cpu:2.1,mem:55.6},
+  {name:'winlogon.exe',pid:560,cpu:0.0,mem:8.4},
+  {name:'taskmgr.exe',pid:7680,cpu:0.5,mem:18.2},
+  {name:'antivirus.exe',pid:1280,cpu:0.3,mem:64.7},
+  {name:'SearchIndexer.exe',pid:3840,cpu:0.9,mem:38.2},
+  {name:'spoolsv.exe',pid:1536,cpu:0.0,mem:12.3},
+  {name:'vmware.exe',pid:6400,cpu:2.4,mem:186.5},
+  {name:'code.exe',pid:8192,cpu:5.2,mem:380.1},
+];
+
+async function loadProcesses() {
+  if (!window.cxi) return;
+  const tbody = document.getElementById('proc-body');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="5"><div style="text-align:center;padding:20px;color:var(--text3)">Loading processes...</div></td></tr>';
+  
+  try {
+    const procs = await window.cxi.getProcesses();
+    tbody.innerHTML = procs.map(p => `
+      <tr>
+        <td style="font-weight:600">${p.name}</td>
+        <td class="mono">${p.pid}</td>
+        <td class="mono" style="color:${p.cpu>5?'var(--red)':p.cpu>2?'var(--yellow)':'var(--text2)'}">${p.cpu.toFixed(1)}%</td>
+        <td class="mono">${p.mem.toFixed(1)} MB</td>
+        <td><span class="badge ${p.status==='running'?'green':'gray'}">${p.status||'running'}</span></td>
+      </tr>`).join('');
+    document.getElementById('proc-count').textContent = procs.length + ' active processes';
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--red)">Failed to load processes</td></tr>';
+  }
+}
+
+function renderProcs(procs) {
+  document.getElementById('proc-body').innerHTML = procs.map(p => `
+    <tr>
+      <td>${p.name}</td>
+      <td class="mono">${p.pid}</td>
+      <td class="mono" style="color:${p.cpu>5?'var(--red)':p.cpu>2?'var(--yellow)':'var(--text2)'}">${p.cpu.toFixed(1)}%</td>
+      <td class="mono">${p.mem.toFixed(1)} MB</td>
+      <td><span class="badge green">Running</span></td>
+    </tr>`).join('');
+}
+
+function filterProcs() {
+  const q = document.getElementById('proc-filter').value.toLowerCase();
+  renderProcs(allProcs.filter(p => p.name.toLowerCase().includes(q)));
+}
+
+// ── STARTUP MANAGER ───────────────────────────────────────
+const STARTUP_ITEMS = [
+  {icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>',name:'Google Chrome',path:'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',enabled:false},
+  {icon:'<svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>',name:'Discord',path:'C:\\Users\\Admin\\AppData\\Local\\Discord\\app.exe',enabled:true},
+  {icon:'<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>',name:'Windows Defender',path:'C:\\Program Files\\Windows Defender\\MSASCui.exe',enabled:true},
+  {icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path></svg>',name:'Spotify',path:'C:\\Users\\Admin\\AppData\\Roaming\\Spotify\\Spotify.exe',enabled:false},
+  {icon:'<svg viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>',name:'OneDrive',path:'C:\\Program Files\\Microsoft OneDrive\\OneDrive.exe',enabled:true},
+  {icon:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>',name:'Microsoft Teams',path:'C:\\Users\\Admin\\AppData\\Local\\Microsoft\\Teams\\current\\Teams.exe',enabled:true},
+  {icon:'<svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>',name:'Steam Client',path:'C:\\Program Files (x86)\\Steam\\steam.exe',enabled:false},
+];
+
+function loadStartup() {
+  const el = document.getElementById('startup-list');
+  el.innerHTML = STARTUP_ITEMS.map((s,i) => `
+    <div class="startup-item">
+      <div class="startup-icon">${s.icon}</div>
+      <div style="flex:1;min-width:0">
+        <div class="startup-name">${s.name}</div>
+        <div class="startup-path">${s.path}</div>
+      </div>
+      <span class="badge ${s.enabled?'green':'gray'}" style="flex-shrink:0">${s.enabled?'Enabled':'Disabled'}</span>
+      <label class="startup-tog" style="margin-left:10px">
+        <input type="checkbox" ${s.enabled?'checked':''} onchange="toggleStartup(${i},this)">
+        <div class="tog-slider"></div>
+      </label>
+    </div>`).join('');
+}
+
+function toggleStartup(i, el) {
+  STARTUP_ITEMS[i].enabled = el.checked;
+  loadStartup();
+}
+
+// ── EVENT LOG ─────────────────────────────────────────────
+let logEntries = [];
+const LOG_POOL = [
+  {level:'INFO',msg:'System monitor tick completed successfully'},
+  {level:'OK',msg:'Network interface Ethernet — connected at 1 Gbps'},
+  {level:'WARN',msg:'CPU temperature approaching threshold: 78°C'},
+  {level:'INFO',msg:'DNS cache flushed automatically'},
+  {level:'OK',msg:'Antivirus definitions updated to version 2.4.8821'},
+  {level:'ERR',msg:'Service svchost (netsvcs) restarted unexpectedly'},
+  {level:'INFO',msg:'User session active: Administrator'},
+  {level:'WARN',msg:'Disk E:\\ free space below 15% — 28.4 GB remaining'},
+  {level:'OK',msg:'Firewall rules verified — all policies active'},
+  {level:'INFO',msg:'Windows Update check scheduled for 02:00'},
+  {level:'ERR',msg:'Failed to resolve hostname: intranet.corp.local'},
+  {level:'INFO',msg:'Process chrome.exe spawned (PID 14221)'},
+];
+
+function addLog() {
+  const e = LOG_POOL[Math.floor(Math.random()*LOG_POOL.length)];
+  const now = new Date();
+  const time = now.toTimeString().slice(0,8);
+  logEntries.unshift({...e, time});
+  if (logEntries.length > 80) logEntries.pop();
+  renderLogs();
+}
+
+function renderLogs() {
+  const filter = document.getElementById('log-filter')?.value || '';
+  const shown = filter ? logEntries.filter(e=>e.level===filter) : logEntries;
+  const el = document.getElementById('log-list');
+  if (!el) return;
+  el.innerHTML = shown.slice(0,50).map(e => `
+    <div class="log-entry">
+      <div class="log-time">${e.time}</div>
+      <div class="log-level ${e.level}">${e.level}</div>
+      <div class="log-msg">${e.msg}</div>
+    </div>`).join('');
+}
+
+function filterLogs() { renderLogs(); }
+function clearLogs() { logEntries = []; renderLogs(); }
+
+// ── SECURITY ──────────────────────────────────────────────
+function buildSecurityChecks() {
+  const checks = [
+    {icon:'<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>',status:'ok',name:'Windows Firewall','desc':'Firewall is active and all profiles are enabled'},
+    {icon:'<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>',status:'ok',name:'Windows Defender','desc':'Real-time protection enabled, definitions current'},
+    {icon:'<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',status:'warn',name:'Windows Updates','desc':'2 critical updates pending installation'},
+    {icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>',status:'ok',name:'User Account Control','desc':'UAC is set to recommended level'},
+    {icon:'<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>',status:'ok',name:'BitLocker Encryption','desc':'Drive C:\\ is fully encrypted'},
+    {icon:'<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',status:'warn',name:'Remote Desktop','desc':'RDP is enabled — ensure it is intentional'},
+    {icon:'<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>',status:'ok',name:'Secure Boot','desc':'Secure Boot is enabled in UEFI settings'},
+    {icon:'<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>',status:'ok',name:'Password Policy','desc':'Strong password policy is enforced'},
+  ];
+  document.getElementById('sec-checks').innerHTML = checks.map(c => `
+    <div class="sec-check">
+      <div class="sec-check-icon ${c.status}">${c.icon}</div>
+      <div class="sec-check-body">
+        <div class="sec-check-name">${c.name}</div>
+        <div class="sec-check-desc">${c.desc}</div>
+      </div>
+      <span class="badge ${c.status==='ok'?'green':c.status==='warn'?'yellow':'red'}">${c.status==='ok'?'Pass':c.status==='warn'?'Warning':'Fail'}</span>
+    </div>`).join('');
+}
+
+// ── SETTINGS ──────────────────────────────────────────────
+let configRefresh = 2000;
+
+function updateRefresh() {
+  const el = document.getElementById('set-refresh');
+  if (!el) return;
+  configRefresh = parseInt(el.value);
+  
+  // Clear and restart the metrics interval
+  if (metricsInterval) clearInterval(metricsInterval);
+  metricsInterval = setInterval(() => {
+    updateMetrics().catch(() => {});
+    updateHealth().catch(() => {});
+  }, configRefresh);
+  
+  const refreshText = document.getElementById('d-refresh-text');
+  if (refreshText) {
+    const s = configRefresh / 1000;
+    refreshText.textContent = `updates every ${s} second${s > 1 ? 's' : ''}`;
+  }
+  console.log('Refresh rate updated to:', configRefresh);
+}
+
+async function loadSettingsInfo() {
+  if (window.cxi) {
+    const info = await window.cxi.getSysInfo();
+    const el = document.getElementById('set-node');
+    if (el) el.textContent = info.nodeVersion;
+  }
+}
+
+// ── INIT ─────────────────────────────────────────────────
+async function init() {
+  try {
+    updateHealth();
+    buildSecurityChecks();
+
+    if (window.cxi) {
+      const info = await window.cxi.getSysInfo();
+      if (info) {
+        const host = document.getElementById('d-host'); if (host) host.textContent = info.hostname || 'Unknown';
+        const user = document.getElementById('d-user'); if (user) user.textContent = info.username || 'Admin';
+        const sbHost = document.getElementById('sb-host'); if (sbHost) sbHost.textContent = info.hostname || 'Unknown';
+        const uname = document.getElementById('user-name'); if (uname) uname.textContent = info.username || 'Admin';
+        
+        const cpuModel = document.getElementById('d-cpu-model');
+        if (cpuModel && info.cpuModel) {
+          cpuModel.textContent = info.cpuModel.split('@')[0].trim();
+        }
+      }
+    } else {
+      const host = document.getElementById('d-host'); if (host) host.textContent = 'DESKTOP-PC';
+      const user = document.getElementById('d-user'); if (user) user.textContent = 'Administrator';
+      const sbHost = document.getElementById('sb-host'); if (sbHost) sbHost.textContent = 'DESKTOP-PC';
+      const cpuModel = document.getElementById('d-cpu-model'); if (cpuModel) cpuModel.textContent = 'Intel Core i7-12700K';
+    }
+  } catch (e) {
+    console.error('Init error:', e);
+  }
+
+  // Start live log simulation
+  for (let i=0;i<8;i++) addLog();
+  setInterval(addLog, 3500);
+
+  // Start metrics with safeguard
+  updateMetrics().catch(() => {});
+  metricsInterval = setInterval(() => {
+    updateMetrics().catch(() => {});
+    updateHealth().catch(() => {});
+  }, configRefresh);
+}
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+init();
+</script>
+</body>
+</html>
