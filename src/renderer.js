@@ -5,7 +5,7 @@
 
 // ── State ──
 let metricsInterval = null;
-let refreshRate = 2000;
+let refreshRate = 5000;
 let cpuHistory = Array(60).fill(0);
 let ramHistory = Array(60).fill(0);
 let wifiHistory = Array(60).fill(-70);

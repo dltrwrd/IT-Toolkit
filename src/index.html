@@ -446,8 +446,8 @@
           box-shadow 0.2s;
       }
       .stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--sh2);
+        transform: translateY(-3px) scale(1.01);
+        box-shadow: var(--sh3);
       }
       .stat-card::before {
         content: '';
@@ -455,7 +455,7 @@
         top: 0;
         left: 0;
         right: 0;
-        height: 3px;
+        height: 4px;
         background: var(--accent-color, var(--blue));
       }
       .stat-card.green::before {
@@ -696,6 +696,8 @@
         border-color: var(--blue);
         color: var(--blue);
         background: var(--blue-soft);
+        transform: translateY(-2px);
+        box-shadow: var(--sh);
       }
       .btn-ghost svg {
         width: 16px;
@@ -1339,6 +1341,12 @@
         height: 32px;
         border-radius: 8px;
       }
+      .chart-host {
+        position: relative;
+        height: 180px;
+        width: 100%;
+        margin-top: 10px;
+      }
       .chart-host canvas {
         position: absolute;
         inset: 0;
@@ -1629,13 +1637,13 @@
               <h1>System Dashboard</h1>
               <p>
                 Live system health overview —
-                <span id="d-refresh-text">updates every 2 seconds</span>
+                <span id="d-refresh-text">updates every 5 seconds</span>
               </p>
             </div>
 
             <!-- Live Stat Cards -->
             <div class="grid-4" style="margin-bottom: 16px">
-              <div class="stat-card">
+              <div class="stat-card" onclick="navTo('processes')" style="cursor:pointer">
                 <div class="stat-icon">
                   <svg viewBox="0 0 24 24">
                     <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
@@ -1654,7 +1662,7 @@
                 <div class="stat-value" id="d-cpu">—</div>
                 <div class="stat-sub" id="d-cpu-model">Loading...</div>
               </div>
-              <div class="stat-card green">
+              <div class="stat-card green" onclick="navTo('disk-analyzer')" style="cursor:pointer">
                 <div class="stat-icon">
                   <svg viewBox="0 0 24 24">
                     <path d="M6 19v2"></path>
@@ -1673,7 +1681,7 @@
                 <div class="stat-value" id="d-mem">—</div>
                 <div class="stat-sub" id="d-mem-sub">Loading...</div>
               </div>
-              <div class="stat-card yellow">
+              <div class="stat-card yellow" onclick="navTo('sysinfo')" style="cursor:pointer">
                 <div class="stat-icon">
                   <svg viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="10"></circle>
@@ -1684,7 +1692,7 @@
                 <div class="stat-value" id="d-uptime">—</div>
                 <div class="stat-sub" id="d-uptime-status">System running</div>
               </div>
-              <div class="stat-card purple">
+              <div class="stat-card purple" onclick="navTo('sysinfo')" style="cursor:pointer">
                 <div class="stat-icon">
                   <svg viewBox="0 0 24 24">
                     <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
@@ -1851,13 +1859,13 @@
                     </svg>
                     Port Scan
                   </button>
-                  <button class="btn btn-ghost" onclick="navTo('disk-health')">
+                  <button class="btn btn-ghost" onclick="navTo('disk-analyzer')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                       <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
                       <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
                       <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
                     </svg>
-                    Disk Health
+                    Disk analyzer
                   </button>
                   <button class="btn btn-ghost" onclick="navTo('processes')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -2617,8 +2625,8 @@
                   </div>
                   <select id="set-refresh" onchange="updateRefresh()" style="width: 130px">
                     <option value="1000">1 second</option>
-                    <option value="2000" selected>2 seconds</option>
-                    <option value="5000">5 seconds</option>
+                    <option value="2000">2 seconds</option>
+                    <option value="5000" selected>5 seconds</option>
                     <option value="10000">10 seconds</option>
                   </select>
                 </div>
@@ -2921,6 +2929,12 @@
         document
           .querySelectorAll('.sb-sub[data-page]')
           .forEach(el => el.classList.toggle('active', el.dataset.page === id));
+
+        // Sync dropdowns
+        if (STORAGE_PAGES.includes(id)) syncDropdown('storage-dd');
+        else if (NET_PAGES.includes(id)) syncDropdown('net-dd');
+        else closeAllDropdowns();
+
         document.getElementById('tb-page-title').textContent = PAGE_TITLES[id] || id;
         if (id === 'sysinfo') loadSysInfo();
         if (id === 'processes') loadProcesses();
@@ -2931,6 +2945,28 @@
         if (id === 'dashboard') {
           setTimeout(drawChart, 50); // Small delay to ensure DOM is updated and visible
         }
+      }
+
+      function syncDropdown(id) {
+        document.querySelectorAll('.sb-dropdown').forEach(dd => {
+          if (dd.id === id) {
+            dd.classList.add('open');
+            const targetArr = document.getElementById('arr-' + id.replace('-dd', ''));
+            if (targetArr) targetArr.style.transform = 'rotate(180deg)';
+          } else {
+            dd.classList.remove('open');
+            const targetArr = document.getElementById('arr-' + dd.id.replace('-dd', ''));
+            if (targetArr) targetArr.style.transform = '';
+          }
+        });
+      }
+
+      function closeAllDropdowns() {
+        document.querySelectorAll('.sb-dropdown').forEach(dd => {
+          dd.classList.remove('open');
+          const targetArr = document.getElementById('arr-' + dd.id.replace('-dd', ''));
+          if (targetArr) targetArr.style.transform = '';
+        });
       }
 
       // Sidebar nav
@@ -2972,16 +3008,24 @@
         const siHw = document.getElementById('si-hw');
         const siMem = document.getElementById('si-mem');
 
-        // Only show skeleton if no cache exists
-        if (!CACHE.sysinfo) {
-          siOs.innerHTML = SKEL.rows(3);
-          siCpu.innerHTML = SKEL.rows(4);
-          siHw.innerHTML = SKEL.rows(3);
-          siMem.innerHTML = SKEL.rows(3);
+        // Cache check
+        if (CACHE.sysinfo) {
+          renderSysInfo(CACHE.sysinfo);
+          // Only re-fetch if needed or just skip to avoid "refresh" bug
+          return;
         }
 
-        const info = CACHE.sysinfo || (await window.cxi.getSysInfo());
-        CACHE.sysinfo = info; // Persistent cache for static info
+        const info = await window.cxi.getSysInfo();
+        CACHE.sysinfo = info;
+        renderSysInfo(info);
+      }
+
+      async function renderSysInfo(info) {
+        const siOs = document.getElementById('si-os');
+        const siCpu = document.getElementById('si-cpu');
+        const siHw = document.getElementById('si-hw');
+        const siMem = document.getElementById('si-mem');
+        if (!siOs || !info) return;
         const gb = b => (b / 1073741824).toFixed(1) + ' GB';
 
         document.getElementById('si-os').innerHTML = rows([
@@ -3467,127 +3511,114 @@
         return [...ports];
       }
 
-      async function loadDiskAnalyzer() {
+      function renderDiskData(data) {
         const el = document.getElementById('disk-list');
         const healthTable = document.getElementById('disk-health-table');
-        const healthScore = document.getElementById('disk-health-score');
         const analyzerContent = document.getElementById('disk-analyzer-content');
+        if (!el || !data) return;
 
-        if (!el) return;
-        if (!window.cxi) return;
+        const { disks, health, diskFolders } = data;
+        const gb = b => (b / 1073741824).toFixed(1);
+        const colors = ['#6366f1', '#1a6ef5', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
 
-        if (!CACHE.diskInfo) {
-          el.innerHTML = SKEL.cards(2);
-          healthTable.innerHTML = SKEL.table(3, 2);
-          if (healthScore)
-            healthScore.innerHTML =
-              '<div class="skeleton" style="height:40px;width:80px;border-radius:6px"></div>';
-          const dhStatus = document.getElementById('disk-health-status-wrap');
-          if (dhStatus) dhStatus.style.visibility = 'hidden';
-          if (analyzerContent) analyzerContent.innerHTML = SKEL.rows(6);
+        // 1. Render Disks
+        el.innerHTML = disks.map(d => `
+          <div class="disk-item">
+            <div class="disk-header"><div class="disk-name"><span class="badge blue">${d.drive || 'Disk'}</span> ${d.label || 'Storage'}</div><span class="badge gray">${d.type}</span></div>
+            <div class="pbar-wrap">
+              <div class="pbar-row"><span>Used: ${gb(d.used)} GB</span><span>Total: ${gb(d.total)} GB</span></div>
+              <div class="pbar-track"><div class="pbar-fill ${d.percent > 85 ? 'red' : 'green'}" style="width:${d.percent}%"></div></div>
+            </div>
+          </div>`).join('');
+
+        // 2. Render Health
+        if (health && healthTable) {
+          healthTable.innerHTML = health.map(h => `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border)">
+              <div style="flex:1; min-width:0">
+                <div style="font-weight:600; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${h.name}</div>
+                <div style="font-size:10px; color:var(--text3); margin-top:2px">Serial: ${h.serial} · POH: ${h.poh} hrs</div>
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px; margin-left:14px">
+                <div style="display:flex; align-items:center; gap:8px">
+                  <span style="font-family:var(--mono); font-weight:700; color:${h.percent < 80 ? 'var(--yellow)' : 'var(--green)'}; font-size:17px">${h.percent}%</span>
+                  <span class="badge ${h.status === 'Healthy' ? 'green' : 'yellow'}" style="white-space:nowrap">${h.status}</span>
+                </div>
+                ${h.temperature ? `<div style="font-size:11px; color:var(--text2); opacity:0.8">${h.temperature}°C</div>` : ''}
+              </div>
+            </div>`).join('');
+          const hScore = document.getElementById('disk-health-score');
+          if (hScore) hScore.innerHTML = '';
         }
 
+        // 3. Render Folder Maps
+        if (analyzerContent && diskFolders) {
+          analyzerContent.innerHTML = disks.map((d, i) => {
+            const folders = diskFolders[i] || [];
+            const totalUsedData = folders.reduce((sum, f) => sum + f.size, 0) || 1;
+            return `
+              <div style="margin-bottom: 20px">
+                <div style="font-weight:700; font-size:12px; color:var(--text); display:flex; align-items:center; gap:8px">
+                  <svg viewBox="0 0 24 24" style="width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                  Partition ${d.drive} — ${d.label || 'System'}
+                </div>
+                <div id="disk-map-${i}">
+                  ${folders.length ? `
+                    <div style="display:flex; height:24px; border-radius:6px; overflow:hidden; margin-top:8px; border:1px solid var(--border)">
+                      ${folders.map((f, fi) => `<div style="width:${(f.size / totalUsedData) * 100}%; background:${colors[fi % colors.length]}; height:100%" title="${f.name} (${gb(f.size)} GB)"></div>`).join('')}
+                    </div>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap:10px; margin-top:12px">
+                      ${folders.map((f, fi) => `
+                        <div style="display:flex; align-items:center; gap:8px">
+                          <div style="width:8px; height:8px; border-radius:50%; background:${colors[fi % colors.length]}"></div>
+                          <div style="min-width:0; flex:1">
+                            <div style="font-size:11px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${f.name}</div>
+                            <div style="font-size:10px; color:var(--text3)">${gb(f.size)} GB</div>
+                          </div>
+                        </div>`).join('')}
+                    </div>` : `
+                    <div class="skeleton" style="height:24px; border-radius:6px; margin-top:8px"></div>
+                    <div class="skeleton" style="height:40px; margin-top:12px; border-radius:6px"></div>`}
+                </div>
+              </div>`;
+          }).join('');
+        }
+      }
+
+      let loadingDiskInfo = false;
+      async function loadDiskAnalyzer() {
+        if (loadingDiskInfo) return;
+        if (CACHE.diskInfo) {
+          renderDiskData(CACHE.diskInfo);
+        }
+
+        if (!window.cxi) return;
+        
+        loadingDiskInfo = true;
         try {
-          const [disks, health] = await Promise.all([
-            window.cxi.getDisks(),
-            window.cxi.getDiskHealth(),
-          ]);
+          const disks = await window.cxi.getDisks();
+          
+          // Background fetch health
+          const pHealth = window.cxi.getDiskHealth();
+          
+          // Update basic list first
+          const currentData = { disks, health: CACHE.diskInfo?.health || [], diskFolders: CACHE.diskInfo?.diskFolders || [] };
+          renderDiskData(currentData);
 
-          // Parallel fetch top folders for all scanned drives
-          const diskFolders = await Promise.all(
-            disks.map(d => {
-              let p = d.drive || d.path || 'C:';
-              if (p.length === 2 && p.endsWith(':')) p += '\\';
-              return window.cxi.getTopFolders(p);
-            })
-          );
+          // Fetch folders
+          const folderPromises = disks.map(async (d) => {
+            let p = d.drive || d.path || 'C:';
+            if (p.length === 2 && p.endsWith(':')) p += '\\';
+            return window.cxi.getTopFolders(p);
+          });
+
+          const [health, diskFolders] = await Promise.all([pHealth, Promise.all(folderPromises)]);
           CACHE.diskInfo = { disks, health, diskFolders };
-
-          const gb = b => (b / 1073741824).toFixed(1);
-          const colors = ['#6366f1', '#1a6ef5', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
-
-          // 1. Drive List (unchanged list above, now focus on analyzer)
-          el.innerHTML = disks
-            .map(
-              d => `
-            <div class="disk-item">
-              <div class="disk-header"><div class="disk-name"><span class="badge blue">${d.drive || 'Disk'}</span> ${d.label || 'Storage'}</div><span class="badge gray">${d.type}</span></div>
-              <div class="pbar-wrap">
-                <div class="pbar-row"><span>Used: ${gb(d.used)} GB</span><span>Total: ${gb(d.total)} GB</span></div>
-                <div class="pbar-track"><div class="pbar-fill ${d.percent > 85 ? 'red' : 'green'}" style="width:${d.percent}%"></div></div>
-              </div>
-            </div>`
-            )
-            .join('');
-
-          // 2. Disk Health (Modern Flex List)
-          if (health && health.length) {
-            healthTable.innerHTML = health
-              .map(
-                h => `
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border)">
-                <div style="flex:1; min-width:0">
-                  <div style="font-weight:600; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${h.name}</div>
-                  <div style="font-size:10px; color:var(--text3); margin-top:2px">Serial: ${h.serial} · POH: ${h.poh} hrs</div>
-                </div>
-                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px; margin-left:14px">
-                  <div style="display:flex; align-items:center; gap:8px">
-                    <span style="font-family:var(--mono); font-weight:700; color:${h.percent < 80 ? 'var(--yellow)' : 'var(--green)'}; font-size:17px">${h.percent}%</span>
-                    <span class="badge ${h.status === 'Healthy' ? 'green' : 'yellow'}" style="white-space:nowrap">${h.status}</span>
-                  </div>
-                  ${h.temperature ? `<div style="font-size:11px; color:var(--text2); opacity:0.8">${h.temperature}°C</div>` : ''}
-                </div>
-              </div>
-            `
-              )
-              .join('');
-            if (healthScore) healthScore.innerHTML = '';
-            const dhWrap = document.getElementById('disk-health-status-wrap');
-            if (dhWrap) dhWrap.style.display = 'none';
-          }
-
-          // 3. Folder Map (The "Partition Map" style requested)
-          if (analyzerContent) {
-            analyzerContent.innerHTML = disks
-              .map((d, i) => {
-                const folders = diskFolders[i] || [];
-                const totalUsedData = folders.reduce((sum, f) => sum + f.size, 0) || 1;
-                return `
-                <div style="margin-bottom: 20px">
-                  <div style="font-size:11px; font-weight:700; color:var(--text); margin-bottom:6px; display:flex; justify-content:space-between">
-                    <span>${d.drive} Root Folders</span>
-                    <span style="color:var(--text3)">Top space consumers</span>
-                  </div>
-                  <div style="display:flex; height:24px; border-radius:6px; overflow:hidden; border:1px solid var(--border); background:var(--surface3)">
-                    ${
-                      folders.length
-                        ? folders
-                            .map((f, fi) => {
-                              const pct = (f.size / totalUsedData) * 100;
-                              return `<div style="width:${pct}%; height:100%; background:${colors[fi % colors.length]}; position:relative" title="${f.name} (${gb(f.size)} GB)"></div>`;
-                            })
-                            .join('')
-                        : '<div style="width:100%; display:flex; align-items:center; justify-content:center; color:var(--text3); font-size:10px">No major folders found</div>'
-                    }
-                  </div>
-                  <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:6px">
-                    ${folders
-                      .map(
-                        (f, fi) => `
-                      <span style="font-size:10px; color:var(--text2); display:flex; align-items:center; gap:3px">
-                        <div style="width:8px; height:8px; border-radius:2px; background:${colors[fi % colors.length]}"></div>
-                        ${f.name} (${gb(f.size)} GB)
-                      </span>`
-                      )
-                      .join('')}
-                  </div>
-                </div>`;
-              })
-              .join('');
-          }
+          renderDiskData(CACHE.diskInfo);
         } catch (e) {
-          console.error(e);
-          el.innerHTML = '<div style="color:var(--red);padding:20px">Error scanning drives</div>';
+          console.error('Disk info error:', e);
+        } finally {
+          loadingDiskInfo = false;
         }
       }
 
@@ -3734,8 +3765,47 @@
         if (!window.cxi) return;
         const tbody = document.getElementById('proc-body');
         if (!tbody) return;
+
+        if (CACHE.processes) {
+          renderProcsUI(CACHE.processes);
+        }
+
+        try {
+          const procs = await window.cxi.getProcesses();
+          CACHE.processes = procs;
+          renderProcsUI(procs);
+        } catch (e) {
+          if (!CACHE.processes) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--red)">Failed to load processes</td></tr>';
+          }
+        }
+      }
+
+      function renderProcsUI(procs) {
+        const tbody = document.getElementById('proc-body');
+        if (!tbody) return;
+        tbody.innerHTML = procs
+          .map(
+            p => `
+      <tr>
+        <td style="font-weight:600">${p.name}</td>
+        <td class="mono">${p.pid}</td>
+        <td class="mono" style="color:${p.cpu > 5 ? 'var(--red)' : p.cpu > 2 ? 'var(--yellow)' : 'var(--text2)'}">${p.cpu.toFixed(1)}%</td>
+        <td class="mono">${p.mem.toFixed(1)} MB</td>
+        <td><span class="badge ${p.status === 'running' ? 'green' : 'gray'}">${p.status || 'running'}</span></td>
+      </tr>`
+          )
+          .join('');
+        const pCount = document.getElementById('proc-count');
+        if (pCount) pCount.textContent = procs.length + ' active processes';
+      }
+
+      async function old_loadProcesses() {
+        if (!window.cxi) return;
+        const tbody = document.getElementById('proc-body');
+        if (!tbody) return;
         if (!CACHE.processes) {
-          tbody.innerHTML = SKEL.table(10, 5);
+          // No skeletons, waiting for init
         }
 
         try {
@@ -3970,7 +4040,7 @@
       }
 
       // ── SETTINGS ──────────────────────────────────────────────
-      let configRefresh = 2000;
+      let configRefresh = 5000;
 
       function updateRefresh() {
         const el = document.getElementById('set-refresh');
@@ -4003,46 +4073,56 @@
       // ── INIT ─────────────────────────────────────────────────
       async function init() {
         try {
-          updateHealth();
+          // Parallelize EVERY module's initial data fetch
+          const pHealth = updateHealth();
+          const pMetrics = updateMetrics();
+          const pSys = loadSysInfo(); // Now returns a promise implicitly 
+          const pDisks = loadDiskAnalyzer();
+          const pProc = loadProcesses();
+          const pStartup = loadStartup();
+          
           buildSecurityChecks();
 
-          if (window.cxi) {
-            const info = await window.cxi.getSysInfo();
-            if (info) {
-              const host = document.getElementById('d-host');
-              if (host) host.textContent = info.hostname || 'Unknown';
-              const user = document.getElementById('d-user');
-              if (user) user.textContent = info.username || 'Admin';
-              const sbHost = document.getElementById('sb-host');
-              if (sbHost) sbHost.textContent = info.hostname || 'Unknown';
-              const uname = document.getElementById('user-name');
-              if (uname) uname.textContent = info.username || 'Admin';
-
-              const cpuModel = document.getElementById('d-cpu-model');
-              if (cpuModel && info.cpuModel) {
-                cpuModel.textContent = info.cpuModel.split('@')[0].trim();
-              }
-            }
-          } else {
+          // WAIT FOR EVERYTHING: Splash will stay open until all these finish
+          const [info] = await Promise.all([
+            window.cxi ? window.cxi.getSysInfo() : Promise.resolve({}),
+            pHealth, 
+            pMetrics, 
+            pSys, 
+            pDisks, 
+            pProc, 
+            pStartup
+          ]);
+          
+          if (info && Object.keys(info).length) {
             const host = document.getElementById('d-host');
-            if (host) host.textContent = 'DESKTOP-PC';
+            if (host) host.textContent = info.hostname || 'Unknown';
             const user = document.getElementById('d-user');
-            if (user) user.textContent = 'Administrator';
+            if (user) user.textContent = info.username || 'Admin';
             const sbHost = document.getElementById('sb-host');
-            if (sbHost) sbHost.textContent = 'DESKTOP-PC';
+            if (sbHost) sbHost.textContent = info.hostname || 'Unknown';
+            const uname = document.getElementById('user-name');
+            if (uname) uname.textContent = info.username || 'Admin';
+
             const cpuModel = document.getElementById('d-cpu-model');
-            if (cpuModel) cpuModel.textContent = 'Intel Core i7-12700K';
+            if (cpuModel && info.cpuModel) {
+              cpuModel.textContent = info.cpuModel.split('@')[0].trim();
+            }
           }
+
+          // SIGNAL MAIN PROCESS: Show the app, we are 100% ready!
+          if (window.cxi) window.cxi.ready();
+          
         } catch (e) {
           console.error('Init error:', e);
+          if (window.cxi) window.cxi.ready(); 
         }
 
         // Start live log simulation
         for (let i = 0; i < 8; i++) addLog();
         setInterval(addLog, 3500);
 
-        // Start metrics with safeguard
-        updateMetrics().catch(() => {});
+        // Start metrics interval
         metricsInterval = setInterval(() => {
           updateMetrics().catch(() => {});
           updateHealth().catch(() => {});

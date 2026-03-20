@@ -22,4 +22,5 @@ contextBridge.exposeInMainWorld('cxi', {
   getTopFolders: (path) => ipcRenderer.invoke('get-top-folders', path),
   securityScan: () => ipcRenderer.invoke('security-scan'),
   runCmd: cmd => ipcRenderer.invoke('run-cmd', cmd),
+  ready: () => ipcRenderer.send('app-ready'),
 });

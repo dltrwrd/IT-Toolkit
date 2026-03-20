@@ -7,6 +7,26 @@ const net = require('net');
 const si = require('systeminformation');
 
 let mainWindow;
+let splashWindow;
+let isDataReady = false;
+let isMinSplashTimeDone = false;
+
+function showSplash() {
+  splashWindow = new BrowserWindow({
+    width: 600,
+    height: 400,
+    transparent: true,
+    frame: false,
+    alwaysOnTop: true,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
+  });
+  splashWindow.loadFile(path.join(__dirname, 'splash.html'));
+  splashWindow.center();
+  splashWindow.on('closed', () => (splashWindow = null));
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -23,15 +43,39 @@ function createWindow() {
     },
     show: false,
   });
+
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
-  mainWindow.once('ready-to-show', () => mainWindow.show());
+
+  mainWindow.once('ready-to-show', () => {
+    // Artificial delay to let user enjoy the splash screen
+    setTimeout(() => {
+      isMinSplashTimeDone = true;
+      tryShowMain();
+    }, 4500); // Minimum splash display time
+  });
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
   Menu.setApplicationMenu(null);
 }
 
-app.whenReady().then(createWindow);
+function tryShowMain() {
+  if (isDataReady && isMinSplashTimeDone && mainWindow) {
+    if (splashWindow) splashWindow.close();
+    mainWindow.show();
+  }
+}
+
+ipcMain.on('app-ready', () => {
+  isDataReady = true;
+  tryShowMain();
+});
+
+app.whenReady().then(() => {
+  showSplash();
+  createWindow();
+});
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
