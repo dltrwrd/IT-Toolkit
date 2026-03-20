@@ -199,7 +199,7 @@ ipcMain.handle('get-disk-health', async () => {
     return new Promise(resolve => {
       const script = `Get-PhysicalDisk | ForEach-Object { $d=$_; $r=($_ | Get-StorageReliabilityCounter); [PSCustomObject]@{ FriendlyName=$d.FriendlyName; SerialNumber=$d.SerialNumber; PowerOnHours=$r.PowerOnHours; Status=$d.HealthStatus; Wear=([int](100 - $r.Wear)); LifeRemaining=$d.RemainingLifePercent } } | ConvertTo-Json`;
       const encodedCommand = Buffer.from(script, 'utf16le').toString('base64');
-      
+
       exec(`powershell -NoProfile -EncodedCommand ${encodedCommand}`, (err, stdout) => {
         let extra = [];
         try {
@@ -237,9 +237,28 @@ ipcMain.handle('get-disk-health', async () => {
   }
 });
 
+ipcMain.handle('open-external-ping', async (event, { host, count, continuous }) => {
+  let args = continuous ? '-t' : `-n ${count}`;
+  const cmd = `start cmd.exe /k "echo --- CXI PING TOOL --- & echo Target: ${host} & ping ${args} ${host}"`;
+  return new Promise(resolve => {
+    exec(cmd, err => {
+      resolve({ success: !err, error: err ? err.message : null });
+    });
+  });
+});
+
+ipcMain.handle('open-external-tracert', async (event, { host }) => {
+  const cmd = `start cmd.exe /k "echo --- CXI TRACERT TOOL --- & echo Target: ${host} & tracert ${host}"`;
+  return new Promise(resolve => {
+    exec(cmd, err => {
+      resolve({ success: !err, error: err ? err.message : null });
+    });
+  });
+});
+
 ipcMain.handle('open-disk-cleanup', async () => {
   return new Promise(resolve => {
-    exec('cleanmgr.exe', (err) => {
+    exec('cleanmgr.exe', err => {
       resolve({ success: !err, error: err ? err.message : null });
     });
   });
@@ -247,7 +266,7 @@ ipcMain.handle('open-disk-cleanup', async () => {
 
 ipcMain.handle('open-defrag', async () => {
   return new Promise(resolve => {
-    exec('dfrgui.exe', (err) => {
+    exec('dfrgui.exe', err => {
       resolve({ success: !err, error: err ? err.message : null });
     });
   });
@@ -308,15 +327,15 @@ ipcMain.on('ping-host', (event, { host, count, continuous }) => {
   const ps = spawn(cmd, args);
   activeProcesses.set(processId, ps);
 
-  ps.stdout.on('data', (data) => {
+  ps.stdout.on('data', data => {
     event.reply('ping-output', { processId, data: data.toString() });
   });
 
-  ps.stderr.on('data', (data) => {
+  ps.stderr.on('data', data => {
     event.reply('ping-output', { processId, data: data.toString(), error: true });
   });
 
-  ps.on('close', (code) => {
+  ps.on('close', code => {
     activeProcesses.delete(processId);
     event.reply('ping-done', { processId, code });
   });
@@ -333,15 +352,15 @@ ipcMain.on('tracert-host', (event, { host }) => {
   const ps = spawn(cmd, args);
   activeProcesses.set(processId, ps);
 
-  ps.stdout.on('data', (data) => {
+  ps.stdout.on('data', data => {
     event.reply('tracert-output', { processId, data: data.toString() });
   });
 
-  ps.stderr.on('data', (data) => {
+  ps.stderr.on('data', data => {
     event.reply('tracert-output', { processId, data: data.toString(), error: true });
   });
 
-  ps.on('close', (code) => {
+  ps.on('close', code => {
     activeProcesses.delete(processId);
     event.reply('tracert-done', { processId, code });
   });
@@ -537,7 +556,7 @@ ipcMain.handle('get-user-profiles', async (event, isStartup = false) => {
         $count++
         $path = $p.LocalPath
         $sid = $p.SID
-        
+
         # Resolve name
         $name = $sid
         try {
@@ -570,56 +589,66 @@ ipcMain.handle('get-user-profiles', async (event, isStartup = false) => {
       $results | ConvertTo-Json
     `.trim();
 
-    const ps = spawn('powershell', ['-NoProfile', '-EncodedCommand', Buffer.from(script, 'utf16le').toString('base64')], {
-      maxBuffer: 1024 * 1024 * 10,
-    });
+    const ps = spawn(
+      'powershell',
+      ['-NoProfile', '-EncodedCommand', Buffer.from(script, 'utf16le').toString('base64')],
+      {
+        maxBuffer: 1024 * 1024 * 10,
+      }
+    );
 
     let stdout = '';
     let stderr = '';
     let buffer = '';
 
-    ps.stdout.on('data', (data) => {
+    ps.stdout.on('data', data => {
       buffer += data.toString();
       let lines = buffer.split(/\r?\n/);
       buffer = lines.pop(); // Remaining partial line in buffer
 
       for (let line of lines) {
-          if (line.trim().startsWith('PROG:')) {
-            const parts = line.trim().split(':');
-            if (parts.length >= 4) {
-              const count = parseInt(parts[1]);
-              const total = parseInt(parts[2]);
-              const name = parts[3];
-              const percent = Math.round((count / total) * 100);
-              
-              const progressInfo = { count, total, name, percent, status: `Loading profile: ${name}` };
-              
-              if (splashWindow && !splashWindow.isDestroyed()) {
-                splashWindow.webContents.send('loading-progress', progressInfo);
-              }
-              if (mainWindow && !mainWindow.isDestroyed()) {
-                mainWindow.webContents.send('profile-load-progress', progressInfo);
-              }
+        if (line.trim().startsWith('PROG:')) {
+          const parts = line.trim().split(':');
+          if (parts.length >= 4) {
+            const count = parseInt(parts[1]);
+            const total = parseInt(parts[2]);
+            const name = parts[3];
+            const percent = Math.round((count / total) * 100);
+
+            const progressInfo = {
+              count,
+              total,
+              name,
+              percent,
+              status: `Loading profile: ${name}`,
+            };
+
+            if (splashWindow && !splashWindow.isDestroyed()) {
+              splashWindow.webContents.send('loading-progress', progressInfo);
             }
-          } else if (line.trim().startsWith('DATA:')) {
-            try {
-              const json = line.trim().substring(5);
-              const profile = JSON.parse(json);
-              if (mainWindow && !mainWindow.isDestroyed()) {
-                mainWindow.webContents.send('profile-data-stream', profile);
-              }
-            } catch (e) {}
-          } else if (line.trim().length > 0) {
-            stdout += line + '\n';
+            if (mainWindow && !mainWindow.isDestroyed()) {
+              mainWindow.webContents.send('profile-load-progress', progressInfo);
+            }
           }
+        } else if (line.trim().startsWith('DATA:')) {
+          try {
+            const json = line.trim().substring(5);
+            const profile = JSON.parse(json);
+            if (mainWindow && !mainWindow.isDestroyed()) {
+              mainWindow.webContents.send('profile-data-stream', profile);
+            }
+          } catch (e) {}
+        } else if (line.trim().length > 0) {
+          stdout += line + '\n';
+        }
       }
     });
 
-    ps.stderr.on('data', (data) => {
+    ps.stderr.on('data', data => {
       stderr += data.toString();
     });
 
-    ps.on('close', (code) => {
+    ps.on('close', code => {
       stdout += buffer;
       if (code !== 0) {
         console.error('Profile fetch error:', stderr);
@@ -660,7 +689,6 @@ ipcMain.handle('delete-user-profile', async (event, sid) => {
   }
 });
 
-
 ipcMain.handle('get-defaults', async () => {
   const os = require('os');
   const path = require('path');
@@ -693,24 +721,28 @@ ipcMain.handle('get-top-folders', async (event, drivePath) => {
     const encodedCommand = Buffer.from(script, 'utf16le').toString('base64');
 
     return new Promise(resolve => {
-      exec(`powershell -NoProfile -EncodedCommand ${encodedCommand}`, { timeout: 15000 }, (err, stdout) => {
-        if (err || !stdout || stdout.trim() === '') return resolve([]);
-        try {
-          let data = JSON.parse(stdout);
-          if (!Array.isArray(data)) data = data ? [data] : [];
-          // Sort by size and take Top 5
-          data.sort((a, b) => (b.Size || 0) - (a.Size || 0));
-          resolve(
-            data.slice(0, 5).map(f => ({
-              name: f.Name,
-              path: f.FullName,
-              size: f.Size || 0,
-            }))
-          );
-        } catch (e) {
-          resolve([]);
+      exec(
+        `powershell -NoProfile -EncodedCommand ${encodedCommand}`,
+        { timeout: 15000 },
+        (err, stdout) => {
+          if (err || !stdout || stdout.trim() === '') return resolve([]);
+          try {
+            let data = JSON.parse(stdout);
+            if (!Array.isArray(data)) data = data ? [data] : [];
+            // Sort by size and take Top 5
+            data.sort((a, b) => (b.Size || 0) - (a.Size || 0));
+            resolve(
+              data.slice(0, 5).map(f => ({
+                name: f.Name,
+                path: f.FullName,
+                size: f.Size || 0,
+              }))
+            );
+          } catch (e) {
+            resolve([]);
+          }
         }
-      });
+      );
     });
   } catch (e) {
     return [];

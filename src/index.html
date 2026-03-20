@@ -1611,7 +1611,7 @@
             <div class="sb-sub" data-page="ping">Ping / Latency</div>
             <div class="sb-sub" data-page="port-scanner">Port Scanner</div>
             <div class="sb-sub" data-page="dns-lookup">IP & DNS Lookup</div>
-            <div class="sb-sub" data-page="speed-test">Speed Test</div>
+
             <div class="sb-sub" data-page="wifi-monitor">WiFi Monitor</div>
           </div>
         </div>
@@ -2028,11 +2028,33 @@
               </div>
               <div style="display: flex; gap: 8px">
                 <button class="btn btn-ghost btn-sm" onclick="window.cxi.openDiskCleanup()">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; margin-right: 4px"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="width: 14px; height: 14px; margin-right: 4px"
+                  >
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                  </svg>
                   Disk Cleanup
                 </button>
                 <button class="btn btn-ghost btn-sm" onclick="window.cxi.openDefrag()">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; margin-right: 4px"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="width: 14px; height: 14px; margin-right: 4px"
+                  >
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                  </svg>
                   Optimize / Defrag
                 </button>
               </div>
@@ -2396,18 +2418,87 @@
                   value="8.8.8.8"
                   placeholder="Hostname or IP address..."
                 />
-                <button class="btn btn-primary" onclick="doPing()" id="ping-btn" style="min-width: 100px">🏓 Ping</button>
-                <button class="btn btn-primary" onclick="doTracert()" id="tracert-btn" style="min-width: 110px">📍 Tracert</button>
+                <button
+                  class="btn btn-primary"
+                  onclick="doPing()"
+                  id="ping-btn"
+                  style="min-width: 110px"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="width: 14px; height: 14px; margin-right: 6px"
+                  >
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                  </svg>
+                  Ping Test
+                </button>
+                <button
+                  class="btn btn-primary"
+                  onclick="doTracert()"
+                  id="tracert-btn"
+                  style="min-width: 120px"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="width: 14px; height: 14px; margin-right: 6px"
+                  >
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                  Tracert
+                </button>
               </div>
-              <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 15px; padding: 0 5px">
-                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--text2)">
-                   <input type="checkbox" id="ping-continuous" style="width: 16px; height: 16px" /> 
-                   <span>Continuous Ping <strong>(-t)</strong></span>
-                 </label>
-                 <div style="display: flex; align-items: center; gap: 10px; border-left: 1px solid var(--border); padding-left: 20px">
-                    <span style="font-size: 13px; color: var(--text2)">Ping count (hops):</span>
-                    <input type="number" id="ping-count" value="4" min="1" max="100" style="width: 70px; height: 32px" />
-                 </div>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 20px;
+                  margin-bottom: 15px;
+                  padding: 0 5px;
+                "
+              >
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    cursor: pointer;
+                    font-size: 13px;
+                    color: var(--text2);
+                  "
+                >
+                  <input type="checkbox" id="ping-continuous" style="width: 16px; height: 16px" />
+                  <span>Continuous Ping <strong>(-t)</strong></span>
+                </label>
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    border-left: 1px solid var(--border);
+                    padding-left: 20px;
+                  "
+                >
+                  <span style="font-size: 13px; color: var(--text2)">Ping count (hops):</span>
+                  <input
+                    type="number"
+                    id="ping-count"
+                    value="4"
+                    min="1"
+                    max="100"
+                    style="width: 70px; height: 32px"
+                  />
+                </div>
               </div>
               <div style="display: flex; gap: 8px; flex-wrap: wrap">
                 <button
@@ -2436,13 +2527,7 @@
                 </button>
               </div>
             </div>
-            <div class="card">
-              <div class="card-title">
-                <div class="dot"></div>
-                Results
-              </div>
-              <div class="terminal" id="ping-output">Ready. Enter a host and click Ping...</div>
-            </div>
+
           </div>
 
           <!-- ══════════════════ PORT SCANNER ══════════════════ -->
@@ -2540,61 +2625,7 @@
             </div>
           </div>
 
-          <!-- ══════════════════ SPEED TEST ══════════════════ -->
-          <div class="page" id="page-speed-test">
-            <div class="page-hdr">
-              <h1>Network Speed Test</h1>
-              <p>Simulated throughput measurement</p>
-            </div>
-            <div class="card" style="margin-bottom: 16px; text-align: center; padding: 32px">
-              <div
-                style="
-                  font-size: 64px;
-                  font-family: var(--display);
-                  font-weight: 700;
-                  color: var(--blue);
-                "
-                id="spd-val"
-              >
-                —
-              </div>
-              <div style="font-size: 14px; color: var(--text3); margin-bottom: 20px" id="spd-unit">
-                Click Start to test
-              </div>
-              <button
-                class="btn btn-primary"
-                id="spd-btn"
-                onclick="doSpeedTest()"
-                style="font-size: 15px; padding: 12px 28px"
-              >
-                ▶ Start Test
-              </button>
-              <div style="margin-top: 20px" id="spd-bar" class="pbar-track" style="display: none">
-                <div
-                  class="pbar-fill blue"
-                  id="spd-fill"
-                  style="width: 0%; transition: width 0.3s"
-                ></div>
-              </div>
-            </div>
-            <div class="grid-3">
-              <div class="stat-card">
-                <div class="stat-label">Download</div>
-                <div class="stat-value" id="spd-dl">—</div>
-                <div class="stat-sub">Mbps</div>
-              </div>
-              <div class="stat-card green">
-                <div class="stat-label">Upload</div>
-                <div class="stat-value" id="spd-ul">—</div>
-                <div class="stat-sub">Mbps</div>
-              </div>
-              <div class="stat-card yellow">
-                <div class="stat-label">Ping</div>
-                <div class="stat-value" id="spd-ping">—</div>
-                <div class="stat-sub">ms latency</div>
-              </div>
-            </div>
-          </div>
+
 
           <!-- ══════════════════ WIFI MONITOR ══════════════════ -->
           <div class="page" id="page-wifi-monitor">
@@ -3152,7 +3183,6 @@
         'ping',
         'port-scanner',
         'dns-lookup',
-        'speed-test',
         'wifi-monitor',
         'processes',
         'startup',
@@ -3169,7 +3199,6 @@
         ping: 'Ping / Latency',
         'port-scanner': 'Port Scanner',
         'dns-lookup': 'IP & DNS Lookup',
-        'speed-test': 'Speed Test',
         'wifi-monitor': 'WiFi Monitor',
         processes: 'Process Manager',
         startup: 'Startup Manager',
@@ -3178,7 +3207,7 @@
         settings: 'Settings',
       };
       const STORAGE_PAGES = ['disk-analyzer', 'duplicate-finder', 'profile-purger'];
-      const NET_PAGES = ['ping', 'port-scanner', 'dns-lookup', 'speed-test', 'wifi-monitor'];
+      const NET_PAGES = ['ping', 'port-scanner', 'dns-lookup', 'wifi-monitor'];
 
       function navTo(id) {
         PAGES.forEach(p => {
@@ -3639,77 +3668,29 @@
         } catch (e) {}
       }
 
-      // ── PING ─────────────────────────────────────────────────
-      let currentPingId = null;
-      let currentTracertId = null;
-
+      // ── PING / TRACERT ──────────────────────────────────────
       function doPing() {
         const host = document.getElementById('ping-host').value.trim();
         if (!host) return;
         const continuous = document.getElementById('ping-continuous').checked;
         const count = parseInt(document.getElementById('ping-count').value) || 4;
 
-        const out = document.getElementById('ping-output');
-        const btn = document.getElementById('ping-btn');
-
-        if (currentPingId) {
-          window.cxi.stopProcess(currentPingId);
-          currentPingId = null;
-          btn.innerHTML = '🏓 Ping';
-          return;
-        }
-
-        btn.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;margin-right:8px"></span> Stop';
-        out.innerHTML = `<div class="t-info t-line">Pinging ${host}... [Press Stop to cancel]</div>\n`;
-
         if (window.cxi) {
-          window.cxi.pingHost({ host, count, continuous });
+          window.cxi.openExternalPing({ host, count, continuous });
         } else {
-          // Simulation for non-electron env
-          simulatePing(host, count, continuous, out, btn);
-        }
-      }
-
-      async function simulatePing(host, count, continuous, out, btn) {
-        const id = 'sim-' + Date.now();
-        currentPingId = id;
-        const max = continuous ? 1000 : count;
-        for (let i = 0; i < max && currentPingId === id; i++) {
-          await sleep(800);
-          const ms = Math.floor(Math.random() * 20 + 5);
-          out.innerHTML += `<div class="t-ok t-line">Reply from ${host}: bytes=32 time=${ms}ms TTL=128</div>`;
-          out.scrollTop = out.scrollHeight;
-        }
-        if (currentPingId === id) {
-          currentPingId = null;
-          btn.innerHTML = '🏓 Ping';
+          alert('External CMD only supported in the Toolkit Desktop app.');
         }
       }
 
       function doTracert() {
         const host = document.getElementById('ping-host').value.trim();
         if (!host) return;
-        const out = document.getElementById('ping-output');
-        const btn = document.getElementById('tracert-btn');
-
-        if (currentTracertId) {
-          window.cxi.stopProcess(currentTracertId);
-          currentTracertId = null;
-          btn.innerHTML = '📍 Tracert';
-          return;
-        }
-
-        btn.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;margin-right:8px"></span> Stop';
-        out.innerHTML = `<div class="t-info t-line">Tracing route to ${host}... (Traceroute can be slow, please wait)</div>\n`;
-
         if (window.cxi) {
-          window.cxi.tracertHost({ host });
+          window.cxi.openExternalTracert({ host });
         } else {
-          out.innerHTML += `<div class="t-err t-line">Traceroute only supported in desktop app.</div>`;
-          btn.innerHTML = '📍 Tracert';
+          alert('External CMD only supported in the Toolkit Desktop app.');
         }
       }
-
 
       // ── PORT SCANNER ─────────────────────────────────────────
       function applyPortPreset() {
@@ -4009,64 +3990,7 @@
         }
       }
 
-      // ── SPEED TEST ────────────────────────────────────────────
-      let speedRunning = false;
-      async function doSpeedTest() {
-        if (speedRunning) return;
-        speedRunning = true;
-        const btn = document.getElementById('spd-btn');
-        const val = document.getElementById('spd-val');
-        const unit = document.getElementById('spd-unit');
-        const fill = document.getElementById('spd-fill');
-        const bar = document.getElementById('spd-bar');
-        bar.style.display = 'block';
-        document.getElementById('spd-dl').textContent = '—';
-        document.getElementById('spd-ul').textContent = '—';
-        document.getElementById('spd-ping').textContent = '—';
-        btn.disabled = true;
 
-        // Ping phase
-        unit.textContent = 'Measuring latency...';
-        for (let i = 0; i <= 100; i += 10) {
-          fill.style.width = i / 4 + '%';
-          await sleep(80);
-        }
-        const ping = Math.floor(8 + Math.random() * 25);
-        document.getElementById('spd-ping').textContent = ping;
-
-        // Download phase
-        unit.textContent = 'Testing download speed...';
-        let dl = 0;
-        for (let i = 0; i <= 100; i++) {
-          dl = Math.min(850, dl + Math.random() * 18);
-          val.textContent = Math.round(dl);
-          unit.textContent = 'Mbps ↓ Download';
-          fill.style.width = 25 + i * 0.5 + '%';
-          await sleep(40);
-        }
-        const dlFinal = Math.round(dl);
-        document.getElementById('spd-dl').textContent = dlFinal;
-
-        // Upload phase
-        unit.textContent = 'Testing upload speed...';
-        let ul = 0;
-        for (let i = 0; i <= 100; i++) {
-          ul = Math.min(400, ul + Math.random() * 8);
-          val.textContent = Math.round(ul);
-          unit.textContent = 'Mbps ↑ Upload';
-          fill.style.width = 75 + i * 0.25 + '%';
-          await sleep(30);
-        }
-        const ulFinal = Math.round(ul);
-        document.getElementById('spd-ul').textContent = ulFinal;
-
-        // Done
-        fill.style.width = '100%';
-        val.textContent = dlFinal;
-        unit.textContent = 'Mbps Download — Test Complete';
-        btn.disabled = false;
-        speedRunning = false;
-      }
 
       // ── PROCESS MANAGER ───────────────────────────────────────
       const FAKE_PROCS = [
@@ -4607,7 +4531,7 @@
 
           buildSecurityChecks();
 
-          // WAIT ONLY FOR ESSENTIAL DATA: 
+          // WAIT ONLY FOR ESSENTIAL DATA:
           // We don't want to hang the splash screen if PowerShell is slow (profiles/disks)
           const [info] = await Promise.all([
             window.cxi ? window.cxi.getSysInfo() : Promise.resolve({}),
@@ -4615,11 +4539,11 @@
             pMetrics,
             pSys,
           ]);
-          
+
           // These continue in background and will update UI when done
-          pDisks.catch(e => console.error("BG Disk Error:", e));
-          pProc.catch(e => console.error("BG Proc Error:", e));
-          pProfiles.catch(e => console.error("BG Profile Error:", e));
+          pDisks.catch(e => console.error('BG Disk Error:', e));
+          pProc.catch(e => console.error('BG Proc Error:', e));
+          pProfiles.catch(e => console.error('BG Profile Error:', e));
           pStartup; // Startup is just a sync factory usually
 
           if (info && Object.keys(info).length) {
@@ -4640,25 +4564,26 @@
 
           // Real-time progress update for profile loading
           if (window.cxi.onProfileProgress) {
-            window.cxi.onProfileProgress((data) => {
+            window.cxi.onProfileProgress(data => {
               const el = document.getElementById('profile-load-status');
-              if (el) el.textContent = `Scanning profiles: ${data.name} (${data.count}/${data.total})`;
+              if (el)
+                el.textContent = `Scanning profiles: ${data.name} (${data.count}/${data.total})`;
             });
           }
 
           if (window.cxi.onProfileData) {
-            window.cxi.onProfileData((profile) => {
+            window.cxi.onProfileData(profile => {
               const existing = allProfiles.findIndex(p => p.SID === profile.SID);
               if (existing === -1) {
                 allProfiles.push(profile);
               } else {
                 allProfiles[existing] = profile;
               }
-              
+
               // Only auto-render if we are on that page and not currently manually refreshing
               const pg = document.getElementById('page-profile-purger');
               if (pg && pg.classList.contains('active') && !profileScanPromise) {
-                 sortProfiles(sortKey, true);
+                sortProfiles(sortKey, true);
               }
             });
           }
@@ -4775,7 +4700,8 @@
           sortProfiles(sortKey, true); // final full sort
         } catch (e) {
           if (list) {
-            list.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--red)">Failed to load profiles.</td></tr>';
+            list.innerHTML =
+              '<tr><td colspan="6" style="text-align:center;color:var(--red)">Failed to load profiles.</td></tr>';
           }
         } finally {
           profileScanPromise = null;
@@ -4913,7 +4839,7 @@
 
         btn.disabled = fail === 0 && selected.length > 0; // Keep disabled if all succeeded
         btn.textContent = 'Purge Selected Profiles';
-        
+
         alert(`Purge Complete.\n\nSuccessfully deleted: ${success}\nFailed: ${fail}`);
         loadUserProfiles(true);
       }
