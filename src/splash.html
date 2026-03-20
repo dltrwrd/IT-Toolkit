@@ -1,142 +1,173 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <style>
-    :root {
-      --bg: #ffffff;
-      --blue: #1a6ef5;
-      --accent: #2563eb;
-      --text: #111827;
-      --text-dim: #6b7280;
-      --track: #f3f4f6;
-    }
-    body {
-      margin: 0;
-      padding: 0;
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: var(--bg);
-      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-      overflow: hidden;
-      user-select: none;
-      -webkit-app-region: drag;
-    }
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-    }
-    .logo-box {
-      width: 80px;
-      height: 80px;
-      border-radius: 20px;
-      background: linear-gradient(135deg, var(--blue), var(--accent));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 10px 25px rgba(26, 110, 245, 0.2);
-      animation: pulse 2.5s infinite ease-in-out;
-    }
-    .logo-box svg {
-      width: 44px;
-      height: 44px;
-      fill: white;
-    }
-    .title {
-      font-size: 28px;
-      font-weight: 800;
-      color: var(--text);
-      letter-spacing: -0.8px;
-      margin-top: 10px;
-    }
-    .subtitle {
-      font-size: 14px;
-      color: var(--text-dim);
-      margin-top: -6px;
-      font-weight: 500;
-    }
-    .loader-wrap {
-      width: 280px;
-      height: 6px;
-      background: var(--track);
-      border-radius: 10px;
-      margin-top: 30px;
-      overflow: hidden;
-      position: relative;
-    }
-    .loader-bar {
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: 0%;
-      background: var(--blue);
-      border-radius: 10px;
-      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .status {
-      font-size: 10px;
-      color: var(--text-dim);
-      margin-top: 12px;
-      font-family: 'Inter', sans-serif;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-    }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.03); opacity: 0.95; }
-    }
-    .fade-in { animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: none; }
-    }
-  </style>
-</head>
-<body>
-  <div class="container fade-in">
-    <div class="logo-box">
-      <svg viewBox="0 0 24 24">
-        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-      </svg>
-    </div>
-    <div class="title">CXI SLT Toolkit</div>
-    <div class="subtitle">Advanced IT Diagnostics & Optimization</div>
-    
-    <div class="loader-wrap">
-      <div class="loader-bar" id="bar"></div>
-    </div>
-    <div class="status" id="status">Initializing modules...</div>
-  </div>
-
-  <script>
-    const bar = document.getElementById('bar');
-    const status = document.getElementById('status');
-    const steps = [
-      { p: 15, t: 'Loading core components...' },
-      { p: 35, t: 'Verifying system permissions...' },
-      { p: 55, t: 'Connecting to hardware APIs...' },
-      { p: 80, t: 'Loading UI resources...' },
-      { p: 95, t: 'Starting application...' }
-    ];
-
-    let currentStep = 0;
-    function nextStep() {
-      if (currentStep < steps.length) {
-        const { p, t } = steps[currentStep];
-        bar.style.width = p + '%';
-        status.textContent = t;
-        currentStep++;
-        setTimeout(nextStep, 600 + Math.random() * 800);
+  <head>
+    <style>
+      :root {
+        --bg: #ffffff;
+        --blue: #1a6ef5;
+        --accent: #2563eb;
+        --text: #111827;
+        --text-dim: #6b7280;
+        --track: #f3f4f6;
       }
-    }
-    setTimeout(nextStep, 500);
-  </script>
-</body>
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg);
+        font-family:
+          'Inter',
+          'Segoe UI',
+          system-ui,
+          -apple-system,
+          sans-serif;
+        overflow: hidden;
+        user-select: none;
+        -webkit-app-region: drag;
+      }
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+      .logo-box {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, var(--blue), var(--accent));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 25px rgba(26, 110, 245, 0.2);
+        animation: pulse 2.5s infinite ease-in-out;
+      }
+      .logo-box svg {
+        width: 44px;
+        height: 44px;
+        fill: white;
+      }
+      .title {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--text);
+        letter-spacing: -0.8px;
+        margin-top: 10px;
+      }
+      .subtitle {
+        font-size: 14px;
+        color: var(--text-dim);
+        margin-top: -6px;
+        font-weight: 500;
+      }
+      .loader-wrap {
+        width: 280px;
+        height: 6px;
+        background: var(--track);
+        border-radius: 10px;
+        margin-top: 30px;
+        overflow: hidden;
+        position: relative;
+      }
+      .loader-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 0%;
+        background: var(--blue);
+        border-radius: 10px;
+        transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .status {
+        font-size: 10px;
+        color: var(--text-dim);
+        margin-top: 12px;
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.03);
+          opacity: 0.95;
+        }
+      }
+      .fade-in {
+        animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(15px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container fade-in">
+      <div class="logo-box">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+        </svg>
+      </div>
+      <div class="title">CXI SLT Toolkit</div>
+      <div class="subtitle">Advanced IT Diagnostics & Optimization</div>
+
+      <div class="loader-wrap">
+        <div class="loader-bar" id="bar"></div>
+      </div>
+      <div class="status" id="status">Initializing modules...</div>
+    </div>
+
+    <script>
+      const bar = document.getElementById('bar');
+      const status = document.getElementById('status');
+      
+      // Initial fake steps until real data starts coming
+      const initialSteps = [
+        { p: 5, t: 'Loading core components...' },
+        { p: 10, t: 'Verifying system permissions...' }
+      ];
+
+      let step = 0;
+      function runInitial() {
+        if (step < initialSteps.length) {
+          bar.style.width = initialSteps[step].p + '%';
+          status.textContent = initialSteps[step].t;
+          step++;
+          setTimeout(runInitial, 500);
+        }
+      }
+      runInitial();
+
+      // Real progress listener
+      if (window.splash) {
+        window.splash.onProgress((data) => {
+          // Range profile loading from 15% to 90%
+          const base = 15;
+          const range = 75;
+          const p = base + (data.percent / 100) * range;
+          
+          bar.style.width = p + '%';
+          status.textContent = `Scanning Profiles: ${data.name} (${data.count}/${data.total})`;
+        });
+      }
+    </script>
+  </body>
 </html>

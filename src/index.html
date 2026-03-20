@@ -1444,6 +1444,50 @@
       .empty-state p {
         font-size: 13px;
       }
+
+      /* ── PROFILE TABLE ── */
+      #profile-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      #profile-table th {
+        text-align: left;
+        padding: 12px;
+        color: var(--text3);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid var(--border);
+      }
+      #profile-table tr {
+        transition: background 0.2s;
+        border-bottom: 1px solid var(--border);
+      }
+      #profile-table tr:hover:not(.locked) {
+        background: var(--surface2);
+      }
+      #profile-table td {
+        padding: 14px 12px;
+        vertical-align: middle;
+      }
+      .badge-soft {
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+      }
+      .badge-soft.blue {
+        background: #e0f2fe;
+        color: #0369a1;
+      }
+      .badge-soft.gray {
+        background: #f1f5f9;
+        color: #475569;
+      }
+      .locked-row {
+        background: rgba(248, 250, 252, 0.5);
+      }
     </style>
   </head>
   <body>
@@ -1539,6 +1583,7 @@
           <div class="sb-dropdown" id="storage-dd">
             <div class="sb-sub" data-page="disk-analyzer">Disk Analyzer</div>
             <div class="sb-sub" data-page="duplicate-finder">Duplicate Finder</div>
+            <div class="sb-sub" data-page="profile-purger">Profile Purger</div>
           </div>
 
           <!-- Network dropdown -->
@@ -2196,6 +2241,128 @@
                   Delete All Copies
                 </button>
               </div>
+            </div>
+          </div>
+
+          <!-- ══════════════════ USER PROFILE PURGER ══════════════════ -->
+          <div class="page" id="page-profile-purger">
+            <div class="page-hdr">
+              <div>
+                <h1>User Profile Purger</h1>
+                <p>Identify and remove inactive or temporary user accounts to free up space</p>
+              </div>
+              <button class="btn btn-primary" onclick="loadUserProfiles(true)">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  style="width: 16px; height: 16px; margin-right: 8px"
+                >
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+                  <path d="M22 2v6h-6"></path>
+                </svg>
+                Refresh List
+              </button>
+            </div>
+
+            <div
+              class="card"
+              style="
+                margin-bottom: 20px;
+                border-color: rgba(239, 68, 68, 0.2);
+                background: rgba(239, 68, 68, 0.03);
+              "
+            >
+              <div style="display: flex; gap: 12px; align-items: flex-start">
+                <div style="color: var(--red); margin-top: 2px">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    style="width: 20px; height: 20px"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                </div>
+                <div>
+                  <h4 style="color: var(--text); margin-bottom: 4px; font-weight: 600">
+                    Administrative Warning
+                  </h4>
+                  <p style="color: var(--text2); font-size: 12.5px; line-height: 1.5">
+                    Deleting user profiles is <strong>permanent</strong>. It removes all files in
+                    Desktop, Documents, Downloads, etc. for that user. System-critical profiles and
+                    your current active session are automatically locked to prevent accidents.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card no-pad">
+              <div class="table-container">
+                <table id="profile-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 40px">
+                        <input
+                          type="checkbox"
+                          id="profile-sel-all"
+                          onclick="toggleAllProfiles(this.checked)"
+                        />
+                      </th>
+                      <th onclick="sortProfiles('UserName')" style="cursor: pointer">
+                        User / Path
+                        <span
+                          id="sort-icon-UserName"
+                          style="font-size: 10px; margin-left: 4px"
+                        ></span>
+                      </th>
+                      <th onclick="sortProfiles('Special')" style="cursor: pointer">
+                        Type
+                        <span
+                          id="sort-icon-Special"
+                          style="font-size: 10px; margin-left: 4px"
+                        ></span>
+                      </th>
+                      <th onclick="sortProfiles('Loaded')" style="cursor: pointer">
+                        Status
+                        <span
+                          id="sort-icon-Loaded"
+                          style="font-size: 10px; margin-left: 4px"
+                        ></span>
+                      </th>
+                      <th
+                        onclick="sortProfiles('TotalSize')"
+                        style="cursor: pointer; text-align: right"
+                      >
+                        Size
+                        <span
+                          id="sort-icon-TotalSize"
+                          style="font-size: 10px; margin-left: 4px"
+                        ></span>
+                      </th>
+                      <th style="text-align: right">SID</th>
+                    </tr>
+                  </thead>
+                  <tbody id="profile-list"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; justify-content: flex-end">
+              <button
+                class="btn btn-danger"
+                onclick="purgeSelectedProfiles()"
+                id="btn-purge-action"
+                disabled
+              >
+                Purge Selected Profiles
+              </button>
             </div>
           </div>
 
@@ -2958,6 +3125,7 @@
         'sysinfo',
         'disk-analyzer',
         'duplicate-finder',
+        'profile-purger',
         'ping',
         'port-scanner',
         'dns-lookup',
@@ -2974,6 +3142,7 @@
         sysinfo: 'System Information',
         'disk-analyzer': 'Disk Analyzer',
         'duplicate-finder': 'Duplicate Finder',
+        'profile-purger': 'User Profile Purger',
         ping: 'Ping / Latency',
         'port-scanner': 'Port Scanner',
         'dns-lookup': 'IP & DNS Lookup',
@@ -2985,7 +3154,7 @@
         security: 'Security Scanner',
         settings: 'Settings',
       };
-      const STORAGE_PAGES = ['disk-analyzer', 'duplicate-finder'];
+      const STORAGE_PAGES = ['disk-analyzer', 'duplicate-finder', 'profile-purger'];
       const NET_PAGES = ['ping', 'port-scanner', 'dns-lookup', 'speed-test', 'wifi-monitor'];
 
       function navTo(id) {
@@ -3011,6 +3180,7 @@
         if (id === 'startup') loadStartup();
         if (id === 'dns-lookup') loadLocalNet();
         if (id === 'disk-analyzer') loadDiskAnalyzer();
+        if (id === 'profile-purger') loadUserProfiles();
         if (id === 'settings') loadSettingsInfo();
         if (id === 'dashboard') {
           setTimeout(drawChart, 50); // Small delay to ensure DOM is updated and visible
@@ -4369,6 +4539,7 @@
           const pDisks = loadDiskAnalyzer();
           const pProc = loadProcesses();
           const pStartup = loadStartup();
+          const pProfiles = loadUserProfiles();
 
           buildSecurityChecks();
 
@@ -4381,6 +4552,7 @@
             pDisks,
             pProc,
             pStartup,
+            pProfiles,
           ]);
 
           if (info && Object.keys(info).length) {
@@ -4397,6 +4569,14 @@
             if (cpuModel && info.cpuModel) {
               cpuModel.textContent = info.cpuModel.split('@')[0].trim();
             }
+          }
+
+          // Real-time progress update for profile loading
+          if (window.cxi.onProfileProgress) {
+            window.cxi.onProfileProgress((data) => {
+              const el = document.getElementById('profile-load-status');
+              if (el) el.textContent = `Scanning profiles: ${data.name} (${data.count}/${data.total})`;
+            });
           }
 
           // SIGNAL MAIN PROCESS: Show the app, we are 100% ready!
@@ -4421,6 +4601,179 @@
           updateMetrics().catch(() => {});
           updateHealth().catch(() => {});
         }, configRefresh);
+      }
+
+      // ── USER PROFILE PURGER ─────────────────────────────────────
+      let allProfiles = [];
+      let sortKey = 'TotalSize'; // Default sort by size desc
+      let sortDir = -1;
+
+      async function loadUserProfiles(force = false) {
+        const list = document.getElementById('profile-list');
+        const btn = document.getElementById('btn-purge-action');
+        const selectAll = document.getElementById('profile-sel-all');
+
+        // If we already have data and not forcing refresh, just render it instantly
+        if (allProfiles.length > 0 && !force) {
+          renderProfileRows();
+          return;
+        }
+
+        selectAll.checked = false;
+        btn.disabled = true;
+        btn.textContent = 'Purge Selected Profiles';
+        list.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align:center;padding:60px">
+              <div class="spinner" style="width:32px; height:32px; margin:0 auto 16px; border: 3px solid var(--blue-soft); border-top-color: var(--blue)"></div>
+              <div id="profile-load-status" style="color:var(--text3); font-weight:500">Identifying system and local profiles...</div>
+            </td>
+          </tr>`;
+
+        try {
+          const profiles = await window.cxi.getUserProfiles();
+          allProfiles = profiles;
+          sortProfiles(sortKey, true); // initial sort
+        } catch (e) {
+          list.innerHTML =
+            '<tr><td colspan="6" style="text-align:center;color:var(--red)">Failed to load profiles.</td></tr>';
+        }
+      }
+
+      function sortProfiles(key, initial = false) {
+        if (!initial) {
+          if (sortKey === key) sortDir *= -1;
+          else {
+            sortKey = key;
+            sortDir = -1; // Default to desc for size
+          }
+        }
+
+        // Update Icons
+        document.querySelectorAll('[id^="sort-icon-"]').forEach(el => (el.innerHTML = ''));
+        const icon = document.getElementById('sort-icon-' + key);
+        if (icon) icon.innerHTML = sortDir === 1 ? '▲' : '▼';
+
+        allProfiles.sort((a, b) => {
+          let vA = a[key];
+          let vB = b[key];
+          if (typeof vA === 'string') {
+            vA = vA.toLowerCase();
+            vB = vB.toLowerCase();
+          }
+          if (vA < vB) return -1 * sortDir;
+          if (vA > vB) return 1 * sortDir;
+          return 0;
+        });
+
+        renderProfileRows();
+      }
+
+      function renderProfileRows() {
+        const list = document.getElementById('profile-list');
+        if (allProfiles.length === 0) {
+          list.innerHTML =
+            '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text3)">No profiles found.</td></tr>';
+          return;
+        }
+
+        list.innerHTML = allProfiles
+          .map((p, i) => {
+            const isAdmin =
+              p.UserName.toLowerCase().includes('admin') ||
+              p.UserName.toLowerCase().includes('system') ||
+              p.UserName.toLowerCase().includes('temp');
+            const isSpecial = p.Special || p.Loaded || isAdmin;
+            const statusLabel = p.Loaded ? 'Logged In' : 'Inactive';
+            const statusClass = p.Loaded ? 'blue' : 'gray';
+            const type = p.Special ? 'System' : 'Local User';
+
+            return `
+              <tr class="${isSpecial ? 'locked' : ''} ${isSpecial ? 'locked-row' : ''}" style="${isSpecial ? 'opacity:0.8' : ''}">
+                <td>
+                  <input type="checkbox" class="profile-check" value="${p.SID}" data-index="${i}" ${isSpecial ? 'disabled' : 'onchange="updatePurgeBtn()"'} />
+                </td>
+                <td style="min-width: 280px">
+                  <div style="font-weight:600; display:flex; align-items:center; gap:8px; color: ${isSpecial ? 'var(--text2)' : 'var(--text)'}">
+                    ${p.UserName}
+                    ${isSpecial ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px;color:var(--text3)" title="Locked Profile"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>' : ''}
+                  </div>
+                  <div style="font-size:11px;color:var(--text3);font-family:var(--mono); margin-top:2px">${p.LocalPath}</div>
+                </td>
+                <td>
+                  <span style="font-size:12px; font-weight:500; color:var(--text3)">${type}</span>
+                </td>
+                <td>
+                  <span class="badge-soft ${statusClass}">${statusLabel}</span>
+                </td>
+                <td style="text-align:right; font-weight:600; color:var(--text2)">
+                  ${fmtSize(p.TotalSize || 0)}
+                </td>
+                <td style="text-align:right; font-family:var(--mono); font-size:10px; color:var(--text3); opacity:0.7">
+                  ${p.SID}
+                </td>
+              </tr>
+            `;
+          })
+          .join('');
+      }
+
+      function toggleAllProfiles(checked) {
+        document.querySelectorAll('.profile-check:not(:disabled)').forEach(cb => {
+          cb.checked = checked;
+        });
+        updatePurgeBtn();
+      }
+
+      function updatePurgeBtn() {
+        const checkedCount = document.querySelectorAll('.profile-check:checked').length;
+        document.getElementById('btn-purge-action').disabled = checkedCount === 0;
+      }
+
+      async function purgeSelectedProfiles() {
+        const checked = document.querySelectorAll('.profile-check:checked');
+        const selected = Array.from(checked).map(cb => {
+          const idx = cb.dataset.index;
+          return allProfiles[idx];
+        });
+
+        if (
+          !confirm(
+            `CRITICAL WARNING: You are about to PERMANENTLY delete ${selected.length} user profile(s).\n\nThis will ERASE all data in their Documents, Desktop, and Downloads folders.\n\nAre you sure you want to proceed?`
+          )
+        )
+          return;
+
+        const btn = document.getElementById('btn-purge-action');
+        btn.disabled = true;
+
+        let success = 0;
+        let fail = 0;
+
+        const deletedSIDs = [];
+        for (let i = 0; i < selected.length; i++) {
+          const p = selected[i];
+          btn.textContent = `Purging... ${i + 1}/${selected.length}`;
+          const res = await window.cxi.deleteUserProfile(p.SID);
+          if (res.success) {
+            success++;
+            deletedSIDs.push(p.SID);
+          } else {
+            fail++;
+          }
+        }
+
+        // Locally remove successful ones immediately for better feedback
+        if (success > 0) {
+          allProfiles = allProfiles.filter(p => !deletedSIDs.includes(p.SID));
+          renderProfileRows();
+        }
+
+        btn.disabled = fail === 0 && selected.length > 0; // Keep disabled if all succeeded
+        btn.textContent = 'Purge Selected Profiles';
+        
+        alert(`Purge Complete.\n\nSuccessfully deleted: ${success}\nFailed: ${fail}`);
+        loadUserProfiles(true);
       }
 
       const sleep = ms => new Promise(r => setTimeout(r, ms));

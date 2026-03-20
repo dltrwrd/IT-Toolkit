@@ -1,7 +1,7 @@
 const { app, BrowserWindow, ipcMain, Menu, shell } = require('electron');
 const path = require('path');
 const os = require('os');
-const { exec } = require('child_process');
+const { exec, spawn, spawnSync } = require('child_process');
 const dns = require('dns');
 const net = require('net');
 const si = require('systeminformation');
@@ -20,6 +20,7 @@ function showSplash() {
     frame: false,
     alwaysOnTop: true,
     webPreferences: {
+      preload: path.join(__dirname, 'splash-preload.js'),
       nodeIntegration: false,
       contextIsolation: true,
     },
@@ -87,7 +88,9 @@ ipcMain.on('win-maximize', () =>
   mainWindow?.isMaximized() ? mainWindow.unmaximize() : mainWindow?.maximize()
 );
 ipcMain.on('win-close', () => mainWindow?.close());
-ipcMain.on('stop-duplicates', () => { stopScanRequested = true; });
+ipcMain.on('stop-duplicates', () => {
+  stopScanRequested = true;
+});
 
 // System info
 ipcMain.handle('get-sysinfo', async () => {
@@ -191,21 +194,28 @@ ipcMain.handle('get-disks', async () => {
 ipcMain.handle('get-disk-health', async () => {
   try {
     const data = await si.diskLayout();
-    const { exec } = require('child_process');
-    
     // Fetch deeper health data including life remaining/percentage
-    return new Promise((resolve) => {
-      const psCmd = `Get-PhysicalDisk | ForEach-Object { $d=$_; $r=($_ | Get-StorageReliabilityCounter); [PSCustomObject]@{ FriendlyName=$d.FriendlyName; SerialNumber=$d.SerialNumber; PowerOnHours=$r.PowerOnHours; Status=$d.HealthStatus; Wear=([int](100 - $r.Wear)); LifeRemaining=$d.RemainingLifePercent } } | ConvertTo-Json`.replace(/\n/g, ' ');
-      exec(`powershell "${psCmd}"`, (err, stdout) => {
+    return new Promise(resolve => {
+      const script = `Get-PhysicalDisk | ForEach-Object { $d=$_; $r=($_ | Get-StorageReliabilityCounter); [PSCustomObject]@{ FriendlyName=$d.FriendlyName; SerialNumber=$d.SerialNumber; PowerOnHours=$r.PowerOnHours; Status=$d.HealthStatus; Wear=([int](100 - $r.Wear)); LifeRemaining=$d.RemainingLifePercent } } | ConvertTo-Json`;
+      const encodedCommand = Buffer.from(script, 'utf16le').toString('base64');
+      
+      exec(`powershell -NoProfile -EncodedCommand ${encodedCommand}`, (err, stdout) => {
         let extra = [];
-        try { 
-          if (!err && stdout) extra = JSON.parse(stdout); 
+        try {
+          if (!err && stdout) extra = JSON.parse(stdout);
           if (!Array.isArray(extra)) extra = extra ? [extra] : [];
-        } catch(e) {}
-        
+        } catch (e) {}
+
         const results = data.map((d, idx) => {
-          const info = extra.find(e => e.SerialNumber === d.serialNum || (e.FriendlyName && e.FriendlyName.includes(d.name))) || extra[idx] || {};
-          
+          const info =
+            extra.find(
+              e =>
+                e.SerialNumber === d.serialNum ||
+                (e.FriendlyName && e.FriendlyName.includes(d.name))
+            ) ||
+            extra[idx] ||
+            {};
+
           return {
             name: `${d.vendor} ${d.model || d.name || 'Unknown'}`.trim(),
             type: d.type || 'Fixed',
@@ -215,7 +225,7 @@ ipcMain.handle('get-disk-health', async () => {
             percent: info.LifeRemaining || info.Wear || 100, // Use life remaining or wear fallback
             poh: info.PowerOnHours || 0,
             serial: d.serialNum || info.SerialNumber || 'N/A',
-            device: d.device
+            device: d.device,
           };
         });
         resolve(results);
@@ -240,7 +250,7 @@ ipcMain.handle('get-partitions', async () => {
           mount: p.mount,
           size: p.size,
           used: usage ? usage.used : 0,
-          available: usage ? usage.available : (usage ? usage.size - usage.used : 0),
+          available: usage ? usage.available : usage ? usage.size - usage.used : 0,
           fsType: p.fsType || (usage ? usage.type : 'Unknown'),
           device: p.device, // Used to group by Physical Drive
         };
@@ -327,7 +337,9 @@ ipcMain.handle('get-duplicates', async (event, dirPath) => {
       const bytesRead = fsSync.readSync(fd, buffer, 0, 16384, 0);
       fsSync.closeSync(fd);
       return crypto.createHash('md5').update(buffer.slice(0, bytesRead)).digest('hex');
-    } catch (e) { return Math.random().toString(); }
+    } catch (e) {
+      return Math.random().toString();
+    }
   }
 
   // Non-blocking recursive scan
@@ -347,13 +359,22 @@ ipcMain.handle('get-duplicates', async (event, dirPath) => {
       for (const entry of entries) {
         if (stopScanRequested) break;
         const fullPath = path.join(currentDir, entry.name);
-        
+
         if (entry.isDirectory()) {
           // Avoid scanning root system folders and user app data to prevent accidental deletion of critical files
           const skip = [
-            'node_modules', '.git', '$Recycle.Bin', 'System Volume Information', 
-            'Windows', 'Program Files', 'Program Files (x86)',
-            'AppData', 'Local', 'LocalLow', 'Roaming', 'Temp'
+            'node_modules',
+            '.git',
+            '$Recycle.Bin',
+            'System Volume Information',
+            'Windows',
+            'Program Files',
+            'Program Files (x86)',
+            'AppData',
+            'Local',
+            'LocalLow',
+            'Roaming',
+            'Temp',
           ];
           if (!skip.includes(entry.name) && !entry.name.startsWith('.')) {
             dirs.push(fullPath);
@@ -362,10 +383,26 @@ ipcMain.handle('get-duplicates', async (event, dirPath) => {
           try {
             const stats = fsSync.statSync(fullPath);
             const ext = path.extname(entry.name).toLowerCase();
-            const skipExts = ['.dll', '.exe', '.sys', '.dat', '.json', '.xml', '.log', '.ini', '.cache', '.tmp', '.manifest', '.lnk', '.cur', '.ani'];
-            
+            const skipExts = [
+              '.dll',
+              '.exe',
+              '.sys',
+              '.dat',
+              '.json',
+              '.xml',
+              '.log',
+              '.ini',
+              '.cache',
+              '.tmp',
+              '.manifest',
+              '.lnk',
+              '.cur',
+              '.ani',
+            ];
+
             // Only consider user files (Images, Docs, etc.) and avoid tiny files
-            if (stats.size > 10240 && !skipExts.includes(ext)) { // Min 10KB + safe extensions
+            if (stats.size > 10240 && !skipExts.includes(ext)) {
+              // Min 10KB + safe extensions
               if (!results.has(stats.size)) results.set(stats.size, []);
               results.get(stats.size).push({ path: fullPath, size: stats.size, name: entry.name });
             }
@@ -393,7 +430,7 @@ ipcMain.handle('get-duplicates', async (event, dirPath) => {
             name: groupedFiles[0].name,
             size: groupedFiles[0].size,
             paths: groupedFiles.map(f => f.path),
-            hash: hash
+            hash: hash,
           });
         }
       }
@@ -411,8 +448,137 @@ ipcMain.handle('delete-file', async (event, filePath) => {
   try {
     fs.unlinkSync(filePath);
     return { success: true };
-  } catch (e) { return { success: false, error: e.message }; }
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
 });
+
+ipcMain.handle('get-user-profiles', async (event, isStartup = false) => {
+  return new Promise((resolve, reject) => {
+    const script = `
+      $ProgressPreference = 'SilentlyContinue'
+      $profiles = Get-CimInstance Win32_UserProfile | Select-Object SID, LocalPath, Loaded, Special
+      $total = $profiles.Count
+      $results = @()
+      $count = 0
+      foreach ($p in $profiles) {
+        $count++
+        $path = $p.LocalPath
+        $sid = $p.SID
+        
+        # Resolve name
+        $name = $sid
+        try {
+          $sidObj = New-Object System.Security.Principal.SecurityIdentifier($sid)
+          $name = $sidObj.Translate([System.Security.Principal.NTAccount]).Value
+        } catch { }
+
+        # Output progress safely using format operator to avoid variable-drive issues
+        $msg = "PROG:{0}:{1}:{2}" -f $count, $total, $name
+        Write-Host $msg
+
+        $totalSize = 0
+        if (Test-Path $path) {
+          try {
+             $items = Get-ChildItem -Path $path -Force -ErrorAction SilentlyContinue
+             foreach ($item in $items) {
+                if ($item.PSIsContainer) {
+                   $s = (Get-ChildItem -Path $item.FullName -Recurse -File -Force -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
+                   if ($s) { $totalSize += $s }
+                } else {
+                   $totalSize += $item.Length
+                }
+             }
+          } catch { }
+        }
+        $p | Add-Member -NotePropertyName UserName -NotePropertyValue $name -PassThru | Add-Member -NotePropertyName TotalSize -NotePropertyValue ([long]$totalSize) -PassThru
+        $results += $p
+      }
+      $results | ConvertTo-Json
+    `.trim();
+
+    const ps = spawn('powershell', ['-NoProfile', '-EncodedCommand', Buffer.from(script, 'utf16le').toString('base64')], {
+      maxBuffer: 1024 * 1024 * 10,
+    });
+
+    let stdout = '';
+    let stderr = '';
+    let buffer = '';
+
+    ps.stdout.on('data', (data) => {
+      buffer += data.toString();
+      let lines = buffer.split(/\r?\n/);
+      buffer = lines.pop(); // Remaining partial line in buffer
+
+      for (let line of lines) {
+        if (line.trim().startsWith('PROG:')) {
+          const parts = line.trim().split(':');
+          if (parts.length >= 4) {
+            const count = parseInt(parts[1]);
+            const total = parseInt(parts[2]);
+            const name = parts[3];
+            const percent = Math.round((count / total) * 100);
+            
+            const progressInfo = { count, total, name, percent, status: `Loading profile: ${name}` };
+            
+            if (splashWindow && !splashWindow.isDestroyed()) {
+              splashWindow.webContents.send('loading-progress', progressInfo);
+            }
+            if (mainWindow && !mainWindow.isDestroyed()) {
+              mainWindow.webContents.send('profile-load-progress', progressInfo);
+            }
+          }
+        } else if (line.trim().length > 0) {
+          stdout += line + '\n';
+        }
+      }
+    });
+
+    ps.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    ps.on('close', (code) => {
+      stdout += buffer;
+      if (code !== 0) {
+        console.error('Profile fetch error:', stderr);
+        return resolve([]);
+      }
+      try {
+        let cleanStdout = stdout.trim();
+        const jsonStart = cleanStdout.search(/[\[\{]/);
+        if (jsonStart >= 0) {
+          cleanStdout = cleanStdout.substring(jsonStart);
+        }
+        let profiles = JSON.parse(cleanStdout);
+        if (!Array.isArray(profiles)) profiles = [profiles];
+        resolve(profiles);
+      } catch (e) {
+        console.error('JSON Parse Error:', e, stdout);
+        resolve([]);
+      }
+    });
+  });
+});
+
+ipcMain.handle('delete-user-profile', async (event, sid) => {
+  try {
+    const script = `Get-CimInstance Win32_UserProfile -Filter "SID = '${sid}'" | Remove-CimInstance`;
+    const encodedCommand = Buffer.from(script, 'utf16le').toString('base64');
+    const result = spawnSync('powershell', ['-NoProfile', '-EncodedCommand', encodedCommand]);
+
+    if (result.status !== 0) {
+      const errorMsg = result.stderr ? result.stderr.toString() : 'Unknown PowerShell error';
+      console.error('Profile deletion failed:', errorMsg);
+      return { success: false, error: errorMsg };
+    }
+    return { success: true };
+  } catch (e) {
+    console.error('Profile deletion exception:', e);
+    return { success: false, error: e.message };
+  }
+});
+
 
 ipcMain.handle('get-defaults', async () => {
   const os = require('os');
@@ -420,19 +586,18 @@ ipcMain.handle('get-defaults', async () => {
   return {
     home: os.homedir(),
     downloads: path.join(os.homedir(), 'Downloads'),
-    desktop: path.join(os.homedir(), 'Desktop')
+    desktop: path.join(os.homedir(), 'Desktop'),
   };
 });
 
 ipcMain.handle('get-top-folders', async (event, drivePath) => {
   try {
-    const { exec } = require('child_process');
     let target = drivePath || 'C:\\';
     // Deeply ensure we have an absolute root like "C:\"
     target = target.split(':')[0] + ':\\';
-    
-    // Use single quotes inside PowerShell to prevent backslash-escape bugs with drive roots (C:\)
-    const psCmd = `
+
+    const script = `
+
       Get-ChildItem -Path '${target}' -Directory -ErrorAction SilentlyContinue | ForEach-Object {
         $size = 0;
         try {
@@ -442,22 +607,28 @@ ipcMain.handle('get-top-folders', async (event, drivePath) => {
         } catch {}
         [PSCustomObject]@{ Name=$_.Name; FullName=$_.FullName; Size=$size }
       } | ConvertTo-Json -Compress
-    `.replace(/\n/g, ' ');
-    
-    return new Promise((resolve) => {
-      exec(`powershell -Command "${psCmd}"`, { timeout: 15000 }, (err, stdout) => {
+    `.trim();
+
+    const encodedCommand = Buffer.from(script, 'utf16le').toString('base64');
+
+    return new Promise(resolve => {
+      exec(`powershell -NoProfile -EncodedCommand ${encodedCommand}`, { timeout: 15000 }, (err, stdout) => {
         if (err || !stdout || stdout.trim() === '') return resolve([]);
         try {
           let data = JSON.parse(stdout);
           if (!Array.isArray(data)) data = data ? [data] : [];
           // Sort by size and take Top 5
-          data.sort((a,b) => (b.Size || 0) - (a.Size || 0));
-          resolve(data.slice(0, 5).map(f => ({
-            name: f.Name,
-            path: f.FullName,
-            size: f.Size || 0
-          })));
-        } catch(e) { resolve([]); }
+          data.sort((a, b) => (b.Size || 0) - (a.Size || 0));
+          resolve(
+            data.slice(0, 5).map(f => ({
+              name: f.Name,
+              path: f.FullName,
+              size: f.Size || 0,
+            }))
+          );
+        } catch (e) {
+          resolve([]);
+        }
       });
     });
   } catch (e) {
