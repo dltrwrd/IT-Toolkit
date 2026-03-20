@@ -305,6 +305,93 @@ ipcMain.handle('dns-lookup', async (e, host) => {
 });
 
 // Run whitelisted commands
+// Duplicate Finder logic
+ipcMain.handle('get-duplicates', async (event, dirPath) => {
+  const fs = require('fs');
+  const path = require('path');
+  const crypto = require('crypto');
+
+  const results = new Map(); // size -> [path]
+  const duplicates = [];
+
+  function getFiles(dir) {
+    try {
+      const files = fs.readdirSync(dir, { withFileTypes: true });
+      for (const file of files) {
+        const fullPath = path.join(dir, file.name);
+        if (file.isDirectory()) {
+          // Avoid system folders
+          if (!['node_modules', '.git', '$Recycle.Bin', 'System Volume Information'].includes(file.name)) {
+            getFiles(fullPath);
+          }
+        } else {
+          try {
+            const stats = fs.statSync(fullPath);
+            if (stats.size > 1024) { // Only files > 1KB
+              if (!results.has(stats.size)) results.set(stats.size, []);
+              results.get(stats.size).push({ path: fullPath, size: stats.size, name: file.name });
+            }
+          } catch (e) {}
+        }
+      }
+    } catch (e) {}
+  }
+
+  getFiles(dirPath);
+
+  // Partial hash for performance (first 16KB)
+  function getFastHash(filePath) {
+    try {
+      const buffer = Buffer.alloc(16384);
+      const fd = fs.openSync(filePath, 'r');
+      fs.readSync(fd, buffer, 0, 16384, 0);
+      fs.closeSync(fd);
+      return crypto.createHash('md5').update(buffer).digest('hex');
+    } catch (e) { return Math.random().toString(); }
+  }
+
+  for (const [size, files] of results.entries()) {
+    if (files.length > 1) {
+      const hashGroups = new Map(); // hash -> [path]
+      for (const f of files) {
+        const h = getFastHash(f.path);
+        if (!hashGroups.has(h)) hashGroups.set(h, []);
+        hashGroups.get(h).push(f);
+      }
+      for (const [hash, groupedFiles] of hashGroups.entries()) {
+        if (groupedFiles.length > 1) {
+          duplicates.push({
+            name: groupedFiles[0].name,
+            size: groupedFiles[0].size,
+            paths: groupedFiles.map(f => f.path),
+            hash: hash
+          });
+        }
+      }
+    }
+  }
+
+  return duplicates;
+});
+
+ipcMain.handle('delete-file', async (event, filePath) => {
+  const fs = require('fs');
+  try {
+    fs.unlinkSync(filePath);
+    return { success: true };
+  } catch (e) { return { success: false, error: e.message }; }
+});
+
+ipcMain.handle('get-defaults', async () => {
+  const os = require('os');
+  const path = require('path');
+  return {
+    home: os.homedir(),
+    downloads: path.join(os.homedir(), 'Downloads'),
+    desktop: path.join(os.homedir(), 'Desktop')
+  };
+});
+
 ipcMain.handle('get-top-folders', async (event, drivePath) => {
   try {
     const { exec } = require('child_process');

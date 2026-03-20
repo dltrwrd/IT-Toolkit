@@ -21,6 +21,9 @@ contextBridge.exposeInMainWorld('cxi', {
   getPartitions: () => ipcRenderer.invoke('get-partitions'),
   getTopFolders: (path) => ipcRenderer.invoke('get-top-folders', path),
   securityScan: () => ipcRenderer.invoke('security-scan'),
+  getDuplicates: (path) => ipcRenderer.invoke('get-duplicates', path),
+  deleteFile: (path) => ipcRenderer.invoke('delete-file', path),
+  getDefaults: () => ipcRenderer.invoke('get-defaults'),
   runCmd: cmd => ipcRenderer.invoke('run-cmd', cmd),
   ready: () => ipcRenderer.send('app-ready'),
 });

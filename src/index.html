@@ -2059,72 +2059,36 @@
               <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
                 <input
                   type="text"
-                  value="C:\Users"
-                  placeholder="Folder to scan..."
-                  style="flex: 1; min-width: 200px"
+                  id="dup-path"
+                  placeholder="Folder to scan (e.g. C:\Users\Name\Downloads)"
+                  style="flex: 1; min-width: 300px"
                 />
-                <select style="width: 160px">
-                  <option>All Files</option>
-                  <option>Images Only</option>
-                  <option>Documents</option>
-                  <option>Videos</option>
-                </select>
-                <button class="btn btn-primary">🔍 Scan Now</button>
+                <button class="btn btn-primary" onclick="scanDuplicates()" id="dup-btn">🔍 Scan Now</button>
               </div>
             </div>
-            <div class="card">
+            <div class="card" id="dup-results-card" style="display:none">
               <div class="card-title">
                 <div class="dot"></div>
-                Found Duplicates <span class="badge blue" style="margin-left: 6px">12 groups</span>
+                Found Duplicates <span class="badge blue" id="dup-count-badge" style="margin-left: 6px">0 groups</span>
               </div>
-              <table class="proc-table">
-                <thead>
-                  <tr>
-                    <th>Filename</th>
-                    <th>Size</th>
-                    <th>Copies</th>
-                    <th>Wasted</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>vacation_photo.jpg</td>
-                    <td class="mono">4.2 MB</td>
-                    <td class="mono">3x</td>
-                    <td class="mono" style="color: var(--red)">8.4 MB</td>
-                    <td><button class="btn btn-sm btn-ghost">Review</button></td>
-                  </tr>
-                  <tr>
-                    <td>project_backup.zip</td>
-                    <td class="mono">128 MB</td>
-                    <td class="mono">2x</td>
-                    <td class="mono" style="color: var(--red)">128 MB</td>
-                    <td><button class="btn btn-sm btn-ghost">Review</button></td>
-                  </tr>
-                  <tr>
-                    <td>report_final.docx</td>
-                    <td class="mono">2.1 MB</td>
-                    <td class="mono">4x</td>
-                    <td class="mono" style="color: var(--red)">6.3 MB</td>
-                    <td><button class="btn btn-sm btn-ghost">Review</button></td>
-                  </tr>
-                  <tr>
-                    <td>setup_installer.exe</td>
-                    <td class="mono">87 MB</td>
-                    <td class="mono">2x</td>
-                    <td class="mono" style="color: var(--red)">87 MB</td>
-                    <td><button class="btn btn-sm btn-ghost">Review</button></td>
-                  </tr>
-                </tbody>
-              </table>
-              <div style="margin-top: 12px; display: flex; gap: 10px; align-items: center">
-                <span style="color: var(--text3); font-size: 12px"
-                  >Total reclaimable: <strong style="color: var(--red)">229.7 MB</strong></span
-                >
-                <button class="btn btn-danger btn-sm" style="margin-left: auto">
-                  🗑️ Delete Selected
-                </button>
+              <div style="max-height: 450px; overflow-y: auto">
+                <table class="proc-table">
+                  <thead>
+                    <tr>
+                      <th>Filename</th>
+                      <th>Size</th>
+                      <th>Copies</th>
+                      <th>Wasted Space</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dup-body"></tbody>
+                </table>
+              </div>
+              <div style="margin-top: 15px; display: flex; gap: 15px; align-items: center; padding-top: 10px; border-top: 1px solid var(--border)">
+                <span id="dup-reclaimable-wrap" style="color: var(--text3); font-size: 13px">
+                  Total reclaimable: <strong id="dup-total-reclaim" style="color: var(--red)">0 MB</strong>
+                </span>
               </div>
             </div>
           </div>
@@ -3850,6 +3814,114 @@
         renderProcs(allProcs.filter(p => p.name.toLowerCase().includes(q)));
       }
 
+      // ── DUPLICATE FINDER ──────────────────────────────────────
+      let currentDuplicates = [];
+      async function scanDuplicates() {
+        const path = document.getElementById('dup-path').value;
+        const btn = document.getElementById('dup-btn');
+        const body = document.getElementById('dup-body');
+        const card = document.getElementById('dup-results-card');
+
+        if (!path || !window.cxi) return;
+
+        btn.disabled = true;
+        btn.innerHTML = 'Scanning...';
+        card.style.display = 'block';
+        body.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text3)">Scanning your files... please wait.</td></tr>';
+
+        try {
+          const dups = await window.cxi.getDuplicates(path);
+          currentDuplicates = dups;
+          renderDuplicates(dups);
+        } catch (e) {
+          body.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--red)">Scan failed: ${e.message}</td></tr>`;
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '🔍 Scan Now';
+        }
+      }
+
+      function renderDuplicates(dups) {
+        const body = document.getElementById('dup-body');
+        const countBadge = document.getElementById('dup-count-badge');
+        const totalReclaim = document.getElementById('dup-total-reclaim');
+
+        countBadge.textContent = `${dups.length} groups`;
+        
+        let totalWasted = 0;
+
+        body.innerHTML = dups.map((g, i) => {
+          const wasted = g.size * (g.paths.length - 1);
+          totalWasted += wasted;
+          return `
+            <tr>
+              <td style="font-weight:600; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap" title="${g.name}">${g.name}</td>
+              <td class="mono">${fmtSize(g.size)}</td>
+              <td class="mono">${g.paths.length}x</td>
+              <td class="mono" style="color:var(--red)">${fmtSize(wasted)}</td>
+              <td><button class="btn btn-sm btn-ghost" onclick="reviewDup(${i})">Details</button></td>
+            </tr>
+          `;
+        }).join('');
+
+        if (dups.length === 0) {
+          body.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text3)">No duplicate files found in this location.</td></tr>';
+        }
+
+        totalReclaim.textContent = fmtSize(totalWasted);
+      }
+
+      function fmtSize(b) {
+        if (b < 1024) return b + ' B';
+        if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+        if (b < 1073741824) return (b / 1048576).toFixed(1) + ' MB';
+        return (b / 1073741824).toFixed(1) + ' GB';
+      }
+
+      function reviewDup(index) {
+        const g = currentDuplicates[index];
+        const paths = g.paths.map((p, pi) => `
+          <div style="padding:10px; border:1px solid var(--border); border-radius:6px; margin-bottom:8px; display:flex; align-items:center; background:var(--surface)">
+            <div style="flex:1; font-size:11px; color:var(--text2); word-break:break-all">${p}</div>
+            ${pi > 0 ? `<button class="btn btn-sm btn-danger" style="padding:4px 8px; font-size:10px" onclick="deleteDupFile('${p.replace(/\\/g, '\\\\')}', ${index}, ${pi}, this)">Delete</button>` : '<span class="badge blue">Original</span>'}
+          </div>
+        `).join('');
+
+        // Simple overlay alert for review
+        const overlay = document.createElement('div');
+        overlay.id = 'dup-overlay';
+        overlay.style = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:9999';
+        overlay.innerHTML = `
+          <div class="card" style="width:500px; max-height:80vh; overflow-y:auto; box-shadow:0 20px 50px rgba(0,0,0,0.3)">
+            <div class="card-title" style="justify-content:space-between">
+              Review Copies: ${g.name}
+              <button class="btn btn-sm btn-ghost" onclick="document.body.removeChild(this.closest('#dup-overlay'))">✕</button>
+            </div>
+            <div style="margin-top:15px">${paths}</div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+      }
+
+      async function deleteDupFile(path, groupIdx, pathIdx, btn) {
+        if (!confirm('Are you sure you want to delete this specific copy?')) return;
+        btn.disabled = true;
+        btn.innerHTML = '...';
+        
+        const res = await window.cxi.deleteFile(path);
+        if (res.success) {
+          btn.parentElement.style.opacity = '0.5';
+          btn.innerHTML = 'Deleted';
+          // Update local data
+          currentDuplicates[groupIdx].paths.splice(pathIdx, 1);
+          renderDuplicates(currentDuplicates);
+        } else {
+          alert('Delete failed: ' + res.error);
+          btn.disabled = false;
+          btn.innerHTML = 'Delete';
+        }
+      }
+
       // ── STARTUP MANAGER ───────────────────────────────────────
       const STARTUP_ITEMS = [
         {
@@ -4111,7 +4183,13 @@
           }
 
           // SIGNAL MAIN PROCESS: Show the app, we are 100% ready!
-          if (window.cxi) window.cxi.ready();
+          if (window.cxi) {
+            window.cxi.getDefaults().then(defs => {
+              const dupPath = document.getElementById('dup-path');
+              if (dupPath && defs.downloads) dupPath.value = defs.downloads;
+            });
+            window.cxi.ready();
+          }
           
         } catch (e) {
           console.error('Init error:', e);
