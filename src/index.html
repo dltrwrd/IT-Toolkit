@@ -718,6 +718,16 @@
       .btn-danger:hover {
         background: #dc2626;
       }
+      .btn svg {
+        fill: none !important;
+        stroke: currentColor !important;
+        stroke-width: 2.5 !important;
+        stroke-linecap: round !important;
+        stroke-linejoin: round !important;
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+      }
 
       /* ── INPUT ── */
       .input-wrap {
@@ -2081,13 +2091,13 @@
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    stroke-width="2.5"
+                    stroke-width="2"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     style="width: 16px; height: 16px"
                   >
                     <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    <path d="m21 21-4.3-4.3"></path>
                   </svg>
                   Scan Now
                 </button>
@@ -2139,15 +2149,14 @@
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    stroke-width="2.5"
+                    stroke-width="2"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     style="width: 16px; height: 16px"
                   >
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path
-                      d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-                    ></path>
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
                     <line x1="10" y1="11" x2="10" y2="17"></line>
                     <line x1="14" y1="11" x2="14" y2="17"></line>
                   </svg>
@@ -3903,16 +3912,29 @@
 
       // ── DUPLICATE FINDER ──────────────────────────────────────
       let currentDuplicates = [];
+      let isScanning = false;
       async function scanDuplicates() {
-        const path = document.getElementById('dup-path').value;
         const btn = document.getElementById('dup-btn');
+        const path = document.getElementById('dup-path').value;
         const body = document.getElementById('dup-body');
         const card = document.getElementById('dup-results-card');
 
+        if (isScanning) {
+          window.cxi.stopScan();
+          btn.disabled = true;
+          btn.innerHTML = 'Stopping...';
+          return;
+        }
+
         if (!path || !window.cxi) return;
 
-        btn.disabled = true;
-        btn.innerHTML = 'Scanning...';
+        isScanning = true;
+        btn.classList.replace('btn-primary', 'btn-danger');
+        btn.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; margin-right: 8px">
+            <rect x="6" y="6" width="12" height="12"></rect>
+          </svg> Stop Scanning`;
+
         card.style.display = 'block';
         body.innerHTML =
           '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text3)">Scanning your files... please wait.</td></tr>';
@@ -3924,8 +3946,14 @@
         } catch (e) {
           body.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--red)">Scan failed: ${e.message}</td></tr>`;
         } finally {
+          isScanning = false;
           btn.disabled = false;
-          btn.innerHTML = '🔍 Scan Now';
+          btn.classList.replace('btn-danger', 'btn-primary');
+          btn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; margin-right: 8px">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg> Scan Now`;
         }
       }
 

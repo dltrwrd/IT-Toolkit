@@ -22,6 +22,7 @@ contextBridge.exposeInMainWorld('cxi', {
   getTopFolders: (path) => ipcRenderer.invoke('get-top-folders', path),
   securityScan: () => ipcRenderer.invoke('security-scan'),
   getDuplicates: (path) => ipcRenderer.invoke('get-duplicates', path),
+  stopScan: () => ipcRenderer.send('stop-duplicates'),
   deleteFile: (path) => ipcRenderer.invoke('delete-file', path),
   getDefaults: () => ipcRenderer.invoke('get-defaults'),
   runCmd: cmd => ipcRenderer.invoke('run-cmd', cmd),

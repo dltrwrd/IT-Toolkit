@@ -10,6 +10,7 @@ let mainWindow;
 let splashWindow;
 let isDataReady = false;
 let isMinSplashTimeDone = false;
+let stopScanRequested = false;
 
 function showSplash() {
   splashWindow = new BrowserWindow({
@@ -86,6 +87,7 @@ ipcMain.on('win-maximize', () =>
   mainWindow?.isMaximized() ? mainWindow.unmaximize() : mainWindow?.maximize()
 );
 ipcMain.on('win-close', () => mainWindow?.close());
+ipcMain.on('stop-duplicates', () => { stopScanRequested = true; });
 
 // System info
 ipcMain.handle('get-sysinfo', async () => {
@@ -329,7 +331,9 @@ ipcMain.handle('get-duplicates', async (event, dirPath) => {
   }
 
   // Non-blocking recursive scan
+  stopScanRequested = false;
   while (dirs.length > 0) {
+    if (stopScanRequested) break;
     const currentDir = dirs.pop();
     iterations++;
 
@@ -341,6 +345,7 @@ ipcMain.handle('get-duplicates', async (event, dirPath) => {
     try {
       const entries = await fs.readdir(currentDir, { withFileTypes: true });
       for (const entry of entries) {
+        if (stopScanRequested) break;
         const fullPath = path.join(currentDir, entry.name);
         
         if (entry.isDirectory()) {
@@ -374,6 +379,7 @@ ipcMain.handle('get-duplicates', async (event, dirPath) => {
         hashGroups.get(h).push(f);
       }
       for (const [hash, groupedFiles] of hashGroups.entries()) {
+        if (stopScanRequested) break;
         if (groupedFiles.length > 1) {
           duplicates.push({
             name: groupedFiles[0].name,
@@ -383,6 +389,7 @@ ipcMain.handle('get-duplicates', async (event, dirPath) => {
           });
         }
       }
+      if (stopScanRequested) break;
       // Yield again to event loop between group processing
       await new Promise(resolve => setImmediate(resolve));
     }
