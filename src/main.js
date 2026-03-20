@@ -421,10 +421,59 @@ ipcMain.handle('scan-port', async (e, { host, port }) => {
 
 // DNS Lookup
 ipcMain.handle('dns-lookup', async (e, host) => {
-  return new Promise(resolve => {
-    dns.lookup(host, { all: true }, (err, addrs) => {
-      if (err) resolve({ success: false, error: err.message });
-      else resolve({ success: true, addresses: addrs });
+  return new Promise((resolve) => {
+    // 1. Core lookup for main IPs
+    dns.lookup(host, { all: true }, async (err, addrs) => {
+      const results = { success: true, addresses: addrs || [], records: [] };
+      if (err) {
+        resolve({ success: false, error: err.message });
+        return;
+      }
+
+      // 2. Parallel Interrogation of all common record types
+      // (Many ISPs block 'ANY' queries, so individual lookups are more robust)
+      const types = ['MX', 'TXT', 'NS', 'CNAME', 'SOA'];
+      const promises = types.map(type => {
+        return new Promise(res => {
+          const method = `resolve${type.charAt(0) + type.slice(1).toLowerCase()}`;
+          if (typeof dns[method] === 'function') {
+            dns[method](host, (dnsErr, data) => {
+              if (!dnsErr && data) {
+                // Standardize format: convert arrays of strings (TXT) or objects (MX)
+                if (type === 'TXT') {
+                  res({ type, entries: data.flat() });
+                } else if (Array.isArray(data)) {
+                  data.forEach(item => {
+                    const rec = typeof item === 'object' ? item : { value: item };
+                    results.records.push({ type, ...rec });
+                  });
+                  res();
+                } else {
+                  results.records.push({ type, value: data });
+                  res();
+                }
+              } else {
+                res();
+              }
+            });
+          } else {
+            res();
+          }
+        });
+      });
+
+      // Special case for TXT since it returns nested arrays
+      const txtPromise = new Promise(res => {
+        dns.resolveTxt(host, (dnsErr, data) => {
+          if (!dnsErr && data) {
+            data.forEach(entry => results.records.push({ type: 'TXT', entries: entry }));
+          }
+          res();
+        });
+      });
+
+      await Promise.allSettled([...promises, txtPromise]);
+      resolve(results);
     });
   });
 });
