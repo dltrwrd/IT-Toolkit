@@ -349,15 +349,23 @@ ipcMain.handle('get-duplicates', async (event, dirPath) => {
         const fullPath = path.join(currentDir, entry.name);
         
         if (entry.isDirectory()) {
-          // Avoid scanning root system folders that cause permissions/hang issues
-          const skip = ['node_modules', '.git', '$Recycle.Bin', 'System Volume Information', 'Windows', 'Program Files', 'Program Files (x86)'];
-          if (!skip.includes(entry.name)) {
+          // Avoid scanning root system folders and user app data to prevent accidental deletion of critical files
+          const skip = [
+            'node_modules', '.git', '$Recycle.Bin', 'System Volume Information', 
+            'Windows', 'Program Files', 'Program Files (x86)',
+            'AppData', 'Local', 'LocalLow', 'Roaming', 'Temp'
+          ];
+          if (!skip.includes(entry.name) && !entry.name.startsWith('.')) {
             dirs.push(fullPath);
           }
         } else if (entry.isFile()) {
           try {
             const stats = fsSync.statSync(fullPath);
-            if (stats.size > 2048) { // Min 2KB
+            const ext = path.extname(entry.name).toLowerCase();
+            const skipExts = ['.dll', '.exe', '.sys', '.dat', '.json', '.xml', '.log', '.ini', '.cache', '.tmp', '.manifest', '.lnk', '.cur', '.ani'];
+            
+            // Only consider user files (Images, Docs, etc.) and avoid tiny files
+            if (stats.size > 10240 && !skipExts.includes(ext)) { // Min 10KB + safe extensions
               if (!results.has(stats.size)) results.set(stats.size, []);
               results.get(stats.size).push({ path: fullPath, size: stats.size, name: entry.name });
             }
