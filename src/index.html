@@ -1519,7 +1519,7 @@
             </svg>
           </div>
           <div class="sb-dropdown" id="storage-dd">
-            <div class="sb-sub" data-page="disk-analyzer">Storage Manager</div>
+            <div class="sb-sub" data-page="disk-analyzer">Storage Details</div>
             <div class="sb-sub" data-page="duplicate-finder">Duplicate Finder</div>
           </div>
 
@@ -1951,7 +1951,7 @@
           <!-- ══════════════════ DISK ANALYZER ══════════════════ -->
           <div class="page" id="page-disk-analyzer">
             <div class="page-hdr">
-              <h1>Storage Usage</h1>
+              <h1>Storage Details</h1>
               <p>Comprehensive overview of drives, health, and partitions</p>
             </div>
             <div class="card" style="margin-bottom: 16px">
@@ -2015,33 +2015,10 @@
                   <div class="dot" style="background: var(--green)"></div>
                   Disk Health (S.M.A.R.T.)
                 </div>
-                <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 12px">
-                  <div
-                    class="sec-score-num"
-                    id="disk-health-score"
-                    style="font-size: 36px; color: var(--green)"
-                  >
-                    98%
-                  </div>
-                  <div id="disk-health-status-wrap">
-                    <div class="badge green" id="disk-health-badge" style="margin-bottom: 4px">
-                      ✅ Healthy
-                    </div>
-                    <div id="disk-health-desc" style="font-size: 12px; color: var(--text3)">
-                      No issues detected
-                    </div>
-                  </div>
+                <!-- Global summary removed for per-disk focus -->
+                <div id="disk-health-table" style="display: flex; flex-direction: column; gap: 8px">
+                  <!-- Entries injected here via JS -->
                 </div>
-                <table class="info-table" id="disk-health-table">
-                  <tr>
-                    <td>C:\ Samsung SSD</td>
-                    <td>Healthy (34°C)</td>
-                  </tr>
-                  <tr>
-                    <td>D:\ WD Blue HDD</td>
-                    <td>Warning (41°C)</td>
-                  </tr>
-                </table>
               </div>
 
               <!-- DISK ANALYZER (TOP FOLDERS) -->
@@ -2917,7 +2894,7 @@
       const PAGE_TITLES = {
         dashboard: 'Dashboard',
         sysinfo: 'System Information',
-        'disk-analyzer': 'Storage Manager',
+        'disk-analyzer': 'Storage Details',
         'duplicate-finder': 'Duplicate Finder',
         ping: 'Ping / Latency',
         'port-scanner': 'Port Scanner',
@@ -3543,41 +3520,30 @@
             )
             .join('');
 
-          // 2. Disk Health
+          // 2. Disk Health (Modern Flex List)
           if (health && health.length) {
             healthTable.innerHTML = health
               .map(
                 h => `
-              <tr>
-                <td>
-                  <div style="font-weight:600">${h.name}</div>
-                  <div style="font-size:10px; color:var(--text3)">Serial: ${h.serial} · POH: ${h.poh} hrs</div>
-                </td>
-                <td style="text-align:right">
-                  <span class="badge ${h.status === 'Healthy' ? 'green' : 'yellow'}" style="margin-bottom:3px">${h.status}</span>
-                  <div style="font-size:11px; color:var(--text2)">${h.temperature ? `${h.temperature}°C` : '—'}</div>
-                </td>
-              </tr>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border)">
+                <div style="flex:1; min-width:0">
+                  <div style="font-weight:600; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${h.name}</div>
+                  <div style="font-size:10px; color:var(--text3); margin-top:2px">Serial: ${h.serial} · POH: ${h.poh} hrs</div>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px; margin-left:14px">
+                  <div style="display:flex; align-items:center; gap:8px">
+                    <span style="font-family:var(--mono); font-weight:700; color:${h.percent < 80 ? 'var(--yellow)' : 'var(--green)'}; font-size:17px">${h.percent}%</span>
+                    <span class="badge ${h.status === 'Healthy' ? 'green' : 'yellow'}" style="white-space:nowrap">${h.status}</span>
+                  </div>
+                  ${h.temperature ? `<div style="font-size:11px; color:var(--text2); opacity:0.8">${h.temperature}°C</div>` : ''}
+                </div>
+              </div>
             `
               )
               .join('');
-            if (healthScore) {
-              const unhealthy = health.filter(h => h.status !== 'Healthy').length;
-              healthScore.textContent = unhealthy > 0 ? 100 - unhealthy * 10 + '%' : '100%';
-              healthScore.style.color = unhealthy > 0 ? 'var(--yellow)' : 'var(--green)';
-
-              const dhWrap = document.getElementById('disk-health-status-wrap');
-              const dhBadge = document.getElementById('disk-health-badge');
-              const dhDesc = document.getElementById('disk-health-desc');
-              if (dhWrap) dhWrap.style.visibility = 'visible';
-              if (dhBadge) {
-                dhBadge.className = `badge ${unhealthy > 0 ? 'yellow' : 'green'}`;
-                dhBadge.textContent = unhealthy > 0 ? 'Check Required' : 'Healthy';
-              }
-              if (dhDesc)
-                dhDesc.textContent =
-                  unhealthy > 0 ? `${unhealthy} issues detected` : 'No issues detected';
-            }
+            if (healthScore) healthScore.innerHTML = '';
+            const dhWrap = document.getElementById('disk-health-status-wrap');
+            if (dhWrap) dhWrap.style.display = 'none';
           }
 
           // 3. Folder Map (The "Partition Map" style requested)

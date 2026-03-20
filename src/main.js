@@ -145,24 +145,28 @@ ipcMain.handle('get-disks', async () => {
 ipcMain.handle('get-disk-health', async () => {
   try {
     const data = await si.diskLayout();
+    const { exec } = require('child_process');
     
-    // We'll try to get extra reliability data via PowerShell for Windows
+    // Fetch deeper health data including life remaining/percentage
     return new Promise((resolve) => {
-      const psCmd = 'Get-PhysicalDisk | % { $d=$_; $r=($_ | Get-StorageReliabilityCounter); [PSCustomObject]@{ DeviceId=$d.DeviceId; FriendlyName=$d.FriendlyName; SerialNumber=$d.SerialNumber; PowerOnHours=$r.PowerOnHours; Status=$d.HealthStatus; MediaType=$d.MediaType; OpStatus=$d.OperationalStatus } } | ConvertTo-Json';
+      const psCmd = `Get-PhysicalDisk | ForEach-Object { $d=$_; $r=($_ | Get-StorageReliabilityCounter); [PSCustomObject]@{ FriendlyName=$d.FriendlyName; SerialNumber=$d.SerialNumber; PowerOnHours=$r.PowerOnHours; Status=$d.HealthStatus; Wear=([int](100 - $r.Wear)); LifeRemaining=$d.RemainingLifePercent } } | ConvertTo-Json`.replace(/\n/g, ' ');
       exec(`powershell "${psCmd}"`, (err, stdout) => {
         let extra = [];
-        try { if (!err && stdout) extra = JSON.parse(stdout); if (!Array.isArray(extra)) extra = [extra].filter(x => x && x.FriendlyName); } catch(e) {}
+        try { 
+          if (!err && stdout) extra = JSON.parse(stdout); 
+          if (!Array.isArray(extra)) extra = extra ? [extra] : [];
+        } catch(e) {}
         
         const results = data.map((d, idx) => {
-          // Attempt to match by FriendlyName or Serial Number
           const info = extra.find(e => e.SerialNumber === d.serialNum || (e.FriendlyName && e.FriendlyName.includes(d.name))) || extra[idx] || {};
           
           return {
             name: `${d.vendor} ${d.model || d.name || 'Unknown'}`.trim(),
-            type: d.type || info.MediaType || 'Fixed',
-            interface: d.interfaceType || d.interface || 'SATA',
+            type: d.type || 'Fixed',
+            interface: d.interfaceType || 'SATA',
             temperature: d.temperature,
             status: info.Status || 'Healthy',
+            percent: info.LifeRemaining || info.Wear || 100, // Use life remaining or wear fallback
             poh: info.PowerOnHours || 0,
             serial: d.serialNum || info.SerialNumber || 'N/A',
             device: d.device
