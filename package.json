@@ -12,6 +12,7 @@
     "appId": "com.cxi.slt.toolkit",
     "productName": "CXI SLT Toolkit",
     "win": {
+      "requestedExecutionLevel": "requireAdministrator",
       "target": [
         { "target": "nsis", "arch": ["x64"] },
         { "target": "portable", "arch": ["x64"] }
