@@ -11,6 +11,7 @@ let splashWindow;
 let isDataReady = false;
 let isMinSplashTimeDone = false;
 let stopScanRequested = false;
+const activeProcesses = new Map();
 
 function showSplash() {
   splashWindow = new BrowserWindow({
@@ -236,6 +237,22 @@ ipcMain.handle('get-disk-health', async () => {
   }
 });
 
+ipcMain.handle('open-disk-cleanup', async () => {
+  return new Promise(resolve => {
+    exec('cleanmgr.exe', (err) => {
+      resolve({ success: !err, error: err ? err.message : null });
+    });
+  });
+});
+
+ipcMain.handle('open-defrag', async () => {
+  return new Promise(resolve => {
+    exec('dfrgui.exe', (err) => {
+      resolve({ success: !err, error: err ? err.message : null });
+    });
+  });
+});
+
 ipcMain.handle('get-partitions', async () => {
   try {
     const [parts, fs] = await Promise.all([si.blockDevices(), si.fsSize()]);
@@ -275,14 +292,69 @@ ipcMain.handle('security-scan', async () => {
 });
 
 // Ping
-ipcMain.handle('ping-host', async (e, host) => {
-  return new Promise(resolve => {
-    const cmd = process.platform === 'win32' ? `ping -n 4 ${host}` : `ping -c 4 ${host}`;
-    const t = Date.now();
-    exec(cmd, { timeout: 12000 }, (err, stdout, stderr) => {
-      resolve({ success: !err, output: err ? stderr || err.message : stdout, ms: Date.now() - t });
-    });
+ipcMain.on('ping-host', (event, { host, count, continuous }) => {
+  const processId = `ping-${Date.now()}`;
+  let cmd = 'ping';
+  let args = [];
+
+  if (process.platform === 'win32') {
+    if (continuous) args.push('-t');
+    else args.push('-n', count.toString());
+  } else {
+    args.push('-c', count.toString());
+  }
+  args.push(host);
+
+  const ps = spawn(cmd, args);
+  activeProcesses.set(processId, ps);
+
+  ps.stdout.on('data', (data) => {
+    event.reply('ping-output', { processId, data: data.toString() });
   });
+
+  ps.stderr.on('data', (data) => {
+    event.reply('ping-output', { processId, data: data.toString(), error: true });
+  });
+
+  ps.on('close', (code) => {
+    activeProcesses.delete(processId);
+    event.reply('ping-done', { processId, code });
+  });
+
+  event.reply('ping-started', { processId });
+});
+
+// Traceroute
+ipcMain.on('tracert-host', (event, { host }) => {
+  const processId = `tracert-${Date.now()}`;
+  const cmd = process.platform === 'win32' ? 'tracert' : 'traceroute';
+  const args = [host];
+
+  const ps = spawn(cmd, args);
+  activeProcesses.set(processId, ps);
+
+  ps.stdout.on('data', (data) => {
+    event.reply('tracert-output', { processId, data: data.toString() });
+  });
+
+  ps.stderr.on('data', (data) => {
+    event.reply('tracert-output', { processId, data: data.toString(), error: true });
+  });
+
+  ps.on('close', (code) => {
+    activeProcesses.delete(processId);
+    event.reply('tracert-done', { processId, code });
+  });
+
+  event.reply('tracert-started', { processId });
+});
+
+ipcMain.on('stop-process', (event, processId) => {
+  const ps = activeProcesses.get(processId);
+  if (ps) {
+    ps.kill();
+    activeProcesses.delete(processId);
+  }
 });
 
 // Port scan
@@ -491,8 +563,9 @@ ipcMain.handle('get-user-profiles', async (event, isStartup = false) => {
              }
           } catch { }
         }
-        $p | Add-Member -NotePropertyName UserName -NotePropertyValue $name -PassThru | Add-Member -NotePropertyName TotalSize -NotePropertyValue ([long]$totalSize) -PassThru
-        $results += $p
+        $obj = $p | Add-Member -NotePropertyName UserName -NotePropertyValue $name -PassThru | Add-Member -NotePropertyName TotalSize -NotePropertyValue ([long]$totalSize) -PassThru
+        Write-Host "DATA:$($obj | ConvertTo-Json -Compress)"
+        $results += $obj
       }
       $results | ConvertTo-Json
     `.trim();
@@ -511,26 +584,34 @@ ipcMain.handle('get-user-profiles', async (event, isStartup = false) => {
       buffer = lines.pop(); // Remaining partial line in buffer
 
       for (let line of lines) {
-        if (line.trim().startsWith('PROG:')) {
-          const parts = line.trim().split(':');
-          if (parts.length >= 4) {
-            const count = parseInt(parts[1]);
-            const total = parseInt(parts[2]);
-            const name = parts[3];
-            const percent = Math.round((count / total) * 100);
-            
-            const progressInfo = { count, total, name, percent, status: `Loading profile: ${name}` };
-            
-            if (splashWindow && !splashWindow.isDestroyed()) {
-              splashWindow.webContents.send('loading-progress', progressInfo);
+          if (line.trim().startsWith('PROG:')) {
+            const parts = line.trim().split(':');
+            if (parts.length >= 4) {
+              const count = parseInt(parts[1]);
+              const total = parseInt(parts[2]);
+              const name = parts[3];
+              const percent = Math.round((count / total) * 100);
+              
+              const progressInfo = { count, total, name, percent, status: `Loading profile: ${name}` };
+              
+              if (splashWindow && !splashWindow.isDestroyed()) {
+                splashWindow.webContents.send('loading-progress', progressInfo);
+              }
+              if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('profile-load-progress', progressInfo);
+              }
             }
-            if (mainWindow && !mainWindow.isDestroyed()) {
-              mainWindow.webContents.send('profile-load-progress', progressInfo);
-            }
+          } else if (line.trim().startsWith('DATA:')) {
+            try {
+              const json = line.trim().substring(5);
+              const profile = JSON.parse(json);
+              if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('profile-data-stream', profile);
+              }
+            } catch (e) {}
+          } else if (line.trim().length > 0) {
+            stdout += line + '\n';
           }
-        } else if (line.trim().length > 0) {
-          stdout += line + '\n';
-        }
       }
     });
 

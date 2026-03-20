@@ -12,7 +12,17 @@ contextBridge.exposeInMainWorld('cxi', {
   getMetrics: () => ipcRenderer.invoke('get-metrics'),
 
   // Tools
-  pingHost: host => ipcRenderer.invoke('ping-host', host),
+  pingHost: (opts) => ipcRenderer.send('ping-host', opts),
+  onPingStarted: (cb) => ipcRenderer.on('ping-started', (e, data) => cb(data)),
+  onPingOutput: (cb) => ipcRenderer.on('ping-output', (e, data) => cb(data)),
+  onPingDone: (cb) => ipcRenderer.on('ping-done', (e, data) => cb(data)),
+  
+  tracertHost: (opts) => ipcRenderer.send('tracert-host', opts),
+  onTracertStarted: (cb) => ipcRenderer.on('tracert-started', (e, data) => cb(data)),
+  onTracertOutput: (cb) => ipcRenderer.on('tracert-output', (e, data) => cb(data)),
+  onTracertDone: (cb) => ipcRenderer.on('tracert-done', (e, data) => cb(data)),
+
+  stopProcess: (id) => ipcRenderer.send('stop-process', id),
   scanPort: (host, port) => ipcRenderer.invoke('scan-port', { host, port }),
   dnsLookup: host => ipcRenderer.invoke('dns-lookup', host),
   getProcesses: () => ipcRenderer.invoke('get-processes'),
@@ -30,4 +40,7 @@ contextBridge.exposeInMainWorld('cxi', {
   runCmd: cmd => ipcRenderer.invoke('run-cmd', cmd),
   ready: () => ipcRenderer.send('app-ready'),
   onProfileProgress: (callback) => ipcRenderer.on('profile-load-progress', (event, data) => callback(data)),
+  onProfileData: (callback) => ipcRenderer.on('profile-data-stream', (event, data) => callback(data)),
+  openDiskCleanup: () => ipcRenderer.invoke('open-disk-cleanup'),
+  openDefrag: () => ipcRenderer.invoke('open-defrag'),
 });

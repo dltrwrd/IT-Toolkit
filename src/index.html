@@ -2022,8 +2022,20 @@
           <!-- ══════════════════ DISK ANALYZER ══════════════════ -->
           <div class="page" id="page-disk-analyzer">
             <div class="page-hdr">
-              <h1>Disk Analyzer</h1>
-              <p>Comprehensive overview of drives, health, and partitions</p>
+              <div>
+                <h1>Disk Analyzer</h1>
+                <p>Comprehensive overview of drives, health, and partitions</p>
+              </div>
+              <div style="display: flex; gap: 8px">
+                <button class="btn btn-ghost btn-sm" onclick="window.cxi.openDiskCleanup()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; margin-right: 4px"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                  Disk Cleanup
+                </button>
+                <button class="btn btn-ghost btn-sm" onclick="window.cxi.openDefrag()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; margin-right: 4px"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                  Optimize / Defrag
+                </button>
+              </div>
             </div>
             <div class="card" style="margin-bottom: 16px">
               <div class="card-title">
@@ -2384,7 +2396,18 @@
                   value="8.8.8.8"
                   placeholder="Hostname or IP address..."
                 />
-                <button class="btn btn-primary" onclick="doPing()" id="ping-btn">🏓 Ping</button>
+                <button class="btn btn-primary" onclick="doPing()" id="ping-btn" style="min-width: 100px">🏓 Ping</button>
+                <button class="btn btn-primary" onclick="doTracert()" id="tracert-btn" style="min-width: 110px">📍 Tracert</button>
+              </div>
+              <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 15px; padding: 0 5px">
+                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--text2)">
+                   <input type="checkbox" id="ping-continuous" style="width: 16px; height: 16px" /> 
+                   <span>Continuous Ping <strong>(-t)</strong></span>
+                 </label>
+                 <div style="display: flex; align-items: center; gap: 10px; border-left: 1px solid var(--border); padding-left: 20px">
+                    <span style="font-size: 13px; color: var(--text2)">Ping count (hops):</span>
+                    <input type="number" id="ping-count" value="4" min="1" max="100" style="width: 70px; height: 32px" />
+                 </div>
               </div>
               <div style="display: flex; gap: 8px; flex-wrap: wrap">
                 <button
@@ -3617,35 +3640,76 @@
       }
 
       // ── PING ─────────────────────────────────────────────────
-      async function doPing() {
+      let currentPingId = null;
+      let currentTracertId = null;
+
+      function doPing() {
+        const host = document.getElementById('ping-host').value.trim();
+        if (!host) return;
+        const continuous = document.getElementById('ping-continuous').checked;
+        const count = parseInt(document.getElementById('ping-count').value) || 4;
+
+        const out = document.getElementById('ping-output');
+        const btn = document.getElementById('ping-btn');
+
+        if (currentPingId) {
+          window.cxi.stopProcess(currentPingId);
+          currentPingId = null;
+          btn.innerHTML = '🏓 Ping';
+          return;
+        }
+
+        btn.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;margin-right:8px"></span> Stop';
+        out.innerHTML = `<div class="t-info t-line">Pinging ${host}... [Press Stop to cancel]</div>\n`;
+
+        if (window.cxi) {
+          window.cxi.pingHost({ host, count, continuous });
+        } else {
+          // Simulation for non-electron env
+          simulatePing(host, count, continuous, out, btn);
+        }
+      }
+
+      async function simulatePing(host, count, continuous, out, btn) {
+        const id = 'sim-' + Date.now();
+        currentPingId = id;
+        const max = continuous ? 1000 : count;
+        for (let i = 0; i < max && currentPingId === id; i++) {
+          await sleep(800);
+          const ms = Math.floor(Math.random() * 20 + 5);
+          out.innerHTML += `<div class="t-ok t-line">Reply from ${host}: bytes=32 time=${ms}ms TTL=128</div>`;
+          out.scrollTop = out.scrollHeight;
+        }
+        if (currentPingId === id) {
+          currentPingId = null;
+          btn.innerHTML = '🏓 Ping';
+        }
+      }
+
+      function doTracert() {
         const host = document.getElementById('ping-host').value.trim();
         if (!host) return;
         const out = document.getElementById('ping-output');
-        const btn = document.getElementById('ping-btn');
-        btn.disabled = true;
-        btn.innerHTML =
-          '<span class="spinner" style="width:12px;height:12px;border-width:2px"></span> Pinging...';
-        out.innerHTML = `<span class="t-info t-line">Pinging ${host}...</span>\n`;
+        const btn = document.getElementById('tracert-btn');
+
+        if (currentTracertId) {
+          window.cxi.stopProcess(currentTracertId);
+          currentTracertId = null;
+          btn.innerHTML = '📍 Tracert';
+          return;
+        }
+
+        btn.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;margin-right:8px"></span> Stop';
+        out.innerHTML = `<div class="t-info t-line">Tracing route to ${host}... (Traceroute can be slow, please wait)</div>\n`;
 
         if (window.cxi) {
-          const r = await window.cxi.pingHost(host);
-          out.innerHTML = `<span class="t-info t-line">Pinging ${host}...\n</span><span class="${r.success ? 't-ok' : 't-err'} t-line">${r.output}</span>`;
+          window.cxi.tracertHost({ host });
         } else {
-          // Simulation
-          await sleep(1800);
-          const ms = Math.floor(Math.random() * 30 + 5);
-          out.innerHTML = `<span class="t-info t-line">Pinging ${host}...\n</span>`;
-          for (let i = 1; i <= 4; i++) {
-            await sleep(400);
-            const m = ms + Math.floor(Math.random() * 10);
-            out.innerHTML += `<span class="t-ok t-line">Reply from ${host}: bytes=32 time=${m}ms TTL=55\n</span>`;
-          }
-          out.innerHTML += `<span class="t-line">\nPing statistics for ${host}: Sent=4, Received=4, Lost=0 (0% loss)\nAverage latency: ${ms}ms\n</span>`;
+          out.innerHTML += `<div class="t-err t-line">Traceroute only supported in desktop app.</div>`;
+          btn.innerHTML = '📍 Tracert';
         }
-        btn.disabled = false;
-        btn.innerHTML =
-          '<svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.5;margin-right:4px"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Ping';
       }
+
 
       // ── PORT SCANNER ─────────────────────────────────────────
       function applyPortPreset() {
@@ -4543,17 +4607,20 @@
 
           buildSecurityChecks();
 
-          // WAIT FOR EVERYTHING: Splash will stay open until all these finish
+          // WAIT ONLY FOR ESSENTIAL DATA: 
+          // We don't want to hang the splash screen if PowerShell is slow (profiles/disks)
           const [info] = await Promise.all([
             window.cxi ? window.cxi.getSysInfo() : Promise.resolve({}),
             pHealth,
             pMetrics,
             pSys,
-            pDisks,
-            pProc,
-            pStartup,
-            pProfiles,
           ]);
+          
+          // These continue in background and will update UI when done
+          pDisks.catch(e => console.error("BG Disk Error:", e));
+          pProc.catch(e => console.error("BG Proc Error:", e));
+          pProfiles.catch(e => console.error("BG Profile Error:", e));
+          pStartup; // Startup is just a sync factory usually
 
           if (info && Object.keys(info).length) {
             const host = document.getElementById('d-host');
@@ -4576,6 +4643,56 @@
             window.cxi.onProfileProgress((data) => {
               const el = document.getElementById('profile-load-status');
               if (el) el.textContent = `Scanning profiles: ${data.name} (${data.count}/${data.total})`;
+            });
+          }
+
+          if (window.cxi.onProfileData) {
+            window.cxi.onProfileData((profile) => {
+              const existing = allProfiles.findIndex(p => p.SID === profile.SID);
+              if (existing === -1) {
+                allProfiles.push(profile);
+              } else {
+                allProfiles[existing] = profile;
+              }
+              
+              // Only auto-render if we are on that page and not currently manually refreshing
+              const pg = document.getElementById('page-profile-purger');
+              if (pg && pg.classList.contains('active') && !profileScanPromise) {
+                 sortProfiles(sortKey, true);
+              }
+            });
+          }
+
+          // Network Tool Listeners
+          if (window.cxi.onPingOutput) {
+            window.cxi.onPingStarted(({ processId }) => {
+              currentPingId = processId;
+            });
+            window.cxi.onPingOutput(({ data, error }) => {
+              const out = document.getElementById('ping-output');
+              if (out) {
+                out.innerHTML += `<div class="${error ? 't-err' : 't-line'}">${data.replace(/\n/g, '<br>')}</div>`;
+                out.scrollTop = out.scrollHeight;
+              }
+            });
+            window.cxi.onPingDone(() => {
+              currentPingId = null;
+              document.getElementById('ping-btn').innerHTML = '🏓 Ping';
+            });
+
+            window.cxi.onTracertStarted(({ processId }) => {
+              currentTracertId = processId;
+            });
+            window.cxi.onTracertOutput(({ data, error }) => {
+              const out = document.getElementById('ping-output');
+              if (out) {
+                out.innerHTML += `<div class="${error ? 't-err' : 't-line'}">${data.replace(/\n/g, '<br>')}</div>`;
+                out.scrollTop = out.scrollHeight;
+              }
+            });
+            window.cxi.onTracertDone(() => {
+              currentTracertId = null;
+              document.getElementById('tracert-btn').innerHTML = '📍 Tracert';
             });
           }
 
@@ -4608,35 +4725,60 @@
       let sortKey = 'TotalSize'; // Default sort by size desc
       let sortDir = -1;
 
+      let profileScanPromise = null;
       async function loadUserProfiles(force = false) {
         const list = document.getElementById('profile-list');
         const btn = document.getElementById('btn-purge-action');
         const selectAll = document.getElementById('profile-sel-all');
 
-        // If we already have data and not forcing refresh, just render it instantly
+        // 1. If we have data and not forcing refresh, just render it instantly
         if (allProfiles.length > 0 && !force) {
           renderProfileRows();
           return;
         }
 
-        selectAll.checked = false;
-        btn.disabled = true;
-        btn.textContent = 'Purge Selected Profiles';
-        list.innerHTML = `
-          <tr>
-            <td colspan="6" style="text-align:center;padding:60px">
-              <div class="spinner" style="width:32px; height:32px; margin:0 auto 16px; border: 3px solid var(--blue-soft); border-top-color: var(--blue)"></div>
-              <div id="profile-load-status" style="color:var(--text3); font-weight:500">Identifying system and local profiles...</div>
-            </td>
-          </tr>`;
+        // 2. If already scanning, show progress UI and return (don't start another scan)
+        if (profileScanPromise && !force) {
+          if (list && (!list.innerHTML || !list.querySelector('.spinner'))) {
+            list.innerHTML = `
+              <tr>
+                <td colspan="6" style="text-align:center;padding:60px">
+                  <div class="spinner" style="width:32px; height:32px; margin:0 auto 16px; border: 3px solid var(--blue-soft); border-top-color: var(--blue)"></div>
+                  <div id="profile-load-status" style="color:var(--text3); font-weight:500">Scanning in progress...</div>
+                </td>
+              </tr>`;
+          }
+          return;
+        }
+
+        // 3. Otherwise, start/restart scan
+        if (selectAll) selectAll.checked = false;
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = 'Purge Selected Profiles';
+        }
+        if (list) {
+          list.innerHTML = `
+            <tr>
+              <td colspan="6" style="text-align:center;padding:60px">
+                <div class="spinner" style="width:32px; height:32px; margin:0 auto 16px; border: 3px solid var(--blue-soft); border-top-color: var(--blue)"></div>
+                <div id="profile-load-status" style="color:var(--text3); font-weight:500">Wait... Scanning system and local profiles...</div>
+              </td>
+            </tr>`;
+        }
 
         try {
-          const profiles = await window.cxi.getUserProfiles();
+          if (force) allProfiles = []; // Clear if forced
+          profileScanPromise = window.cxi.getUserProfiles();
+          const profiles = await profileScanPromise;
           allProfiles = profiles;
-          sortProfiles(sortKey, true); // initial sort
+          sortProfiles(sortKey, true); // final full sort
         } catch (e) {
-          list.innerHTML =
-            '<tr><td colspan="6" style="text-align:center;color:var(--red)">Failed to load profiles.</td></tr>';
+          if (list) {
+            list.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--red)">Failed to load profiles.</td></tr>';
+          }
+        } finally {
+          profileScanPromise = null;
         }
       }
 
