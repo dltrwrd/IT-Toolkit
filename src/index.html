@@ -1518,10 +1518,45 @@
         z-index: 10;
         transition: opacity 0.5s;
       }
+      #toast-container {
+        position: fixed;
+        bottom: 50px;
+        right: 24px;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+      }
+      .toast {
+        background: var(--surface);
+        color: var(--text);
+        padding: 12px 20px;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        border: 1.5px solid var(--border);
+        font-size: 13.5px;
+        font-weight: 500;
+        min-width: 280px;
+        max-width: 400px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        animation: toastIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        pointer-events: auto;
+      }
+      @keyframes toastIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      .toast.info { border-left: 4px solid var(--blue); }
+      .toast.success { border-left: 4px solid var(--green); }
+      .toast.error { border-left: 4px solid var(--red); }
     </style>
   </head>
   <body>
     <div id="app">
+      <div id="toast-container"></div>
       <!-- TITLEBAR -->
       <div id="titlebar">
         <div class="tb-left">
@@ -2568,6 +2603,19 @@
 
             <!-- PERMANENT SPEEDTEST CARD -->
             <div id="speedtest-card">
+              <!-- Floating Refresh Button -->
+              <button 
+                onclick="reloadSpeedtest()" 
+                title="Refresh Speedtest"
+                style="position: absolute; top: 12px; right: 12px; z-index: 20; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text2); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+                onmouseover="this.style.background='var(--blue-soft)'; this.style.color='var(--blue)'"
+                onmouseout="this.style.background='var(--surface)'; this.style.color='var(--text2)'"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 14px; height: 14px;">
+                  <path d="M23 4v6h-6"></path>
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+              </button>
               <div class="speedtest-loader" id="speed-loader">
                 <div
                   class="spinner"
@@ -4586,15 +4634,25 @@
           const pStartup = loadStartup();
           const pProfiles = loadUserProfiles();
 
+          // Wait for Speedtest webview to at least start/load initial shell
+          const pSpeedtest = new Promise(resolve => {
+            const wv = document.getElementById('speed-webview');
+            if (!wv) return resolve();
+            const onDone = () => resolve();
+            wv.addEventListener('did-finish-load', onDone, { once: true });
+            wv.addEventListener('did-fail-load', onDone, { once: true });
+            setTimeout(onDone, 6000); // Max 6s wait for Speedtest
+          });
+
           buildSecurityChecks();
 
-          // WAIT ONLY FOR ESSENTIAL DATA:
-          // We don't want to hang the splash screen if PowerShell is slow (profiles/disks)
+          // WAIT FOR ESSENTIAL DATA + SPEEDTEST (for background readiness):
           const [info] = await Promise.all([
             window.cxi ? window.cxi.getSysInfo() : Promise.resolve({}),
             pHealth,
             pMetrics,
             pSys,
+            pSpeedtest,
           ]);
 
           // These continue in background and will update UI when done
@@ -4855,6 +4913,21 @@
         document.getElementById('btn-purge-action').disabled = checkedCount === 0;
       }
 
+      function showToast(msg, type = 'info') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const t = document.createElement('div');
+        t.className = `toast ${type}`;
+        t.innerHTML = `<span>${msg}</span>`;
+        container.appendChild(t);
+        setTimeout(() => {
+          t.style.opacity = '0';
+          t.style.transform = 'translateY(10px)';
+          t.style.transition = 'all 0.4s';
+          setTimeout(() => t.remove(), 400);
+        }, 4500);
+      }
+
       async function purgeSelectedProfiles() {
         const checked = document.querySelectorAll('.profile-check:checked');
         const selected = Array.from(checked).map(cb => {
@@ -4871,39 +4944,75 @@
 
         const btn = document.getElementById('btn-purge-action');
         btn.disabled = true;
+        showToast(`Starting background purge of ${selected.length} profile(s)...`, 'info');
 
         let success = 0;
         let fail = 0;
 
-        const deletedSIDs = [];
         for (let i = 0; i < selected.length; i++) {
           const p = selected[i];
           btn.textContent = `Purging... ${i + 1}/${selected.length}`;
           const res = await window.cxi.deleteUserProfile(p.SID);
           if (res.success) {
             success++;
-            deletedSIDs.push(p.SID);
+            showToast(`Deleted profile: ${p.UserName}`, 'success');
           } else {
             fail++;
+            showToast(`Error deleting ${p.UserName}: ${res.error || 'Unknown error'}`, 'error');
           }
         }
 
-        // Locally remove successful ones immediately for better feedback
-        if (success > 0) {
-          allProfiles = allProfiles.filter(p => !deletedSIDs.includes(p.SID));
-          renderProfileRows();
-        }
+        if (success > 0) showToast(`Successfully purged ${success} profile(s).`, 'success');
+        if (fail > 0) showToast(`${fail} profile(s) failed to delete. Check administrative permissions.`, 'error');
 
-        btn.disabled = fail === 0 && selected.length > 0; // Keep disabled if all succeeded
+        btn.disabled = false;
         btn.textContent = 'Purge Selected Profiles';
-
-        alert(`Purge Complete.\n\nSuccessfully deleted: ${success}\nFailed: ${fail}`);
         loadUserProfiles(true);
+      }
+
+
+      function reloadSpeedtest() {
+        const wv = document.getElementById('speed-webview');
+        const loader = document.getElementById('speed-loader');
+        if (!wv) return;
+        
+        if (loader) {
+          loader.innerHTML = `
+            <div class="spinner" style="width: 36px; height: 36px; border: 4px solid var(--blue-soft); border-top-color: var(--blue);"></div>
+            <div style="margin-top: 15px; color: var(--text3); font-weight: 500;">Refreshing Speedtest...</div>
+          `;
+          loader.style.display = 'flex';
+          loader.style.opacity = '1';
+        }
+        wv.reload();
       }
 
       const speedWebview = document.getElementById('speed-webview');
       const speedLoader = document.getElementById('speed-loader');
       if (speedWebview) {
+        // Only show error if the MAIN page fails to load
+        // Note: isMainFrame is the 5th argument in webview did-fail-load
+        speedWebview.addEventListener('did-fail-load', (e) => {
+          // In webviews, the arguments are passed as part of the event or in specific fields
+          // For webview element events, we check e.isMainFrame
+          if (e.isMainFrame) {
+            if (speedLoader) {
+              speedLoader.innerHTML = `
+                <div style="font-size: 40px; margin-bottom: 12px">📡</div>
+                <div style="font-weight: 600; color: var(--red)">Connection Failed</div>
+                <div style="font-size: 12.5px; color: var(--text3); margin-top: 6px; text-align:center; padding: 0 30px; line-height: 1.5">
+                  Could not reach speedtest.net. <br>Please check your internet connection and try again.
+                </div>
+                <button class="btn btn-primary btn-sm" style="margin-top: 20px; padding: 8px 20px" onclick="reloadSpeedtest()">
+                  🔄 Retry Connection
+                </button>
+              `;
+              speedLoader.style.display = 'flex';
+              speedLoader.style.opacity = '1';
+            }
+          }
+        });
+
         speedWebview.addEventListener('did-finish-load', () => {
           speedWebview.insertCSS(`
             /* Hide internal scrollbars and lock layout */

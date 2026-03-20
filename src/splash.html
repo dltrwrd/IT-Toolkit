@@ -139,35 +139,28 @@
       const bar = document.getElementById('bar');
       const status = document.getElementById('status');
       
-      // Initial fake steps until real data starts coming
       const initialSteps = [
-        { p: 5, t: 'Loading core components...' },
-        { p: 10, t: 'Verifying system permissions...' }
+        { p: 10, t: 'Loading core components...' },
+        { p: 25, t: 'Verifying system permissions...' },
+        { p: 45, t: 'Initializing diagnostic modules...' },
+        { p: 65, t: 'Connecting to system interfaces...' },
+        { p: 85, t: 'Preparing workspace...' },
+        { p: 95, t: 'Almost ready...' }
       ];
 
-      let step = 0;
+      let step = -1;
       function runInitial() {
+        step++;
         if (step < initialSteps.length) {
           bar.style.width = initialSteps[step].p + '%';
           status.textContent = initialSteps[step].t;
-          step++;
-          setTimeout(runInitial, 500);
+          
+          // Vary the timing for a more "active" look
+          const delay = 600 + Math.random() * 800;
+          setTimeout(runInitial, delay);
         }
       }
       runInitial();
-
-      // Real progress listener
-      if (window.splash) {
-        window.splash.onProgress((data) => {
-          // Range profile loading from 15% to 90%
-          const base = 15;
-          const range = 75;
-          const p = base + (data.percent / 100) * range;
-          
-          bar.style.width = p + '%';
-          status.textContent = `Scanning Profiles: ${data.name} (${data.count}/${data.total})`;
-        });
-      }
     </script>
   </body>
 </html>

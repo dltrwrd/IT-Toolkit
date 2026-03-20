@@ -70,11 +70,9 @@ function createWindow() {
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
   mainWindow.once('ready-to-show', () => {
-    // Artificial delay to let user enjoy the splash screen
-    setTimeout(() => {
-      isMinSplashTimeDone = true;
-      tryShowMain();
-    }, 4500); // Minimum splash display time
+    // Show as soon as the window is ready (or wait for data if needed)
+    isMinSplashTimeDone = true; 
+    tryShowMain();
   });
 
   mainWindow.on('closed', () => {
@@ -84,7 +82,7 @@ function createWindow() {
 }
 
 function tryShowMain() {
-  if (isDataReady && isMinSplashTimeDone && mainWindow) {
+  if (isDataReady && mainWindow) {
     if (splashWindow) splashWindow.close();
     mainWindow.show();
   }
@@ -647,9 +645,6 @@ ipcMain.handle('get-user-profiles', async (event, isStartup = false) => {
               status: `Loading profile: ${name}`,
             };
 
-            if (splashWindow && !splashWindow.isDestroyed()) {
-              splashWindow.webContents.send('loading-progress', progressInfo);
-            }
             if (mainWindow && !mainWindow.isDestroyed()) {
               mainWindow.webContents.send('profile-load-progress', progressInfo);
             }
@@ -696,21 +691,31 @@ ipcMain.handle('get-user-profiles', async (event, isStartup = false) => {
 });
 
 ipcMain.handle('delete-user-profile', async (event, sid) => {
-  try {
-    const script = `Get-CimInstance Win32_UserProfile -Filter "SID = '${sid}'" | Remove-CimInstance`;
-    const encodedCommand = Buffer.from(script, 'utf16le').toString('base64');
-    const result = spawnSync('powershell', ['-NoProfile', '-EncodedCommand', encodedCommand]);
+  return new Promise(resolve => {
+    try {
+      const script = `Get-CimInstance Win32_UserProfile -Filter "SID = '${sid}'" | Remove-CimInstance`;
+      const encodedCommand = Buffer.from(script, 'utf16le').toString('base64');
 
-    if (result.status !== 0) {
-      const errorMsg = result.stderr ? result.stderr.toString() : 'Unknown PowerShell error';
-      console.error('Profile deletion failed:', errorMsg);
-      return { success: false, error: errorMsg };
+      const ps = spawn('powershell', ['-NoProfile', '-EncodedCommand', encodedCommand]);
+
+      let stderr = '';
+      ps.stderr.on('data', data => {
+        stderr += data.toString();
+      });
+
+      ps.on('close', code => {
+        if (code !== 0) {
+          console.error('Profile deletion failed:', stderr);
+          resolve({ success: false, error: stderr || 'Unknown exit code' });
+        } else {
+          resolve({ success: true });
+        }
+      });
+    } catch (e) {
+      console.error('Profile deletion exception:', e);
+      resolve({ success: false, error: e.message });
     }
-    return { success: true };
-  } catch (e) {
-    console.error('Profile deletion exception:', e);
-    return { success: false, error: e.message };
-  }
+  });
 });
 
 ipcMain.handle('get-defaults', async () => {
