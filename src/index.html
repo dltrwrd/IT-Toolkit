@@ -4009,12 +4009,15 @@
         const countBadge = document.getElementById('dup-count-badge');
         const totalReclaim = document.getElementById('dup-total-reclaim');
 
-        countBadge.textContent = `${dups.length} groups`;
+        // Only show groups that still have actual duplicates (length > 1)
+        const activeGroups = dups.filter(g => g.paths.length > 1);
+        countBadge.textContent = `${activeGroups.length} groups found`;
 
         let totalWasted = 0;
 
-        body.innerHTML = dups
-          .map((g, i) => {
+        body.innerHTML = activeGroups
+          .map(g => {
+            const originalIndex = dups.indexOf(g);
             const wasted = g.size * (g.paths.length - 1);
             totalWasted += wasted;
             return `
@@ -4023,13 +4026,13 @@
               <td class="mono">${fmtSize(g.size)}</td>
               <td class="mono">${g.paths.length}x</td>
               <td class="mono" style="color:var(--red)">${fmtSize(wasted)}</td>
-              <td><button class="btn btn-sm btn-ghost" onclick="reviewDup(${i})">Details</button></td>
+              <td><button class="btn btn-sm btn-ghost" onclick="reviewDup(${originalIndex})">Details</button></td>
             </tr>
           `;
           })
           .join('');
 
-        if (dups.length === 0) {
+        if (activeGroups.length === 0) {
           body.innerHTML =
             '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text3)">No duplicate files found in this location.</td></tr>';
         }
