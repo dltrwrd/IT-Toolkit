@@ -1488,6 +1488,36 @@
       .locked-row {
         background: rgba(248, 250, 252, 0.5);
       }
+      #speedtest-card {
+        margin-top: 18px;
+        height: 720px;
+        overflow: hidden;
+        border-radius: var(--r);
+        border: 1px solid var(--border);
+        background: white;
+        box-shadow: var(--sh);
+        position: relative;
+      }
+      webview {
+        width: 100%;
+        height: calc(100% + 80px);
+        margin-top: -80px;
+        border: none;
+      }
+      .speedtest-loader {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        transition: opacity 0.5s;
+      }
     </style>
   </head>
   <body>
@@ -1943,6 +1973,12 @@
                       ></path>
                     </svg>
                     DNS Lookup
+                  </button>
+                  <button class="btn btn-ghost" onclick="navTo('ping')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                    </svg>
+                    Speedtest
                   </button>
                 </div>
               </div>
@@ -2458,6 +2494,7 @@
                   Tracert
                 </button>
               </div>
+
               <div
                 style="
                   display: flex;
@@ -2527,8 +2564,32 @@
                 </button>
               </div>
             </div>
+            <!-- End Ping Inputs Card -->
 
+            <!-- PERMANENT SPEEDTEST CARD -->
+            <div id="speedtest-card">
+              <div class="speedtest-loader" id="speed-loader">
+                <div
+                  class="spinner"
+                  style="
+                    width: 36px;
+                    height: 36px;
+                    border: 4px solid var(--blue-soft);
+                    border-top-color: var(--blue);
+                  "
+                ></div>
+                <div style="margin-top: 15px; color: var(--text3); font-weight: 500">
+                  Readying Speedtest...
+                </div>
+              </div>
+              <webview
+                id="speed-webview"
+                src="https://www.speedtest.net"
+                partition="persist:speedtest"
+              ></webview>
+            </div>
           </div>
+          <!-- End page-ping -->
 
           <!-- ══════════════════ PORT SCANNER ══════════════════ -->
           <div class="page" id="page-port-scanner">
@@ -2624,8 +2685,6 @@
               </div>
             </div>
           </div>
-
-
 
           <!-- ══════════════════ WIFI MONITOR ══════════════════ -->
           <div class="page" id="page-wifi-monitor">
@@ -3990,8 +4049,6 @@
         }
       }
 
-
-
       // ── PROCESS MANAGER ───────────────────────────────────────
       const FAKE_PROCS = [
         { name: 'System Idle Process', pid: 0, cpu: 0.1, mem: 0.1 },
@@ -4842,6 +4899,36 @@
 
         alert(`Purge Complete.\n\nSuccessfully deleted: ${success}\nFailed: ${fail}`);
         loadUserProfiles(true);
+      }
+
+      const speedWebview = document.getElementById('speed-webview');
+      const speedLoader = document.getElementById('speed-loader');
+      if (speedWebview) {
+        speedWebview.addEventListener('did-finish-load', () => {
+          speedWebview.insertCSS(`
+            /* Hide internal scrollbars and lock layout */
+            ::-webkit-scrollbar { display: none !important; width: 0 !important; }
+            html, body { overflow: hidden !important; height: 100% !important; scrollbar-width: none; }
+            
+            /* Clean UI */
+            nav, header, footer, .top-ad-container, .sidebar-ad-container,
+            [class*="nav"], [id*="nav"], .logo, .menu, .nav-links, .masthead,
+            .ads-container, .ads-wrapper, .ads, .ad-container,
+            iframe[id^="google_ads_"], .desktop-ad-container,
+            .pre-speedtest-ad, .post-speedtest-ad, .notification-banner {
+              display: none !important; visibility: hidden !important;
+              height: 0 !important; margin: 0 !important; padding: 0 !important;
+            }
+            .pure-u-1-4 { width: 0 !important; display: none !important; }
+            .pure-u-3-4 { width: 100% !important; flex-grow: 1 !important; }
+            .speedtest-container { margin: 0 auto !important; padding: 0px !important; }
+            #container { background: transparent !important; }
+          `);
+          if (speedLoader) {
+            speedLoader.style.opacity = '0';
+            setTimeout(() => (speedLoader.style.display = 'none'), 500);
+          }
+        });
       }
 
       const sleep = ms => new Promise(r => setTimeout(r, ms));

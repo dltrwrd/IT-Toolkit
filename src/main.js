@@ -43,8 +43,28 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      webviewTag: true,
     },
     show: false,
+  });
+
+  // Global ad-blocking to speed up embedded views and stop terminal errors
+  const session = require('electron').session;
+  const adBlockList = [
+    '*://*.google-analytics.com/*',
+    '*://*.googletagmanager.com/*',
+    '*://*.doubleclick.net/*',
+    '*://*.gammaplatform.com/*',
+    '*://*.nex8.net/*',
+    '*://*.amazon-adsystem.com/*',
+    '*://*.adnxs.com/*',
+    '*://*.pubmatic.com/*',
+    '*://*.rubiconproject.com/*',
+    '*://*.criteo.com/*',
+  ];
+
+  session.defaultSession.webRequest.onBeforeRequest({ urls: adBlockList }, (details, callback) => {
+    callback({ cancel: true });
   });
 
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
@@ -254,6 +274,10 @@ ipcMain.handle('open-external-tracert', async (event, { host }) => {
       resolve({ success: !err, error: err ? err.message : null });
     });
   });
+});
+
+ipcMain.handle('open-speedtest', async () => {
+  return { success: true };
 });
 
 ipcMain.handle('open-disk-cleanup', async () => {

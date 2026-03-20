@@ -23,6 +23,7 @@ contextBridge.exposeInMainWorld('cxi', {
   onTracertDone: cb => ipcRenderer.on('tracert-done', (e, data) => cb(data)),
   openExternalPing: opts => ipcRenderer.invoke('open-external-ping', opts),
   openExternalTracert: opts => ipcRenderer.invoke('open-external-tracert', opts),
+  openSpeedtest: () => ipcRenderer.invoke('open-speedtest'),
 
   stopProcess: id => ipcRenderer.send('stop-process', id),
   scanPort: (host, port) => ipcRenderer.invoke('scan-port', { host, port }),
