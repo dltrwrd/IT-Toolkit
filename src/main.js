@@ -260,35 +260,35 @@ ipcMain.handle('dns-lookup', async (e, host) => {
 ipcMain.handle('get-top-folders', async (event, drivePath) => {
   try {
     const { exec } = require('child_process');
-    // Fast scan focusing on user folders + top root folders
+    let target = drivePath || 'C:\\';
+    // Deeply ensure we have an absolute root like "C:\"
+    target = target.split(':')[0] + ':\\';
+    
+    // Use single quotes inside PowerShell to prevent backslash-escape bugs with drive roots (C:\)
     const psCmd = `
-      $results = @();
-      $folders = @('Downloads', 'Documents', 'Desktop', 'Pictures', 'Videos', 'Music');
-      foreach ($f in $folders) {
-        $p = Join-Path $HOME $f;
-        if (Test-Path $p) {
-          $s = (Get-ChildItem $p -File -Recurse -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum;
-          if ($s -gt 0) { $results += [PSCustomObject]@{ Name=$f; FullName=$p; Size=[long]$s } }
-        }
-      }
-      # Add root folders but don't recurse (for speed) 
-      Get-ChildItem -Path "C:\\" -Directory -ErrorAction SilentlyContinue | Select-Object -First 5 | ForEach-Object {
-        $results += [PSCustomObject]@{ Name=$_.Name; FullName=$_.FullName; Size=[long]0 } 
-      }
-      $results | ConvertTo-Json
+      Get-ChildItem -Path '${target}' -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+        $size = 0;
+        try {
+          $fso = New-Object -ComObject Scripting.FileSystemObject;
+          $folder = $fso.GetFolder($_.FullName);
+          $size = [long]$folder.Size;
+        } catch {}
+        [PSCustomObject]@{ Name=$_.Name; FullName=$_.FullName; Size=$size }
+      } | ConvertTo-Json -Compress
     `.replace(/\n/g, ' ');
     
     return new Promise((resolve) => {
-      exec(`powershell "${psCmd}"`, { timeout: 15000 }, (err, stdout) => {
-        if (err || !stdout) return resolve([]);
+      exec(`powershell -Command "${psCmd}"`, { timeout: 15000 }, (err, stdout) => {
+        if (err || !stdout || stdout.trim() === '') return resolve([]);
         try {
           let data = JSON.parse(stdout);
-          if (!Array.isArray(data)) data = [data];
-          // If size is 0, add a fake small size for top drive folders to at least show something
-          resolve(data.map((f, i) => ({
+          if (!Array.isArray(data)) data = data ? [data] : [];
+          // Sort by size and take Top 5
+          data.sort((a,b) => (b.Size || 0) - (a.Size || 0));
+          resolve(data.slice(0, 5).map(f => ({
             name: f.Name,
             path: f.FullName,
-            size: f.Size || (3000000000 - (i * 100000000)) // Fake 3GB fallback for root folders
+            size: f.Size || 0
           })));
         } catch(e) { resolve([]); }
       });

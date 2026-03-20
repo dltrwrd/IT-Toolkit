@@ -1951,7 +1951,7 @@
           <!-- ══════════════════ DISK ANALYZER ══════════════════ -->
           <div class="page" id="page-disk-analyzer">
             <div class="page-hdr">
-              <h1>Storage Management</h1>
+              <h1>Storage Usage</h1>
               <p>Comprehensive overview of drives, health, and partitions</p>
             </div>
             <div class="card" style="margin-bottom: 16px">
@@ -2016,10 +2016,20 @@
                   Disk Health (S.M.A.R.T.)
                 </div>
                 <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 12px">
-                  <div class="sec-score-num" id="disk-health-score" style="font-size: 36px; color: var(--green)">98%</div>
+                  <div
+                    class="sec-score-num"
+                    id="disk-health-score"
+                    style="font-size: 36px; color: var(--green)"
+                  >
+                    98%
+                  </div>
                   <div id="disk-health-status-wrap">
-                    <div class="badge green" id="disk-health-badge" style="margin-bottom: 4px">✅ Healthy</div>
-                    <div id="disk-health-desc" style="font-size: 12px; color: var(--text3)">No issues detected</div>
+                    <div class="badge green" id="disk-health-badge" style="margin-bottom: 4px">
+                      ✅ Healthy
+                    </div>
+                    <div id="disk-health-desc" style="font-size: 12px; color: var(--text3)">
+                      No issues detected
+                    </div>
                   </div>
                 </div>
                 <table class="info-table" id="disk-health-table">
@@ -2040,7 +2050,10 @@
                   <div class="dot" style="background: var(--purple)"></div>
                   Disk Space Analyzer (Top Folders)
                 </div>
-                <div id="disk-analyzer-content" style="display: flex; flex-direction: column; gap: 8px; min-height: 200px">
+                <div
+                  id="disk-analyzer-content"
+                  style="display: flex; flex-direction: column; gap: 8px; min-height: 200px"
+                >
                   <!-- Results injected here -->
                 </div>
               </div>
@@ -2870,11 +2883,16 @@
     <script>
       const CACHE = {};
       const SKEL = {
-        rows: (n=4) => Array(n).fill('<div class="skeleton sk-row"></div>').join(''),
-        cards: (n=2) => Array(n).fill('<div class="skeleton sk-card"></div>').join(''),
-        table: (r=5, c=2) => Array(r).fill(`<tr>${Array(c).fill('<td><div class="skeleton sk-row"></div></td>').join('')}</tr>`).join('')
+        rows: (n = 4) => Array(n).fill('<div class="skeleton sk-row"></div>').join(''),
+        cards: (n = 2) => Array(n).fill('<div class="skeleton sk-card"></div>').join(''),
+        table: (r = 5, c = 2) =>
+          Array(r)
+            .fill(
+              `<tr>${Array(c).fill('<td><div class="skeleton sk-row"></div></td>').join('')}</tr>`
+            )
+            .join(''),
       };
-      
+
       function getLoader(msg) {
         return `<div class="loader-full"><div class="spinner" style="width:24px;height:24px;border-width:3px"></div><div>${msg || 'Loading...'}</div></div>`;
       }
@@ -2976,7 +2994,7 @@
         const siCpu = document.getElementById('si-cpu');
         const siHw = document.getElementById('si-hw');
         const siMem = document.getElementById('si-mem');
-        
+
         // Only show skeleton if no cache exists
         if (!CACHE.sysinfo) {
           siOs.innerHTML = SKEL.rows(3);
@@ -3477,47 +3495,59 @@
         const healthTable = document.getElementById('disk-health-table');
         const healthScore = document.getElementById('disk-health-score');
         const analyzerContent = document.getElementById('disk-analyzer-content');
-        
+
         if (!el) return;
         if (!window.cxi) return;
 
         if (!CACHE.diskInfo) {
           el.innerHTML = SKEL.cards(2);
           healthTable.innerHTML = SKEL.table(3, 2);
-          if (healthScore) healthScore.innerHTML = '<div class="skeleton" style="height:40px;width:80px;border-radius:6px"></div>';
+          if (healthScore)
+            healthScore.innerHTML =
+              '<div class="skeleton" style="height:40px;width:80px;border-radius:6px"></div>';
           const dhStatus = document.getElementById('disk-health-status-wrap');
           if (dhStatus) dhStatus.style.visibility = 'hidden';
           if (analyzerContent) analyzerContent.innerHTML = SKEL.rows(6);
         }
-        
+
         try {
-          const [disks, health, folders] = await Promise.all([
+          const [disks, health] = await Promise.all([
             window.cxi.getDisks(),
             window.cxi.getDiskHealth(),
-            window.cxi.getTopFolders('C:\\')
           ]);
-          CACHE.diskInfo = { disks, health, folders };
-          
-          const gb = b => (b / 1073741824).toFixed(1);
 
-          // 1. Drive List
+          // Parallel fetch top folders for all scanned drives
+          const diskFolders = await Promise.all(
+            disks.map(d => {
+              let p = d.drive || d.path || 'C:';
+              if (p.length === 2 && p.endsWith(':')) p += '\\';
+              return window.cxi.getTopFolders(p);
+            })
+          );
+          CACHE.diskInfo = { disks, health, diskFolders };
+
+          const gb = b => (b / 1073741824).toFixed(1);
+          const colors = ['#6366f1', '#1a6ef5', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
+
+          // 1. Drive List (unchanged list above, now focus on analyzer)
           el.innerHTML = disks
             .map(
               d => `
-      <div class="disk-item">
-        <div class="disk-header"><div class="disk-name"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;margin-right:4px"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg> ${d.drive} (${d.label || 'Local Disk'})</div><span class="badge ${d.type === 'SSD' ? 'blue' : 'gray'}">${d.type || 'Fixed'}</span></div>
-        <div class="pbar-wrap">
-          <div class="pbar-row"><span style="color:var(--text2)">Used: ${gb(d.used)} GB</span><span style="color:var(--text3)">Total: ${gb(d.total)} GB</span></div>
-          <div class="pbar-track"><div class="pbar-fill ${d.percent > 90 ? 'red' : d.percent > 75 ? 'yellow' : 'green'}" style="width:${d.percent}%"></div></div>
-        </div>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px">${d.percent}% used · ${gb(d.free)} GB free</div>
-      </div>`
+            <div class="disk-item">
+              <div class="disk-header"><div class="disk-name"><span class="badge blue">${d.drive || 'Disk'}</span> ${d.label || 'Storage'}</div><span class="badge gray">${d.type}</span></div>
+              <div class="pbar-wrap">
+                <div class="pbar-row"><span>Used: ${gb(d.used)} GB</span><span>Total: ${gb(d.total)} GB</span></div>
+                <div class="pbar-track"><div class="pbar-fill ${d.percent > 85 ? 'red' : 'green'}" style="width:${d.percent}%"></div></div>
+              </div>
+            </div>`
             )
             .join('');
 
           // 2. Disk Health
           if (health && health.length) {
-            healthTable.innerHTML = health.map(h => `
+            healthTable.innerHTML = health
+              .map(
+                h => `
               <tr>
                 <td>
                   <div style="font-weight:600">${h.name}</div>
@@ -3528,42 +3558,67 @@
                   <div style="font-size:11px; color:var(--text2)">${h.temperature ? `${h.temperature}°C` : '—'}</div>
                 </td>
               </tr>
-            `).join('');
+            `
+              )
+              .join('');
             if (healthScore) {
               const unhealthy = health.filter(h => h.status !== 'Healthy').length;
-              healthScore.textContent = unhealthy > 0 ? (100 - (unhealthy * 10)) + '%' : '100%';
+              healthScore.textContent = unhealthy > 0 ? 100 - unhealthy * 10 + '%' : '100%';
               healthScore.style.color = unhealthy > 0 ? 'var(--yellow)' : 'var(--green)';
-              
+
               const dhWrap = document.getElementById('disk-health-status-wrap');
               const dhBadge = document.getElementById('disk-health-badge');
               const dhDesc = document.getElementById('disk-health-desc');
               if (dhWrap) dhWrap.style.visibility = 'visible';
               if (dhBadge) {
                 dhBadge.className = `badge ${unhealthy > 0 ? 'yellow' : 'green'}`;
-                dhBadge.textContent = unhealthy > 0 ? '⚠️ Check Required' : '✅ Healthy';
+                dhBadge.textContent = unhealthy > 0 ? 'Check Required' : 'Healthy';
               }
-              if (dhDesc) dhDesc.textContent = unhealthy > 0 ? `${unhealthy} issues detected` : 'No issues detected';
+              if (dhDesc)
+                dhDesc.textContent =
+                  unhealthy > 0 ? `${unhealthy} issues detected` : 'No issues detected';
             }
           }
 
-          // 3. Top Folders Analysis
+          // 3. Folder Map (The "Partition Map" style requested)
           if (analyzerContent) {
-            analyzerContent.innerHTML = (folders && folders.length) ? folders.map(f => {
-              const maxVal = folders[0].size || 1;
-              const pct = (f.size / maxVal) * 100;
-              return `
-                <div style="margin-bottom: 8px">
-                  <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:3px">
-                    <span style="font-weight:600; color:var(--text; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px">${f.name}</span>
-                    <span style="font-family:var(--mono); color:var(--blue)">${gb(f.size)} GB</span>
+            analyzerContent.innerHTML = disks
+              .map((d, i) => {
+                const folders = diskFolders[i] || [];
+                const totalUsedData = folders.reduce((sum, f) => sum + f.size, 0) || 1;
+                return `
+                <div style="margin-bottom: 20px">
+                  <div style="font-size:11px; font-weight:700; color:var(--text); margin-bottom:6px; display:flex; justify-content:space-between">
+                    <span>${d.drive} Root Folders</span>
+                    <span style="color:var(--text3)">Top space consumers</span>
                   </div>
-                  <div class="pbar-track" style="height:6px; background:var(--surface3)">
-                    <div class="pbar-fill" style="width:${pct}%; background:var(--blue2); opacity:0.8"></div>
+                  <div style="display:flex; height:24px; border-radius:6px; overflow:hidden; border:1px solid var(--border); background:var(--surface3)">
+                    ${
+                      folders.length
+                        ? folders
+                            .map((f, fi) => {
+                              const pct = (f.size / totalUsedData) * 100;
+                              return `<div style="width:${pct}%; height:100%; background:${colors[fi % colors.length]}; position:relative" title="${f.name} (${gb(f.size)} GB)"></div>`;
+                            })
+                            .join('')
+                        : '<div style="width:100%; display:flex; align-items:center; justify-content:center; color:var(--text3); font-size:10px">No major folders found</div>'
+                    }
+                  </div>
+                  <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:6px">
+                    ${folders
+                      .map(
+                        (f, fi) => `
+                      <span style="font-size:10px; color:var(--text2); display:flex; align-items:center; gap:3px">
+                        <div style="width:8px; height:8px; border-radius:2px; background:${colors[fi % colors.length]}"></div>
+                        ${f.name} (${gb(f.size)} GB)
+                      </span>`
+                      )
+                      .join('')}
                   </div>
                 </div>`;
-            }).join('') : '<div style="padding:20px; text-align:center; color:var(--text3)">No folder data available.</div>';
+              })
+              .join('');
           }
-
         } catch (e) {
           console.error(e);
           el.innerHTML = '<div style="color:var(--red);padding:20px">Error scanning drives</div>';
