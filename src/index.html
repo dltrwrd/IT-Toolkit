@@ -1643,7 +1643,7 @@
 
             <!-- Live Stat Cards -->
             <div class="grid-4" style="margin-bottom: 16px">
-              <div class="stat-card" onclick="navTo('processes')" style="cursor:pointer">
+              <div class="stat-card" onclick="navTo('processes')" style="cursor: pointer">
                 <div class="stat-icon">
                   <svg viewBox="0 0 24 24">
                     <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
@@ -1662,7 +1662,7 @@
                 <div class="stat-value" id="d-cpu">—</div>
                 <div class="stat-sub" id="d-cpu-model">Loading...</div>
               </div>
-              <div class="stat-card green" onclick="navTo('disk-analyzer')" style="cursor:pointer">
+              <div class="stat-card green" onclick="navTo('disk-analyzer')" style="cursor: pointer">
                 <div class="stat-icon">
                   <svg viewBox="0 0 24 24">
                     <path d="M6 19v2"></path>
@@ -1681,7 +1681,7 @@
                 <div class="stat-value" id="d-mem">—</div>
                 <div class="stat-sub" id="d-mem-sub">Loading...</div>
               </div>
-              <div class="stat-card yellow" onclick="navTo('sysinfo')" style="cursor:pointer">
+              <div class="stat-card yellow" onclick="navTo('sysinfo')" style="cursor: pointer">
                 <div class="stat-icon">
                   <svg viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="10"></circle>
@@ -1692,7 +1692,7 @@
                 <div class="stat-value" id="d-uptime">—</div>
                 <div class="stat-sub" id="d-uptime-status">System running</div>
               </div>
-              <div class="stat-card purple" onclick="navTo('sysinfo')" style="cursor:pointer">
+              <div class="stat-card purple" onclick="navTo('sysinfo')" style="cursor: pointer">
                 <div class="stat-icon">
                   <svg viewBox="0 0 24 24">
                     <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
@@ -1902,7 +1902,7 @@
                 <p>Full hardware and operating system details</p>
               </div>
               <button class="btn btn-primary" onclick="exportReport()">
-                <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; stroke-width: 2.5">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; margin-right: 6px">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                   <polyline points="7 10 12 15 17 10"></polyline>
                   <line x1="12" y1="15" x2="12" y2="3"></line>
@@ -2020,7 +2020,7 @@
               <!-- DISK HEALTH -->
               <div class="card">
                 <div class="card-title">
-                  <div class="dot" style="background: var(--green)"></div>
+                  <div class="dot" style="background: var(--blue)"></div>
                   Disk Health (S.M.A.R.T.)
                 </div>
                 <!-- Global summary removed for per-disk focus -->
@@ -2032,7 +2032,7 @@
               <!-- DISK ANALYZER (TOP FOLDERS) -->
               <div class="card">
                 <div class="card-title">
-                  <div class="dot" style="background: var(--purple)"></div>
+                  <div class="dot" style="background: var(--blue)"></div>
                   Disk Space Analyzer (Top Folders)
                 </div>
                 <div
@@ -2063,13 +2063,22 @@
                   placeholder="Folder to scan (e.g. C:\Users\Name\Downloads)"
                   style="flex: 1; min-width: 300px"
                 />
-                <button class="btn btn-primary" onclick="scanDuplicates()" id="dup-btn">🔍 Scan Now</button>
+                <button class="btn btn-primary" onclick="scanDuplicates()" id="dup-btn" style="display: flex; align-items: center; gap: 8px">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  Scan Now
+                </button>
               </div>
             </div>
-            <div class="card" id="dup-results-card" style="display:none">
+            <div class="card" id="dup-results-card" style="display: none">
               <div class="card-title">
                 <div class="dot"></div>
-                Found Duplicates <span class="badge blue" id="dup-count-badge" style="margin-left: 6px">0 groups</span>
+                Found Duplicates
+                <span class="badge blue" id="dup-count-badge" style="margin-left: 6px"
+                  >0 groups</span
+                >
               </div>
               <div style="max-height: 450px; overflow-y: auto">
                 <table class="proc-table">
@@ -2085,10 +2094,34 @@
                   <tbody id="dup-body"></tbody>
                 </table>
               </div>
-              <div style="margin-top: 15px; display: flex; gap: 15px; align-items: center; padding-top: 10px; border-top: 1px solid var(--border)">
+              <div
+                style="
+                  margin-top: 15px;
+                  display: flex;
+                  gap: 15px;
+                  align-items: center;
+                  padding-top: 10px;
+                  border-top: 1px solid var(--border);
+                "
+              >
                 <span id="dup-reclaimable-wrap" style="color: var(--text3); font-size: 13px">
-                  Total reclaimable: <strong id="dup-total-reclaim" style="color: var(--red)">0 MB</strong>
+                  Total reclaimable:
+                  <strong id="dup-total-reclaim" style="color: var(--red)">0 MB</strong>
                 </span>
+                <button
+                  class="btn btn-danger btn-sm py-10"
+                  id="del-all-btn"
+                  style="margin-left: auto; display: flex; align-items: center; gap: 8px"
+                  onclick="deleteAllDuplicates()"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                  </svg>
+                  Delete All Copies
+                </button>
               </div>
             </div>
           </div>
@@ -3486,18 +3519,24 @@
         const colors = ['#6366f1', '#1a6ef5', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
 
         // 1. Render Disks
-        el.innerHTML = disks.map(d => `
+        el.innerHTML = disks
+          .map(
+            d => `
           <div class="disk-item">
             <div class="disk-header"><div class="disk-name"><span class="badge blue">${d.drive || 'Disk'}</span> ${d.label || 'Storage'}</div><span class="badge gray">${d.type}</span></div>
             <div class="pbar-wrap">
               <div class="pbar-row"><span>Used: ${gb(d.used)} GB</span><span>Total: ${gb(d.total)} GB</span></div>
               <div class="pbar-track"><div class="pbar-fill ${d.percent > 85 ? 'red' : 'green'}" style="width:${d.percent}%"></div></div>
             </div>
-          </div>`).join('');
+          </div>`
+          )
+          .join('');
 
         // 2. Render Health
         if (health && healthTable) {
-          healthTable.innerHTML = health.map(h => `
+          healthTable.innerHTML = health
+            .map(
+              h => `
             <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border)">
               <div style="flex:1; min-width:0">
                 <div style="font-weight:600; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${h.name}</div>
@@ -3510,42 +3549,54 @@
                 </div>
                 ${h.temperature ? `<div style="font-size:11px; color:var(--text2); opacity:0.8">${h.temperature}°C</div>` : ''}
               </div>
-            </div>`).join('');
+            </div>`
+            )
+            .join('');
           const hScore = document.getElementById('disk-health-score');
           if (hScore) hScore.innerHTML = '';
         }
 
         // 3. Render Folder Maps
         if (analyzerContent && diskFolders) {
-          analyzerContent.innerHTML = disks.map((d, i) => {
-            const folders = diskFolders[i] || [];
-            const totalUsedData = folders.reduce((sum, f) => sum + f.size, 0) || 1;
-            return `
+          analyzerContent.innerHTML = disks
+            .map((d, i) => {
+              const folders = diskFolders[i] || [];
+              const totalUsedData = folders.reduce((sum, f) => sum + f.size, 0) || 1;
+              return `
               <div style="margin-bottom: 20px">
                 <div style="font-weight:700; font-size:12px; color:var(--text); display:flex; align-items:center; gap:8px">
                   <svg viewBox="0 0 24 24" style="width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
                   Partition ${d.drive} — ${d.label || 'System'}
                 </div>
                 <div id="disk-map-${i}">
-                  ${folders.length ? `
+                  ${
+                    folders.length
+                      ? `
                     <div style="display:flex; height:24px; border-radius:6px; overflow:hidden; margin-top:8px; border:1px solid var(--border)">
                       ${folders.map((f, fi) => `<div style="width:${(f.size / totalUsedData) * 100}%; background:${colors[fi % colors.length]}; height:100%" title="${f.name} (${gb(f.size)} GB)"></div>`).join('')}
                     </div>
                     <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap:10px; margin-top:12px">
-                      ${folders.map((f, fi) => `
+                      ${folders
+                        .map(
+                          (f, fi) => `
                         <div style="display:flex; align-items:center; gap:8px">
                           <div style="width:8px; height:8px; border-radius:50%; background:${colors[fi % colors.length]}"></div>
                           <div style="min-width:0; flex:1">
                             <div style="font-size:11px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${f.name}</div>
                             <div style="font-size:10px; color:var(--text3)">${gb(f.size)} GB</div>
                           </div>
-                        </div>`).join('')}
-                    </div>` : `
+                        </div>`
+                        )
+                        .join('')}
+                    </div>`
+                      : `
                     <div class="skeleton" style="height:24px; border-radius:6px; margin-top:8px"></div>
-                    <div class="skeleton" style="height:40px; margin-top:12px; border-radius:6px"></div>`}
+                    <div class="skeleton" style="height:40px; margin-top:12px; border-radius:6px"></div>`
+                  }
                 </div>
               </div>`;
-          }).join('');
+            })
+            .join('');
         }
       }
 
@@ -3557,20 +3608,24 @@
         }
 
         if (!window.cxi) return;
-        
+
         loadingDiskInfo = true;
         try {
           const disks = await window.cxi.getDisks();
-          
+
           // Background fetch health
           const pHealth = window.cxi.getDiskHealth();
-          
+
           // Update basic list first
-          const currentData = { disks, health: CACHE.diskInfo?.health || [], diskFolders: CACHE.diskInfo?.diskFolders || [] };
+          const currentData = {
+            disks,
+            health: CACHE.diskInfo?.health || [],
+            diskFolders: CACHE.diskInfo?.diskFolders || [],
+          };
           renderDiskData(currentData);
 
           // Fetch folders
-          const folderPromises = disks.map(async (d) => {
+          const folderPromises = disks.map(async d => {
             let p = d.drive || d.path || 'C:';
             if (p.length === 2 && p.endsWith(':')) p += '\\';
             return window.cxi.getTopFolders(p);
@@ -3740,7 +3795,8 @@
           renderProcsUI(procs);
         } catch (e) {
           if (!CACHE.processes) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--red)">Failed to load processes</td></tr>';
+            tbody.innerHTML =
+              '<tr><td colspan="5" style="text-align:center;color:var(--red)">Failed to load processes</td></tr>';
           }
         }
       }
@@ -3827,7 +3883,8 @@
         btn.disabled = true;
         btn.innerHTML = 'Scanning...';
         card.style.display = 'block';
-        body.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text3)">Scanning your files... please wait.</td></tr>';
+        body.innerHTML =
+          '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text3)">Scanning your files... please wait.</td></tr>';
 
         try {
           const dups = await window.cxi.getDuplicates(path);
@@ -3847,13 +3904,14 @@
         const totalReclaim = document.getElementById('dup-total-reclaim');
 
         countBadge.textContent = `${dups.length} groups`;
-        
+
         let totalWasted = 0;
 
-        body.innerHTML = dups.map((g, i) => {
-          const wasted = g.size * (g.paths.length - 1);
-          totalWasted += wasted;
-          return `
+        body.innerHTML = dups
+          .map((g, i) => {
+            const wasted = g.size * (g.paths.length - 1);
+            totalWasted += wasted;
+            return `
             <tr>
               <td style="font-weight:600; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap" title="${g.name}">${g.name}</td>
               <td class="mono">${fmtSize(g.size)}</td>
@@ -3862,10 +3920,12 @@
               <td><button class="btn btn-sm btn-ghost" onclick="reviewDup(${i})">Details</button></td>
             </tr>
           `;
-        }).join('');
+          })
+          .join('');
 
         if (dups.length === 0) {
-          body.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text3)">No duplicate files found in this location.</td></tr>';
+          body.innerHTML =
+            '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text3)">No duplicate files found in this location.</td></tr>';
         }
 
         totalReclaim.textContent = fmtSize(totalWasted);
@@ -3880,17 +3940,22 @@
 
       function reviewDup(index) {
         const g = currentDuplicates[index];
-        const paths = g.paths.map((p, pi) => `
+        const paths = g.paths
+          .map(
+            (p, pi) => `
           <div style="padding:10px; border:1px solid var(--border); border-radius:6px; margin-bottom:8px; display:flex; align-items:center; background:var(--surface)">
             <div style="flex:1; font-size:11px; color:var(--text2); word-break:break-all">${p}</div>
             ${pi > 0 ? `<button class="btn btn-sm btn-danger" style="padding:4px 8px; font-size:10px" onclick="deleteDupFile('${p.replace(/\\/g, '\\\\')}', ${index}, ${pi}, this)">Delete</button>` : '<span class="badge blue">Original</span>'}
           </div>
-        `).join('');
+        `
+          )
+          .join('');
 
         // Simple overlay alert for review
         const overlay = document.createElement('div');
         overlay.id = 'dup-overlay';
-        overlay.style = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:9999';
+        overlay.style =
+          'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:9999';
         overlay.innerHTML = `
           <div class="card" style="width:500px; max-height:80vh; overflow-y:auto; box-shadow:0 20px 50px rgba(0,0,0,0.3)">
             <div class="card-title" style="justify-content:space-between">
@@ -3907,7 +3972,7 @@
         if (!confirm('Are you sure you want to delete this specific copy?')) return;
         btn.disabled = true;
         btn.innerHTML = '...';
-        
+
         const res = await window.cxi.deleteFile(path);
         if (res.success) {
           btn.parentElement.style.opacity = '0.5';
@@ -3920,6 +3985,48 @@
           btn.disabled = false;
           btn.innerHTML = 'Delete';
         }
+      }
+
+      async function deleteAllDuplicates() {
+        if (!currentDuplicates.length) return;
+        const total = currentDuplicates.reduce((sum, g) => sum + (g.paths.length - 1), 0);
+        if (
+          !confirm(
+            `This will delete ALL ${total} duplicate copies while keeping the originals. This cannot be undone. Continue?`
+          )
+        )
+          return;
+
+        const btn = document.getElementById('del-all-btn');
+        btn.disabled = true;
+        btn.innerHTML = 'Deleting copies...';
+
+        let deleted = 0;
+        for (let i = 0; i < currentDuplicates.length; i++) {
+          const g = currentDuplicates[i];
+          for (let j = g.paths.length - 1; j > 0; j--) {
+            const p = g.paths[j];
+            const res = await window.cxi.deleteFile(p);
+            if (res.success) {
+              g.paths.splice(j, 1);
+              deleted++;
+            }
+          }
+        }
+
+        btn.innerHTML = `Deleted ${deleted} files!`;
+        renderDuplicates(currentDuplicates);
+
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px; margin-right:8px">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg> Delete All Copies`;
+        }, 3000);
       }
 
       // ── STARTUP MANAGER ───────────────────────────────────────
@@ -4148,24 +4255,24 @@
           // Parallelize EVERY module's initial data fetch
           const pHealth = updateHealth();
           const pMetrics = updateMetrics();
-          const pSys = loadSysInfo(); // Now returns a promise implicitly 
+          const pSys = loadSysInfo(); // Now returns a promise implicitly
           const pDisks = loadDiskAnalyzer();
           const pProc = loadProcesses();
           const pStartup = loadStartup();
-          
+
           buildSecurityChecks();
 
           // WAIT FOR EVERYTHING: Splash will stay open until all these finish
           const [info] = await Promise.all([
             window.cxi ? window.cxi.getSysInfo() : Promise.resolve({}),
-            pHealth, 
-            pMetrics, 
-            pSys, 
-            pDisks, 
-            pProc, 
-            pStartup
+            pHealth,
+            pMetrics,
+            pSys,
+            pDisks,
+            pProc,
+            pStartup,
           ]);
-          
+
           if (info && Object.keys(info).length) {
             const host = document.getElementById('d-host');
             if (host) host.textContent = info.hostname || 'Unknown';
@@ -4190,10 +4297,9 @@
             });
             window.cxi.ready();
           }
-          
         } catch (e) {
           console.error('Init error:', e);
-          if (window.cxi) window.cxi.ready(); 
+          if (window.cxi) window.cxi.ready();
         }
 
         // Start live log simulation

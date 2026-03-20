@@ -307,52 +307,67 @@ ipcMain.handle('dns-lookup', async (e, host) => {
 // Run whitelisted commands
 // Duplicate Finder logic
 ipcMain.handle('get-duplicates', async (event, dirPath) => {
-  const fs = require('fs');
+  const fs = require('fs').promises;
+  const fsSync = require('fs');
   const path = require('path');
   const crypto = require('crypto');
 
   const results = new Map(); // size -> [path]
   const duplicates = [];
-
-  function getFiles(dir) {
-    try {
-      const files = fs.readdirSync(dir, { withFileTypes: true });
-      for (const file of files) {
-        const fullPath = path.join(dir, file.name);
-        if (file.isDirectory()) {
-          // Avoid system folders
-          if (!['node_modules', '.git', '$Recycle.Bin', 'System Volume Information'].includes(file.name)) {
-            getFiles(fullPath);
-          }
-        } else {
-          try {
-            const stats = fs.statSync(fullPath);
-            if (stats.size > 1024) { // Only files > 1KB
-              if (!results.has(stats.size)) results.set(stats.size, []);
-              results.get(stats.size).push({ path: fullPath, size: stats.size, name: file.name });
-            }
-          } catch (e) {}
-        }
-      }
-    } catch (e) {}
-  }
-
-  getFiles(dirPath);
+  const dirs = [dirPath];
+  let iterations = 0;
 
   // Partial hash for performance (first 16KB)
   function getFastHash(filePath) {
     try {
       const buffer = Buffer.alloc(16384);
-      const fd = fs.openSync(filePath, 'r');
-      fs.readSync(fd, buffer, 0, 16384, 0);
-      fs.closeSync(fd);
-      return crypto.createHash('md5').update(buffer).digest('hex');
+      const fd = fsSync.openSync(filePath, 'r');
+      const bytesRead = fsSync.readSync(fd, buffer, 0, 16384, 0);
+      fsSync.closeSync(fd);
+      return crypto.createHash('md5').update(buffer.slice(0, bytesRead)).digest('hex');
     } catch (e) { return Math.random().toString(); }
   }
 
+  // Non-blocking recursive scan
+  while (dirs.length > 0) {
+    const currentDir = dirs.pop();
+    iterations++;
+
+    // Yield to event loop every 100 directories to avoid freezing UI
+    if (iterations % 100 === 0) {
+      await new Promise(resolve => setImmediate(resolve));
+    }
+
+    try {
+      const entries = await fs.readdir(currentDir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(currentDir, entry.name);
+        
+        if (entry.isDirectory()) {
+          // Avoid scanning root system folders that cause permissions/hang issues
+          const skip = ['node_modules', '.git', '$Recycle.Bin', 'System Volume Information', 'Windows', 'Program Files', 'Program Files (x86)'];
+          if (!skip.includes(entry.name)) {
+            dirs.push(fullPath);
+          }
+        } else if (entry.isFile()) {
+          try {
+            const stats = fsSync.statSync(fullPath);
+            if (stats.size > 2048) { // Min 2KB
+              if (!results.has(stats.size)) results.set(stats.size, []);
+              results.get(stats.size).push({ path: fullPath, size: stats.size, name: entry.name });
+            }
+          } catch (e) {}
+        }
+      }
+    } catch (e) {
+      // Skip directories that we can't read
+    }
+  }
+
+  // Phase 2: Verify duplicates by hash
   for (const [size, files] of results.entries()) {
     if (files.length > 1) {
-      const hashGroups = new Map(); // hash -> [path]
+      const hashGroups = new Map();
       for (const f of files) {
         const h = getFastHash(f.path);
         if (!hashGroups.has(h)) hashGroups.set(h, []);
@@ -368,6 +383,8 @@ ipcMain.handle('get-duplicates', async (event, dirPath) => {
           });
         }
       }
+      // Yield again to event loop between group processing
+      await new Promise(resolve => setImmediate(resolve));
     }
   }
 
