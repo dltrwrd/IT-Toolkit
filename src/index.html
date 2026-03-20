@@ -1902,7 +1902,15 @@
                 <p>Full hardware and operating system details</p>
               </div>
               <button class="btn btn-primary" onclick="exportReport()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; margin-right: 6px">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  style="width: 16px; height: 16px; margin-right: 6px"
+                >
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                   <polyline points="7 10 12 15 17 10"></polyline>
                   <line x1="12" y1="15" x2="12" y2="3"></line>
@@ -1959,7 +1967,7 @@
           <!-- ══════════════════ DISK ANALYZER ══════════════════ -->
           <div class="page" id="page-disk-analyzer">
             <div class="page-hdr">
-              <h1>Storage Details</h1>
+              <h1>Disk Analyzer</h1>
               <p>Comprehensive overview of drives, health, and partitions</p>
             </div>
             <div class="card" style="margin-bottom: 16px">
@@ -2063,8 +2071,21 @@
                   placeholder="Folder to scan (e.g. C:\Users\Name\Downloads)"
                   style="flex: 1; min-width: 300px"
                 />
-                <button class="btn btn-primary" onclick="scanDuplicates()" id="dup-btn" style="display: flex; align-items: center; gap: 8px">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px">
+                <button
+                  class="btn btn-primary"
+                  onclick="scanDuplicates()"
+                  id="dup-btn"
+                  style="display: flex; align-items: center; gap: 8px"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="width: 16px; height: 16px"
+                  >
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                   </svg>
@@ -2114,9 +2135,19 @@
                   style="margin-left: auto; display: flex; align-items: center; gap: 8px"
                   onclick="deleteAllDuplicates()"
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="width: 16px; height: 16px"
+                  >
                     <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <path
+                      d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                    ></path>
                     <line x1="10" y1="11" x2="10" y2="17"></line>
                     <line x1="14" y1="11" x2="14" y2="17"></line>
                   </svg>
@@ -2899,7 +2930,7 @@
       const PAGE_TITLES = {
         dashboard: 'Dashboard',
         sysinfo: 'System Information',
-        'disk-analyzer': 'Storage Details',
+        'disk-analyzer': 'Disk Analyzer',
         'duplicate-finder': 'Duplicate Finder',
         ping: 'Ping / Latency',
         'port-scanner': 'Port Scanner',
