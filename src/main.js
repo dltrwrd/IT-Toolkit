@@ -565,20 +565,6 @@ ipcMain.handle('get-partitions', async () => {
   }
 });
 
-ipcMain.handle('security-scan', async () => {
-  return {
-    score: 85,
-    firewallStatus: 'Enabled',
-    antivirusStatus: 'Active',
-    lastUpdate: Date.now(),
-    openPorts: [80, 443],
-    vulnerabilities: [
-      { title: 'Open Port 80', severity: 'Medium', desc: 'Unencrypted HTTP traffic allowed.' },
-      { title: 'Guest Account', severity: 'Low', desc: 'Guest account is disabled (Secure).' },
-    ],
-  };
-});
-
 // Ping
 ipcMain.on('ping-host', (event, { host, count, continuous }) => {
   const processId = `ping-${Date.now()}`;
@@ -1178,6 +1164,48 @@ ipcMain.handle('get-startup-items', async () => {
           enabled: true // Registry entries in 'Run' are enabled by default
         })));
       } catch (e) { resolve([]); }
+    });
+  });
+});
+
+ipcMain.handle('security-scan', async () => {
+  return new Promise(resolve => {
+    const script = `
+      $results = @{}
+      
+      # Firewall
+      $fw = netsh advfirewall show allprofiles | Select-String "State"
+      $results.Firewall = if ($fw -like "*ON*") { "Pass" } else { "Fail" }
+
+      # Antivirus (Windows Defender Service)
+      $av = Get-Service -Name WinDefend -ErrorAction SilentlyContinue
+      $results.Antivirus = if ($av -and $av.Status -eq "Running") { "Pass" } else { "Fail" }
+
+      # Windows Update (Checking for pending)
+      # This is slow, so let's do a quick check of the AU service
+      $wu = Get-Service -Name wuauserv -ErrorAction SilentlyContinue
+      $results.WindowsUpdate = if ($wu) { "Pass" } else { "Fail" }
+
+      # UAC (EnableLUA)
+      $uac = Get-ItemProperty -Path "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" -Name "EnableLUA" -ErrorAction SilentlyContinue
+      $results.UAC = if ($uac -and $uac.EnableLUA -eq 1) { "Pass" } else { "Fail" }
+
+      # BitLocker (C: drive)
+      $bl = Get-BitLockerVolume -MountPoint C: -ErrorAction SilentlyContinue
+      $results.BitLocker = if ($bl -and $bl.ProtectionStatus -eq "On") { "Pass" } else { "Fail" }
+
+      # RDP (fDenyTSConnections)
+      $rdp = Get-ItemProperty -Path "HKLM:\\System\\CurrentControlSet\\Control\\Terminal Server" -Name "fDenyTSConnections" -ErrorAction SilentlyContinue
+      $results.RDP = if ($rdp -and $rdp.fDenyTSConnections -eq 1) { "Pass" } else { "Warning" } # 1 means denied (safe), 0 means enabled
+
+      $results | ConvertTo-Json
+    `.trim();
+    const encodedCommand = Buffer.from(script, 'utf16le').toString('base64');
+    exec(`powershell -NoProfile -EncodedCommand ${encodedCommand}`, (err, stdout) => {
+      if (err || !stdout) return resolve({});
+      try {
+        resolve(JSON.parse(stdout));
+      } catch (e) { resolve({}); }
     });
   });
 });

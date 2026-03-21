@@ -1586,7 +1586,7 @@
               </svg>
             </div>
             <span class="tb-logo-name">CXI SLT</span>
-            <span class="tb-logo-ver">v1.0</span>
+            <span class="tb-logo-ver">v3.0</span>
           </div>
           <span class="tb-title" id="tb-page-title">Dashboard</span>
         </div>
@@ -3388,10 +3388,12 @@
                 <button
                   class="btn btn-ghost btn-sm"
                   onclick="clearLogs()"
-                  style="margin-left: auto; display: flex; align-items: center; gap: 6px;"
+                  style="margin-left: auto; display: flex; align-items: center; gap: 6px"
                 >
-                  <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: currentColor;">
-                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                  <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: currentColor">
+                    <path
+                      d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                    />
                   </svg>
                   Clear
                 </button>
@@ -3418,12 +3420,12 @@
                   Security Score
                 </div>
                 <div class="sec-score-ring">
-                  <div class="sec-score-num">84</div>
-                  <div class="sec-score-lbl">out of 100 — Good</div>
+                  <div class="sec-score-num" id="sec-score-val">--</div>
+                  <div class="sec-score-lbl" id="sec-score-lbl">Analyzing...</div>
                 </div>
                 <div class="pbar-wrap">
                   <div class="pbar-track">
-                    <div class="pbar-fill green" style="width: 84%"></div>
+                    <div class="pbar-fill green" id="sec-score-fill" style="width: 0%"></div>
                   </div>
                 </div>
               </div>
@@ -3435,23 +3437,23 @@
                 <table class="info-table">
                   <tr>
                     <td>Firewall</td>
-                    <td><span class="badge green">✅ Active</span></td>
+                    <td id="stat-firewall"><span class="badge gray">Checking...</span></td>
                   </tr>
                   <tr>
                     <td>Antivirus</td>
-                    <td><span class="badge green">✅ Up to date</span></td>
+                    <td id="stat-antivirus"><span class="badge gray">Checking...</span></td>
                   </tr>
                   <tr>
                     <td>Windows Update</td>
-                    <td><span class="badge yellow">⚠️ 2 Pending</span></td>
+                    <td id="stat-update"><span class="badge gray">Checking...</span></td>
                   </tr>
                   <tr>
                     <td>Open Ports</td>
-                    <td><span class="badge blue">4 monitored</span></td>
+                    <td id="stat-ports"><span class="badge blue">Monitored</span></td>
                   </tr>
                   <tr>
                     <td>Last Scan</td>
-                    <td>2 hours ago</td>
+                    <td id="stat-time">Just now</td>
                   </tr>
                 </table>
               </div>
@@ -3495,7 +3497,10 @@
                     <p>Launch CXI SLT Toolkit on startup</p>
                   </div>
                   <label class="startup-tog"
-                    ><input type="checkbox" id="set-startup" onchange="updateSetting('startup', this)" />
+                    ><input
+                      type="checkbox"
+                      id="set-startup"
+                      onchange="updateSetting('startup', this)" />
                     <div class="tog-slider"></div
                   ></label>
                 </div>
@@ -3515,7 +3520,10 @@
                     <p>Play sound on high CPU/memory</p>
                   </div>
                   <label class="startup-tog"
-                    ><input type="checkbox" id="set-sound" onchange="updateSetting('sound', this)" />
+                    ><input
+                      type="checkbox"
+                      id="set-sound"
+                      onchange="updateSetting('sound', this)" />
                     <div class="tog-slider"></div
                   ></label>
                 </div>
@@ -3531,7 +3539,13 @@
                     <p>Warn when CPU exceeds this %</p>
                   </div>
                   <div style="display: flex; align-items: center; gap: 6px">
-                    <input type="number" id="set-cpu" value="85" style="width: 70px; flex: none" onchange="updateSetting('cpuAlert', this)" />
+                    <input
+                      type="number"
+                      id="set-cpu"
+                      value="85"
+                      style="width: 70px; flex: none"
+                      onchange="updateSetting('cpuAlert', this)"
+                    />
                     <span style="color: var(--text3)">%</span>
                   </div>
                 </div>
@@ -3541,7 +3555,13 @@
                     <p>Warn when RAM exceeds this %</p>
                   </div>
                   <div style="display: flex; align-items: center; gap: 6px">
-                    <input type="number" id="set-mem" value="90" style="width: 70px; flex: none" onchange="updateSetting('memAlert', this)" />
+                    <input
+                      type="number"
+                      id="set-mem"
+                      value="90"
+                      style="width: 70px; flex: none"
+                      onchange="updateSetting('memAlert', this)"
+                    />
                     <span style="color: var(--text3)">%</span>
                   </div>
                 </div>
@@ -3551,7 +3571,13 @@
                     <p>Warn when drive is this % full</p>
                   </div>
                   <div style="display: flex; align-items: center; gap: 6px">
-                    <input type="number" id="set-disk" value="85" style="width: 70px; flex: none" onchange="updateSetting('diskAlert', this)" />
+                    <input
+                      type="number"
+                      id="set-disk"
+                      value="85"
+                      style="width: 70px; flex: none"
+                      onchange="updateSetting('diskAlert', this)"
+                    />
                     <span style="color: var(--text3)">%</span>
                   </div>
                 </div>
@@ -3564,7 +3590,7 @@
                 <table class="info-table">
                   <tr>
                     <td>Version</td>
-                    <td>1.0.0</td>
+                    <td>3.0.0</td>
                   </tr>
                   <tr>
                     <td>Platform</td>
@@ -3584,7 +3610,10 @@
                   </tr>
                 </table>
                 <div style="margin-top: 14px; display: flex; gap: 8px">
-                  <button class="btn btn-primary btn-sm" onclick="showToast('You are on the latest version.', 'success')">
+                  <button
+                    class="btn btn-primary btn-sm"
+                    onclick="showToast('You are on the latest version.', 'success')"
+                  >
                     <svg
                       viewBox="0 0 24 24"
                       style="
@@ -3632,7 +3661,10 @@
                     <p>Help improve CXI SLT Toolkit (no personal data)</p>
                   </div>
                   <label class="startup-tog"
-                    ><input type="checkbox" id="set-telemetry" onchange="updateSetting('telemetry', this)" />
+                    ><input
+                      type="checkbox"
+                      id="set-telemetry"
+                      onchange="updateSetting('telemetry', this)" />
                     <div class="tog-slider"></div
                   ></label>
                 </div>
@@ -3642,7 +3674,10 @@
                     <p>Store ping/port scan results locally</p>
                   </div>
                   <label class="startup-tog"
-                    ><input type="checkbox" id="set-history" onchange="updateSetting('history', this)" />
+                    ><input
+                      type="checkbox"
+                      id="set-history"
+                      onchange="updateSetting('history', this)" />
                     <div class="tog-slider"></div
                   ></label>
                 </div>
@@ -3716,7 +3751,7 @@
           </div>
 
           <div class="sb-stat" style="margin-left: auto; opacity: 0.6; font-size: 10px">
-            CXI SLT Toolkit <span style="margin-left: 4px; font-weight: 700">v1.0</span>
+            CXI SLT Toolkit <span style="margin-left: 4px; font-weight: 700">v3.0</span>
           </div>
         </div>
       </div>
@@ -4879,17 +4914,15 @@
 
       function applyNetworkMonitorInterval() {
         if (networkMonitorTimer) clearInterval(networkMonitorTimer);
-        let delayMs = 60 * 1000; // default 1 min for 1 hr range
+        // Reverted to 1 min per user request (Balanced for long-term history)
+        let delayMs = 60000; 
         if (wifiGraphRange >= 48)
-          delayMs = 120 * 60 * 1000; // 2 hrs
-        else if (wifiGraphRange >= 24)
           delayMs = 60 * 60 * 1000; // 1 hr
-        else if (wifiGraphRange >= 12)
+        else if (wifiGraphRange >= 24)
           delayMs = 30 * 60 * 1000; // 30 mins
-        else if (wifiGraphRange >= 6)
-          delayMs = 10 * 60 * 1000; // 10 mins
-        else if (wifiGraphRange >= 3) delayMs = 5 * 60 * 1000; // 5 mins
-
+        else if (wifiGraphRange >= 12)
+          delayMs = 15 * 60 * 1000; // 15 mins
+          
         networkMonitorTimer = setInterval(monitorBackgroundNetwork, delayMs);
       }
 
@@ -5490,9 +5523,10 @@
         STARTUP_ITEMS = items;
         const el = document.getElementById('startup-list');
         if (!el) return;
-        
+
         if (STARTUP_ITEMS.length === 0) {
-          el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text3)">No startup items found in registry.</div>';
+          el.innerHTML =
+            '<div style="padding:20px;text-align:center;color:var(--text3)">No startup items found in registry.</div>';
           return;
         }
 
@@ -5521,14 +5555,18 @@
       async function toggleStartup(i, el) {
         const item = STARTUP_ITEMS[i];
         if (!el.checked) {
-          if (!confirm(`Are you sure you want to prevent "${item.name}" from starting with Windows? This will remove it from the registry.`)) {
+          if (
+            !confirm(
+              `Are you sure you want to prevent "${item.name}" from starting with Windows? This will remove it from the registry.`
+            )
+          ) {
             el.checked = true;
             return;
           }
           const success = await window.cxi.toggleStartupItem({
             name: item.name,
             registry: item.registry,
-            enabled: false
+            enabled: false,
           });
           if (success) {
             showToast(`${item.name} removed from startup.`, 'success');
@@ -5538,7 +5576,10 @@
             el.checked = true;
           }
         } else {
-          showToast(`Re-enabling apps via Toolkit is coming soon. Please use the app's own settings for now.`, 'info');
+          showToast(
+            `Re-enabling apps via Toolkit is coming soon. Please use the app's own settings for now.`,
+            'info'
+          );
           el.checked = false;
         }
       }
@@ -5581,57 +5622,96 @@
       }
 
       // ── SECURITY ──────────────────────────────────────────────
-      function buildSecurityChecks() {
+      async function buildSecurityChecks() {
+        if (!window.cxi || !window.cxi.securityScan) return;
+
+        const res = await window.cxi.securityScan();
+        let passCount = 0;
+
         const checks = [
           {
             icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>',
-            status: 'ok',
+            status: res.Firewall === 'Pass' ? 'ok' : 'red',
             name: 'Windows Firewall',
-            desc: 'Firewall is active and all profiles are enabled',
+            desc:
+              res.Firewall === 'Pass'
+                ? 'Firewall is active and all profiles are enabled'
+                : 'One or more firewall profiles are disabled',
           },
           {
             icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>',
-            status: 'ok',
+            status: res.Antivirus === 'Pass' ? 'ok' : 'red',
             name: 'Windows Defender',
-            desc: 'Real-time protection enabled, definitions current',
+            desc:
+              res.Antivirus === 'Pass'
+                ? 'Real-time protection enabled'
+                : 'Defender service is not running',
           },
           {
-            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
-            status: 'warn',
-            name: 'Windows Updates',
-            desc: '2 critical updates pending installation',
-          },
-          {
-            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>',
-            status: 'ok',
+            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>',
+            status: res.UAC === 'Pass' ? 'ok' : 'red',
             name: 'User Account Control',
-            desc: 'UAC is set to recommended level',
+            desc:
+              res.UAC === 'Pass'
+                ? 'UAC is enabled and protecting your system'
+                : 'UAC is disabled (Security Risk)',
           },
           {
             icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>',
-            status: 'ok',
+            status: res.BitLocker === 'Pass' ? 'ok' : 'warn',
             name: 'BitLocker Encryption',
-            desc: 'Drive C:\\ is fully encrypted',
+            desc:
+              res.BitLocker === 'Pass'
+                ? 'Drive C:\\ is protected with BitLocker'
+                : 'Drive C:\\ is not encrypted',
           },
           {
             icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
-            status: 'warn',
+            status: res.RDP === 'Pass' ? 'ok' : 'warn',
             name: 'Remote Desktop',
-            desc: 'RDP is enabled — ensure it is intentional',
-          },
-          {
-            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>',
-            status: 'ok',
-            name: 'Secure Boot',
-            desc: 'Secure Boot is enabled in UEFI settings',
-          },
-          {
-            icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>',
-            status: 'ok',
-            name: 'Password Policy',
-            desc: 'Strong password policy is enforced',
+            desc:
+              res.RDP === 'Pass'
+                ? 'RDP is disabled (Recommended for security)'
+                : 'RDP is currently enabled',
           },
         ];
+
+        // Update Score
+        checks.forEach(c => {
+          if (c.status === 'ok') passCount++;
+        });
+        const score = Math.round((passCount / checks.length) * 100);
+        const scoreEl = document.getElementById('sec-score-val');
+        const fillEl = document.getElementById('sec-score-fill');
+        const lblEl = document.getElementById('sec-score-lbl');
+
+        if (scoreEl) scoreEl.textContent = score;
+        if (fillEl) fillEl.style.width = score + '%';
+        if (lblEl)
+          lblEl.textContent = `out of 100 — ${score >= 80 ? 'Good' : score >= 50 ? 'Fair' : 'Poor'}`;
+
+        // Update Quick Stats
+        const setStat = (id, pass, label) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          el.innerHTML = `<span class="badge ${pass ? 'green' : 'red'}">${pass ? '✅' : '❌'} ${label}</span>`;
+        };
+        setStat(
+          'stat-firewall',
+          res.Firewall === 'Pass',
+          res.Firewall === 'Pass' ? 'Active' : 'Disabled'
+        );
+        setStat(
+          'stat-antivirus',
+          res.Antivirus === 'Pass',
+          res.Antivirus === 'Pass' ? 'Protected' : 'Risk'
+        );
+        setStat(
+          'stat-update',
+          res.WindowsUpdate === 'Pass',
+          res.WindowsUpdate === 'Pass' ? 'Service OK' : 'Check WU'
+        );
+
         document.getElementById('sec-checks').innerHTML = checks
           .map(
             c => `
@@ -5649,7 +5729,7 @@
 
       // ── SETTINGS ──────────────────────────────────────────────
       let configRefresh = 5000;
-      
+
       const defaultSettings = {
         startup: false,
         tray: true,
@@ -5658,14 +5738,16 @@
         memAlert: 90,
         diskAlert: 85,
         telemetry: false,
-        history: true
+        history: true,
       };
 
       function getSettings() {
         try {
           const s = localStorage.getItem('cxi_settings');
           return s ? { ...defaultSettings, ...JSON.parse(s) } : defaultSettings;
-        } catch(e) { return defaultSettings; }
+        } catch (e) {
+          return defaultSettings;
+        }
       }
 
       function updateSetting(key, el) {
@@ -5673,7 +5755,7 @@
         if (el.type === 'checkbox') settings[key] = el.checked;
         else settings[key] = parseFloat(el.value);
         localStorage.setItem('cxi_settings', JSON.stringify(settings));
-        
+
         // Handle immediate effects
         if (key === 'startup' && window.cxi && window.cxi.setStartup) {
           window.cxi.setStartup(settings.startup);
@@ -5685,9 +5767,9 @@
 
       function clearSettings() {
         if (confirm('Are you sure you want to revert all settings back to their default state?')) {
-           localStorage.removeItem('cxi_settings');
-           loadSettingsInfo();
-           showToast('All data cleared', 'success');
+          localStorage.removeItem('cxi_settings');
+          loadSettingsInfo();
+          showToast('All data cleared', 'success');
         }
       }
 
@@ -5716,16 +5798,22 @@
           const info = await window.cxi.getSysInfo();
           const el = document.getElementById('set-node');
           if (el) el.textContent = info.nodeVersion;
-          
+
           if (window.cxi.setTray) {
             window.cxi.setTray(getSettings().tray);
           }
         }
-        
+
         const s = getSettings();
-        const sc = (id, val) => { const el=document.getElementById(id); if(el) el.checked=val; };
-        const sv = (id, val) => { const el=document.getElementById(id); if(el) el.value=val; };
-        
+        const sc = (id, val) => {
+          const el = document.getElementById(id);
+          if (el) el.checked = val;
+        };
+        const sv = (id, val) => {
+          const el = document.getElementById(id);
+          if (el) el.value = val;
+        };
+
         sc('set-startup', s.startup);
         sc('set-tray', s.tray);
         sc('set-sound', s.sound);
@@ -5741,7 +5829,7 @@
         try {
           // Initialize Settings
           loadSettingsInfo();
-          
+
           // Parallelize EVERY module's initial data fetch
           const pHealth = updateHealth();
           const pMetrics = updateMetrics();
@@ -5866,15 +5954,18 @@
           if (window.cxi) window.cxi.ready();
         }
 
-        // Sync real logs
+        // Sync real logs & security posture
         refreshLogs();
+        buildSecurityChecks();
         setInterval(refreshLogs, 10000); // Sync real logs every 10s
 
-        // Start metrics interval
+        // Start metrics & network background intervals
         metricsInterval = setInterval(() => {
           updateMetrics().catch(() => {});
           updateHealth().catch(() => {});
         }, configRefresh);
+        
+        applyNetworkMonitorInterval(); // Ensure background net graph starts now
       }
 
       // ── USER PROFILE PURGER ─────────────────────────────────────
