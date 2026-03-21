@@ -59,5 +59,7 @@ contextBridge.exposeInMainWorld('cxi', {
   openLogsFolder: () => ipcRenderer.invoke('open-logs-folder'),
   getWindowsEvents: (count) => ipcRenderer.invoke('get-windows-events', count),
   getStartupItems: () => ipcRenderer.invoke('get-startup-items'),
-  toggleStartupItem: (opts) => ipcRenderer.invoke('toggle-startup-item', opts)
+  toggleStartupItem: (opts) => ipcRenderer.invoke('toggle-startup-item', opts),
+  getLinkLatency: () => ipcRenderer.invoke('get-link-latency'),
+  networkReset: () => ipcRenderer.invoke('network-reset')
 });

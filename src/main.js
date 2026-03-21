@@ -406,7 +406,29 @@ ipcMain.handle('get-network-stats', async () => {
   });
 });
 
+ipcMain.handle('get-link-latency', async () => {
+  return new Promise(resolve => {
+    // Ping Google DNS for a solid health check
+    exec('ping -n 1 8.8.8.8', { timeout: 2000 }, (err, stdout) => {
+      if (err || !stdout) return resolve({ ms: 0, status: 'Offline' });
+      const match = stdout.match(/time[=<](\d+)ms/i);
+      if (match) {
+        resolve({ ms: parseInt(match[1]), status: 'Online' });
+      } else {
+        resolve({ ms: 0, status: 'Timeout' });
+      }
+    });
+  });
+});
+
 // Real Data Handlers
+ipcMain.handle('network-reset', async () => {
+  // Pop a real CMD window for live feedback and native experience
+  const cmd = 'cls & echo ======================================== & echo  CXI SLT TOOLKIT: NETWORK CONFIG RESET & echo ======================================== & echo. & echo [1/3] Flushing DNS... & ipconfig /flushdns & echo. & echo [2/3] Releasing IP Address... & ipconfig /release & echo. & echo [3/3] Renewing IP Address (Wait)... & ipconfig /renew & echo. & echo ======================================== & echo  NETWORK RESET COMPLETE! & echo ======================================== & echo. & pause';
+  exec(`start "Toolkit Network Reset" cmd /c "${cmd}"`);
+  return { success: true };
+});
+
 ipcMain.handle('get-processes', async () => {
   try {
     const list = await si.processes();
