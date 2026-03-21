@@ -1,5 +1,19 @@
 const { app, BrowserWindow, ipcMain, Menu, shell, Tray, nativeImage, Notification } = require('electron');
 
+// --- SINGLE INSTANCE LOCK ---
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  });
+}
+
 // Silence terminal SSL/handshake errors from webviews (like Speedtest ads)
 app.commandLine.appendSwitch('ignore-certificate-errors');
 app.commandLine.appendSwitch('log-level', '3'); // Only show fatal errors
