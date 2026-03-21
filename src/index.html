@@ -1553,12 +1553,24 @@
         pointer-events: auto;
       }
       @keyframes toastIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
       }
-      .toast.info { border-left: 4px solid var(--blue); }
-      .toast.success { border-left: 4px solid var(--green); }
-      .toast.error { border-left: 4px solid var(--red); }
+      .toast.info {
+        border-left: 4px solid var(--blue);
+      }
+      .toast.success {
+        border-left: 4px solid var(--green);
+      }
+      .toast.error {
+        border-left: 4px solid var(--red);
+      }
     </style>
   </head>
   <body>
@@ -1608,7 +1620,14 @@
           <div class="sb-label">Main</div>
           <div class="sb-item active" data-page="dashboard">
             <div class="ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <rect x="3" y="3" width="7" height="7"></rect>
                 <rect x="14" y="3" width="7" height="7"></rect>
                 <rect x="14" y="14" width="7" height="7"></rect>
@@ -1620,7 +1639,14 @@
           </div>
           <div class="sb-item" data-page="sysinfo">
             <div class="ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
                 <line x1="8" y1="21" x2="16" y2="21"></line>
                 <line x1="12" y1="17" x2="12" y2="21"></line>
@@ -1636,7 +1662,14 @@
           <!-- Storage dropdown -->
           <div class="sb-item" data-toggle="storage-dd">
             <div class="ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
                 <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
                 <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
@@ -1661,7 +1694,14 @@
           <!-- Network dropdown -->
           <div class="sb-item" data-toggle="net-dd">
             <div class="ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="2" y1="12" x2="22" y2="12"></line>
                 <path
@@ -1692,7 +1732,14 @@
           <div class="sb-label">System</div>
           <div class="sb-item" data-page="processes">
             <div class="ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
               </svg>
             </div>
@@ -1700,9 +1747,20 @@
           </div>
           <div class="sb-item" data-page="startup">
             <div class="ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
-                <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"
+                ></path>
+                <path
+                  d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"
+                ></path>
                 <path d="M9 12H4s.55-3.03 2-5c1.62-2.2 5-3 5-3"></path>
                 <path d="M12 15v5s3.03-.55 5-2c2.2-1.62 3-5 3-5"></path>
               </svg>
@@ -1711,7 +1769,14 @@
           </div>
           <div class="sb-item" data-page="eventlog">
             <div class="ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <line x1="8" y1="6" x2="21" y2="6"></line>
                 <line x1="8" y1="12" x2="21" y2="12"></line>
                 <line x1="8" y1="18" x2="21" y2="18"></line>
@@ -1725,7 +1790,14 @@
           </div>
           <div class="sb-item" data-page="security">
             <div class="ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
               </svg>
             </div>
@@ -1737,9 +1809,18 @@
           <div class="sb-label">Config</div>
           <div class="sb-item" data-page="settings">
             <div class="ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                ></path>
               </svg>
             </div>
             <div class="lbl">Settings</div>
@@ -1967,21 +2048,42 @@
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
                   <button class="btn btn-ghost" onclick="navTo('ping')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
                       <circle cx="12" cy="12" r="10"></circle>
                       <polyline points="12 6 12 12 16 14"></polyline>
                     </svg>
                     Ping Test
                   </button>
                   <button class="btn btn-ghost" onclick="navTo('port-scanner')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
                       <circle cx="11" cy="11" r="8"></circle>
                       <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
                     Port Scan
                   </button>
                   <button class="btn btn-ghost" onclick="navTo('disk-analyzer')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
                       <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
                       <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
                       <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
@@ -1989,27 +2091,57 @@
                     Disk analyzer
                   </button>
                   <button class="btn btn-ghost" onclick="navTo('processes')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
                       <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
                     </svg>
                     Processes
                   </button>
                   <button class="btn btn-ghost" onclick="navTo('security')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
                       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                     </svg>
                     Security
                   </button>
                   <button class="btn btn-ghost" onclick="navTo('dns-lookup')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
                       <circle cx="12" cy="12" r="10"></circle>
                       <line x1="2" y1="12" x2="22" y2="12"></line>
-                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                      <path
+                        d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                      ></path>
                     </svg>
                     DNS Lookup
                   </button>
                   <button class="btn btn-ghost" onclick="navTo('ping')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
                       <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
                     </svg>
                     Speedtest
@@ -2572,16 +2704,45 @@
                 </div>
               </div>
               <div style="display: flex; gap: 8px; flex-wrap: wrap">
-                <button class="btn btn-ghost btn-sm" onclick="quickPing('8.8.8.8', true)">8.8.8.8</button>
-                <button class="btn btn-ghost btn-sm" onclick="quickPing('8.8.4.4', true)">8.8.4.4</button>
-                <button class="btn btn-ghost btn-sm" onclick="quickPing('1.1.1.1', true)">1.1.1.1</button>
-                <button class="btn btn-ghost btn-sm" onclick="quickPing('1.0.0.1', true)">1.0.0.1</button>
-                <button class="btn btn-ghost btn-sm" onclick="quickPing('192.168.1.38', true)">192.168.1.38</button>
-                <button class="btn btn-ghost btn-sm" onclick="quickPing('203.28.66.34', true)">203.28.66.34</button>
+                <button class="btn btn-ghost btn-sm" onclick="quickPing('8.8.8.8', true)">
+                  8.8.8.8
+                </button>
+                <button class="btn btn-ghost btn-sm" onclick="quickPing('8.8.4.4', true)">
+                  8.8.4.4
+                </button>
+                <button class="btn btn-ghost btn-sm" onclick="quickPing('1.1.1.1', true)">
+                  1.1.1.1
+                </button>
+                <button class="btn btn-ghost btn-sm" onclick="quickPing('1.0.0.1', true)">
+                  1.0.0.1
+                </button>
+                <button class="btn btn-ghost btn-sm" onclick="quickPing('192.168.1.38', true)">
+                  192.168.1.38
+                </button>
+                <button class="btn btn-ghost btn-sm" onclick="quickPing('203.28.66.34', true)">
+                  203.28.66.34
+                </button>
                 <button class="btn btn-ghost btn-sm" onclick="pingGateway()">Gateway</button>
-                <button class="btn btn-ghost btn-sm" onclick="quickPing('google.com')">google.com</button>
-                <button class="btn btn-ghost btn-sm" onclick="window.cxi.openExternalIpconfig()" style="border-color:var(--orange); color:var(--orange)">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px; height:12px; margin-right:4px"><rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect><path d="M7 2v20"></path><path d="M17 2v20"></path><path d="M2 12h20"></path></svg>
+                <button class="btn btn-ghost btn-sm" onclick="quickPing('google.com')">
+                  google.com
+                </button>
+                <button
+                  class="btn btn-ghost btn-sm"
+                  onclick="window.cxi.openExternalIpconfig()"
+                  style="border-color: var(--orange); color: var(--orange)"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    style="width: 12px; height: 12px; margin-right: 4px"
+                  >
+                    <rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect>
+                    <path d="M7 2v20"></path>
+                    <path d="M17 2v20"></path>
+                    <path d="M2 12h20"></path>
+                  </svg>
                   IPConfig
                 </button>
               </div>
@@ -2591,14 +2752,43 @@
             <!-- PERMANENT SPEEDTEST CARD -->
             <div id="speedtest-card">
               <!-- Floating Refresh Button -->
-              <button 
-                onclick="reloadSpeedtest()" 
+              <button
+                onclick="reloadSpeedtest()"
                 title="Refresh Speedtest"
-                style="position: absolute; top: 12px; right: 12px; z-index: 20; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text2); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
-                onmouseover="this.style.background='var(--blue-soft)'; this.style.color='var(--blue)'"
-                onmouseout="this.style.background='var(--surface)'; this.style.color='var(--text2)'"
+                style="
+                  position: absolute;
+                  top: 12px;
+                  right: 12px;
+                  z-index: 20;
+                  width: 32px;
+                  height: 32px;
+                  border-radius: 50%;
+                  border: 1px solid var(--border);
+                  background: var(--surface);
+                  color: var(--text2);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  cursor: pointer;
+                  transition: all 0.2s;
+                  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                "
+                onmouseover="
+                  this.style.background = 'var(--blue-soft)';
+                  this.style.color = 'var(--blue)';
+                "
+                onmouseout="
+                  this.style.background = 'var(--surface)';
+                  this.style.color = 'var(--text2)';
+                "
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 14px; height: 14px;">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  style="width: 14px; height: 14px"
+                >
                   <path d="M23 4v6h-6"></path>
                   <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
                 </svg>
@@ -2657,21 +2847,38 @@
                   value="21,22,23,25,53,80,443,3306,3389,8080"
                 />
                 <button class="btn btn-primary" onclick="doPortScan()" id="ps-btn">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:4px">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="width: 14px; height: 14px; margin-right: 4px"
+                  >
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                  </svg> Scan
+                  </svg>
+                  Scan
                 </button>
               </div>
             </div>
-            <div id="ps-progress-container" style="display:none; margin-bottom:16px;">
-              <div class="card" style="padding:15px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; font-weight:600;">
+            <div id="ps-progress-container" style="display: none; margin-bottom: 16px">
+              <div class="card" style="padding: 15px">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 8px;
+                    font-size: 12px;
+                    font-weight: 600;
+                  "
+                >
                   <span id="ps-status-text">Scanning ports...</span>
                   <span id="ps-percent-text">0%</span>
                 </div>
-                <div class="pbar-track" style="height:8px;">
-                  <div id="ps-progress-fill" class="pbar-fill blue" style="width:0%"></div>
+                <div class="pbar-track" style="height: 8px">
+                  <div id="ps-progress-fill" class="pbar-fill blue" style="width: 0%"></div>
                 </div>
               </div>
             </div>
@@ -2687,9 +2894,19 @@
               <div class="port-grid" id="port-results">
                 <div class="empty-state">
                   <div class="ei">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:48px;height:48px;opacity:0.6">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      style="width: 48px; height: 48px; opacity: 0.6"
+                    >
                       <circle cx="12" cy="11" r="3"></circle>
-                      <path d="M16 11c0 2.209-1.791 4-4 4s-4-1.791-4-4 1.791-4 4-4 4 1.791 4 4Z"></path>
+                      <path
+                        d="M16 11c0 2.209-1.791 4-4 4s-4-1.791-4-4 1.791-4 4-4 4 1.791 4 4Z"
+                      ></path>
                       <path d="M12 2v3"></path>
                       <path d="M12 17v5"></path>
                       <path d="M11 22h2"></path>
@@ -2726,21 +2943,44 @@
                   placeholder="Hostname or domain..."
                 />
                 <button class="btn btn-primary" onclick="doDNS()">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:6px">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="width: 14px; height: 14px; margin-right: 6px"
+                  >
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="2" y1="12" x2="22" y2="12"></line>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                  </svg> Lookup
+                    <path
+                      d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                    ></path>
+                  </svg>
+                  Lookup
                 </button>
               </div>
             </div>
-            <div id="dns-progress-container" style="display:none; margin-bottom:16px;">
-              <div class="card" style="padding:15px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; font-weight:600;">
+            <div id="dns-progress-container" style="display: none; margin-bottom: 16px">
+              <div class="card" style="padding: 15px">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 8px;
+                    font-size: 12px;
+                    font-weight: 600;
+                  "
+                >
                   <span id="dns-status-text">Querying DNS records...</span>
                 </div>
-                <div class="pbar-track" style="height:6px;">
-                  <div id="dns-progress-fill" class="pbar-fill blue" style="width:100%; transition: none; animation: pbar-indet 2s infinite linear;"></div>
+                <div class="pbar-track" style="height: 6px">
+                  <div
+                    id="dns-progress-fill"
+                    class="pbar-fill blue"
+                    style="width: 100%; transition: none; animation: pbar-indet 2s infinite linear"
+                  ></div>
                 </div>
               </div>
             </div>
@@ -2754,10 +2994,20 @@
                   <div id="dns-result-ips">
                     <div class="empty-state">
                       <div class="ei">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:48px;height:48px;opacity:0.6">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          style="width: 48px; height: 48px; opacity: 0.6"
+                        >
                           <circle cx="12" cy="12" r="10"></circle>
                           <line x1="2" y1="12" x2="22" y2="12"></line>
-                          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                          <path
+                            d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                          ></path>
                         </svg>
                       </div>
                       <p>Enter a hostname above</p>
@@ -2779,14 +3029,22 @@
           <!-- ══════════════════ WIFI MONITOR ══════════════════ -->
           <div class="page" id="page-wifi-monitor">
             <div class="page-hdr">
-              <div style="flex:1">
+              <div style="flex: 1">
                 <h1>WiFi Monitor</h1>
                 <p>Wireless network signal and details</p>
               </div>
               <button class="btn btn-ghost" onclick="loadWifiMonitor()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;margin-right:6px">
-                  <path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-                </svg> Refresh
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  style="width: 14px; height: 14px; margin-right: 6px"
+                >
+                  <path d="M23 4v6h-6"></path>
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+                Refresh
               </button>
             </div>
             <div class="grid-2" style="margin-bottom: 16px">
@@ -2843,11 +3101,16 @@
                   >
                     —
                   </div>
-                  <div id="wifi-signal-desc" style="font-size: 14px; color: var(--text3); margin-bottom: 12px">
+                  <div
+                    id="wifi-signal-desc"
+                    style="font-size: 14px; color: var(--text3); margin-bottom: 12px"
+                  >
                     dBm — Detectable
                   </div>
                   <div class="pbar-wrap">
-                    <div class="pbar-row"><span>Signal</span><span id="wifi-cur-percent">0%</span></div>
+                    <div class="pbar-row">
+                      <span>Signal</span><span id="wifi-cur-percent">0%</span>
+                    </div>
                     <div class="pbar-track">
                       <div id="wifi-cur-fill" class="pbar-fill green" style="width: 0%"></div>
                     </div>
@@ -2871,7 +3134,11 @@
                   </tr>
                 </thead>
                 <tbody id="wifi-nearby-list">
-                  <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text3)">Scanning for networks...</td></tr>
+                  <tr>
+                    <td colspan="5" style="text-align: center; padding: 40px; color: var(--text3)">
+                      Scanning for networks...
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -2883,37 +3150,21 @@
               <h1>Process Manager</h1>
               <p>Running processes — live view</p>
             </div>
-            <div class="card">
-              <div class="card-title">
-                <div class="dot"></div>
-                Running Processes
-                <span id="proc-count" class="badge blue" style="margin-left: 6px"></span>
-              </div>
-              <div class="search-bar" style="margin-bottom: 12px">
-                <span class="search-icon">🔍</span>
-                <input
-                  type="text"
-                  placeholder="Filter processes..."
-                  id="proc-filter"
-                  oninput="filterProcs()"
-                />
-              </div>
-              <div style="max-height: 400px; overflow-y: auto">
+            <div class="card" style="padding: 0; overflow: hidden">
+              <div style="flex: 1; max-height: calc(100vh - 165px); overflow-y: auto">
                 <table class="proc-table" id="proc-table">
                   <thead>
                     <tr>
-                      <th>Name</th>
-                      <th>PID</th>
-                      <th>CPU %</th>
-                      <th>Memory</th>
-                      <th>Status</th>
+                      <th data-key="name" onclick="sortProcs('name')" style="cursor: pointer; user-select: none; padding: 12px 15px">Name</th>
+                      <th data-key="pid" onclick="sortProcs('pid')" style="cursor: pointer; user-select: none; padding: 12px 15px">PID</th>
+                      <th data-key="cpu" onclick="sortProcs('cpu')" style="cursor: pointer; user-select: none; padding: 12px 15px">CPU %</th>
+                      <th data-key="mem" onclick="sortProcs('mem')" style="cursor: pointer; user-select: none; padding: 12px 15px">Memory</th>
+                      <th data-key="status" onclick="sortProcs('status')" style="cursor: pointer; user-select: none; padding: 12px 15px">Status</th>
+                      <th style="padding: 12px 15px">Action</th>
                     </tr>
                   </thead>
                   <tbody id="proc-body"></tbody>
                 </table>
-              </div>
-              <div style="margin-top: 10px; display: flex; gap: 8px">
-                <button class="btn btn-ghost btn-sm" onclick="loadProcesses()">🔄 Refresh</button>
               </div>
             </div>
           </div>
@@ -3838,7 +4089,9 @@
       async function runToolkitIpconfig() {
         if (!window.cxi) return;
         const out = document.getElementById('ping-output');
-        if (out) out.innerHTML += '<div class="t-line" style="color:var(--orange)">[System] Running ipconfig /all...</div>';
+        if (out)
+          out.innerHTML +=
+            '<div class="t-line" style="color:var(--orange)">[System] Running ipconfig /all...</div>';
         try {
           const result = await window.cxi.runIpconfig();
           if (out) {
@@ -3846,7 +4099,7 @@
             out.scrollTop = out.scrollHeight;
           }
         } catch (e) {
-           if (out) out.innerHTML += '<div class="t-err">[Error] Failed to run ipconfig</div>';
+          if (out) out.innerHTML += '<div class="t-err">[Error] Failed to run ipconfig</div>';
         }
       }
 
@@ -3912,7 +4165,7 @@
         btn.disabled = true;
         btn.innerHTML =
           '<span class="spinner" style="width:12px;height:12px;border-width:2px"></span> Scanning...';
-        
+
         progContainer.style.display = 'block';
         progFill.style.width = '0%';
         progPercent.textContent = '0%';
@@ -3923,11 +4176,11 @@
 
         let openCount = 0;
         const results = [];
-        
+
         for (let i = 0; i < ports.length; i++) {
           const port = ports[i];
           const pct = Math.round(((i + 1) / ports.length) * 100);
-          
+
           progFill.style.width = pct + '%';
           progPercent.textContent = pct + '%';
           progStatus.textContent = `Checking port ${port}...`;
@@ -3937,13 +4190,22 @@
             result = await window.cxi.scanPort(host, port);
           } else {
             await sleep(100 + Math.random() * 50);
-            const openChance = (host === '127.0.0.1' || host === 'localhost') ? ([80, 443, 3306, 22].includes(port) ? 0.7 : 0.2) : 0.15;
-            result = { port, open: Math.random() < openChance, ms: Math.floor(10 + Math.random() * 100) };
+            const openChance =
+              host === '127.0.0.1' || host === 'localhost'
+                ? [80, 443, 3306, 22].includes(port)
+                  ? 0.7
+                  : 0.2
+                : 0.15;
+            result = {
+              port,
+              open: Math.random() < openChance,
+              ms: Math.floor(10 + Math.random() * 100),
+            };
           }
-          
+
           if (result.open) openCount++;
           results.push(result);
-          
+
           // Iterative update
           const chip = document.createElement('div');
           chip.className = `port-chip ${result.open ? 'open' : 'closed'}`;
@@ -3954,7 +4216,7 @@
           `;
           resultsEl.appendChild(chip);
           summary.textContent = `${openCount} open / ${i + 1} scanned`;
-          
+
           // Scroll to bottom of results to show latest
           resultsEl.parentElement.scrollTop = resultsEl.parentElement.scrollHeight;
         }
@@ -3963,7 +4225,7 @@
         btn.disabled = false;
         btn.innerHTML =
           '<svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.5;margin-right:4px"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Scan';
-        
+
         setTimeout(() => {
           progContainer.style.opacity = '0';
           setTimeout(() => {
@@ -4140,16 +4402,21 @@
               if (r.addresses && r.addresses.length > 0) {
                 elIps.innerHTML = `
                   <div class="grid-2" style="gap:8px">
-                    ${r.addresses.map(a => `
+                    ${r.addresses
+                      .map(
+                        a => `
                       <div class="net-if-card" style="margin-bottom:0; border-left: 2px solid var(--blue); padding: 10px">
                         <div class="net-if-name" style="margin-bottom:0; font-size:10px; opacity:0.6">${a.family} Protocol</div>
                         <div style="font-family:var(--mono); font-size:13px; font-weight:600; color:var(--text)">${a.address}</div>
                       </div>
-                    `).join('')}
+                    `
+                      )
+                      .join('')}
                   </div>
                 `;
               } else {
-                 elIps.innerHTML = '<p style="padding:10px; color:var(--text3)">No IP addresses found</p>';
+                elIps.innerHTML =
+                  '<p style="padding:10px; color:var(--text3)">No IP addresses found</p>';
               }
 
               // 2. Extra Data (MX, TXT, NS, etc.) as separate cards
@@ -4171,20 +4438,28 @@
                       ${type} Records
                     </div>
                     <div style="display:flex; flex-direction:column; gap:6px">
-                      ${items.map(rec => {
-                        let val = '';
-                        const raw = rec.value || rec;
-                        if (type === 'MX') val = `<span style="color:var(--text2)">${raw.exchange}</span> <span style="font-size:9px; background:var(--surface3); padding:1px 5px; border-radius:3px; margin-left:8px">Priority: ${raw.priority}</span>`;
-                        else if (type === 'TXT') val = (raw.entries || []).join(' ');
-                        else if (type === 'SOA') val = `<div style="line-height:1.4">Primary NS: <span style="color:var(--text)">${raw.nsname}</span><br>Admin Email: <span style="color:var(--text); font-size:11px">${raw.hostmaster.replace(/\./, '@')}</span><br><span style="opacity:0.5; font-size:10px">Serial: ${raw.serial}</span></div>`;
-                        else val = raw.address || raw.value || (typeof raw === 'string' ? raw : JSON.stringify(raw));
+                      ${items
+                        .map(rec => {
+                          let val = '';
+                          const raw = rec.value || rec;
+                          if (type === 'MX')
+                            val = `<span style="color:var(--text2)">${raw.exchange}</span> <span style="font-size:9px; background:var(--surface3); padding:1px 5px; border-radius:3px; margin-left:8px">Priority: ${raw.priority}</span>`;
+                          else if (type === 'TXT') val = (raw.entries || []).join(' ');
+                          else if (type === 'SOA')
+                            val = `<div style="line-height:1.4">Primary NS: <span style="color:var(--text)">${raw.nsname}</span><br>Admin Email: <span style="color:var(--text); font-size:11px">${raw.hostmaster.replace(/\./, '@')}</span><br><span style="opacity:0.5; font-size:10px">Serial: ${raw.serial}</span></div>`;
+                          else
+                            val =
+                              raw.address ||
+                              raw.value ||
+                              (typeof raw === 'string' ? raw : JSON.stringify(raw));
 
-                        return `
+                          return `
                           <div class="net-if-card" style="margin-bottom:0; padding:8px 12px; background: var(--surface2); border: 1px solid var(--border)">
                             <div style="word-break:break-all; font-family:var(--mono); font-size:11.5px; color:var(--text2)">${val}</div>
                           </div>
                         `;
-                      }).join('')}
+                        })
+                        .join('')}
                     </div>
                   `;
                   elExtra.appendChild(card);
@@ -4217,14 +4492,15 @@
               const ipv4 = addrs.find(a => a.family === 'IPv4');
               if (!ipv4) continue;
 
-              const isWifi = name.toLowerCase().includes('wi-fi') || name.toLowerCase().includes('wlan');
+              const isWifi =
+                name.toLowerCase().includes('wi-fi') || name.toLowerCase().includes('wlan');
               const isEth = name.toLowerCase().includes('ethernet');
-              
-              const icon = isWifi 
+
+              const icon = isWifi
                 ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:6px"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>'
-                : isEth 
-                ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:6px"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>'
-                : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:6px"><rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect><path d="M15 22V10a2 2 0 0 0-2-2H2"></path></svg>';
+                : isEth
+                  ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:6px"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>'
+                  : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;margin-right:6px"><rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect><path d="M15 22V10a2 2 0 0 0-2-2H2"></path></svg>';
 
               html += `
                 <div class="net-if-card" style="margin-bottom:8px">
@@ -4236,8 +4512,8 @@
               `;
             }
             el.innerHTML = html || '<div class="empty-state"><p>No active interfaces</p></div>';
-          } catch(e) {
-             el.innerHTML = '<p style="color:var(--text3)">Failed to load network info</p>';
+          } catch (e) {
+            el.innerHTML = '<p style="color:var(--text3)">Failed to load network info</p>';
           }
         } else {
           el.innerHTML = `
@@ -4265,94 +4541,204 @@
         { name: 'code.exe', pid: 8192, cpu: 5.2, mem: 380.1 },
       ];
 
+      let procInterval = null;
+      let ALL_PROCS = [];
+      let procSearchQuery = '';
+
       async function loadProcesses() {
         if (!window.cxi) return;
         const tbody = document.getElementById('proc-body');
         if (!tbody) return;
 
-        if (CACHE.processes) {
+        if (CACHE.processes && ALL_PROCS.length === 0) {
           renderProcsUI(CACHE.processes);
         }
 
         try {
           const procs = await window.cxi.getProcesses();
+          ALL_PROCS = procs;
           CACHE.processes = procs;
+
           renderProcsUI(procs);
+          
+          // Initial sort indicator for CPU
+          if (ALL_PROCS.length > 0 && procSortKey === 'cpu') {
+            const cpuTh = document.querySelector('#proc-table th[data-key="cpu"]');
+            if (cpuTh && !cpuTh.innerHTML.includes('▾')) {
+              cpuTh.innerHTML = `CPU % <span style="font-size: 14px; margin-left: 4px">▾</span>`;
+              cpuTh.style.color = 'var(--blue)';
+              cpuTh.style.background = 'var(--blue-soft)';
+            }
+          }
+
+          if (!procInterval) {
+            procInterval = setInterval(() => {
+              const pg = document.getElementById('page-processes');
+              if (pg && pg.classList.contains('active')) {
+                loadProcesses();
+              }
+            }, 5000);
+          }
         } catch (e) {
           if (!CACHE.processes) {
             tbody.innerHTML =
-              '<tr><td colspan="5" style="text-align:center;color:var(--red)">Failed to load processes</td></tr>';
+              '<tr><td colspan="6" style="text-align:center;color:var(--red)">Failed to load processes</td></tr>';
           }
         }
+      }
+
+      let procSortKey = 'cpu';
+      let procSortOrder = -1; // -1 for desc, 1 for asc (default cpu desc)
+
+      function sortProcs(key) {
+        if (procSortKey === key) {
+          procSortOrder *= -1;
+        } else {
+          procSortKey = key;
+          // Default to DESC for numbers/pct, ASC for strings
+          procSortOrder = (key === 'name' || key === 'status') ? 1 : -1;
+        }
+        
+        // Update header UI
+        document.querySelectorAll('#proc-table th[data-key]').forEach(th => {
+          const k = th.getAttribute('data-key');
+          let label = k.charAt(0).toUpperCase() + k.slice(1);
+          if (k === 'cpu') label = 'CPU %';
+          if (k === 'mem') label = 'Memory';
+          
+          if (k === procSortKey) {
+            th.innerHTML = `${label} <span style="font-size: 14px; margin-left: 4px">${procSortOrder === 1 ? '▴' : '▾'}</span>`;
+            th.style.color = 'var(--blue)';
+            th.style.background = 'var(--blue-soft)';
+          } else {
+            th.innerHTML = label;
+            th.style.color = 'var(--text3)';
+            th.style.background = 'transparent';
+          }
+        });
+
+        // Re-render
+        renderProcsUI(ALL_PROCS);
       }
 
       function renderProcsUI(procs) {
         const tbody = document.getElementById('proc-body');
         if (!tbody) return;
-        tbody.innerHTML = procs
-          .map(
-            p => `
-      <tr>
-        <td style="font-weight:600">${p.name}</td>
-        <td class="mono">${p.pid}</td>
-        <td class="mono" style="color:${p.cpu > 5 ? 'var(--red)' : p.cpu > 2 ? 'var(--yellow)' : 'var(--text2)'}">${p.cpu.toFixed(1)}%</td>
-        <td class="mono">${p.mem.toFixed(1)} MB</td>
-        <td><span class="badge ${p.status === 'running' ? 'green' : 'gray'}">${p.status || 'running'}</span></td>
-      </tr>`
-          )
+
+        // Perform sorting before rendering
+        const sorted = [...procs].sort((a, b) => {
+          let valA = a[procSortKey];
+          let valB = b[procSortKey];
+          
+          if (typeof valA === 'string') valA = valA.toLowerCase();
+          if (typeof valB === 'string') valB = valB.toLowerCase();
+          
+          if (valA < valB) return -1 * procSortOrder;
+          if (valA > valB) return 1 * procSortOrder;
+          return 0;
+        });
+
+        tbody.innerHTML = sorted
+          .map(p => {
+            const isSystem = p.pid <= 4 || p.name.toLowerCase().includes('system');
+            return `
+              <tr>
+                <td style="font-weight:600; padding: 10px 15px">${p.name}</td>
+                <td class="mono" style="padding: 10px 15px">${p.pid}</td>
+                <td class="mono" style="color:${p.cpu > 20 ? 'var(--red)' : p.cpu > 5 ? 'var(--yellow)' : 'var(--text2)'}; padding: 10px 15px">${p.cpu.toFixed(1)}%</td>
+                <td class="mono" style="padding: 10px 15px">${p.mem.toFixed(1)} MB</td>
+                <td style="padding: 10px 15px"><span class="badge ${p.status === 'running' || p.status === 'sleeping' ? 'green' : 'gray'}">${p.status || 'unknown'}</span></td>
+                <td style="padding: 10px 15px">
+                  ${
+                    isSystem
+                      ? ''
+                      : `
+                  <button class="btn btn-sm" onclick="killProc(${p.pid}, '${p.name}')" title="Kill Process" style="padding:4px; min-width:32px; height:32px; background:rgba(239, 68, 68, 0.1); border:1px solid rgba(239, 68, 68, 0.2); color:var(--red); display:flex; align-items:center; justify-content:center; border-radius:6px; transition:all 0.2s" onmouseover="this.style.background='var(--red)'; this.style.color='#fff'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='var(--red)'">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                  </button>
+                  `
+                  }
+                </td>
+              </tr>`;
+          })
           .join('');
-        const pCount = document.getElementById('proc-count');
-        if (pCount) pCount.textContent = procs.length + ' active processes';
+      }
+
+      async function killProc(pid, name) {
+        if (confirm(`Are you sure you want to terminate ${name} (PID: ${pid})?`)) {
+          const res = await window.cxi.killProcess(pid);
+          if (res.success) {
+            showToast(`Terminated ${name}`, 'success');
+            loadProcesses();
+          } else {
+            showToast('Failed to kill process' + (res.error ? ': ' + res.error : ''), 'error');
+          }
+        }
       }
 
       // ── WIFI MONITOR ─────────────────────────────────────────
       async function loadWifiMonitor() {
         if (!window.cxi) return;
-        
+
         try {
           const data = await window.cxi.getWifiData();
           const hasWifi = data.connected && data.connected.length > 0;
           const cur = hasWifi ? data.connected[0] : null;
           const eth = data.ethernet;
-          
+
           if (cur) {
             document.getElementById('wifi-cur-ssid').textContent = cur.ssid || 'Unknown';
-            document.getElementById('wifi-cur-band').textContent = `${cur.model || ''} (${cur.frequency} MHz)`;
+            document.getElementById('wifi-cur-band').textContent =
+              `${cur.model || ''} (${cur.frequency} MHz)`;
             document.getElementById('wifi-cur-channel').textContent = cur.channel || '—';
             document.getElementById('wifi-cur-bssid').textContent = cur.bssid || '—';
             document.getElementById('wifi-cur-security').textContent = cur.security || '—';
-            document.getElementById('wifi-cur-speed').textContent = cur.bitRate ? `${cur.bitRate} Mbps` : '—';
-            
+            document.getElementById('wifi-cur-speed').textContent = cur.bitRate
+              ? `${cur.bitRate} Mbps`
+              : '—';
+
             const sig = cur.signalLevel || -100;
-            const pct = Math.min(100, Math.max(0, (sig + 100) * 2)); 
-            
+            const pct = Math.min(100, Math.max(0, (sig + 100) * 2));
+
             document.getElementById('wifi-big-signal').textContent = sig;
             document.getElementById('wifi-cur-signal-text').textContent = `${sig} dBm`;
             document.getElementById('wifi-cur-percent').textContent = pct + '%';
             document.getElementById('wifi-cur-fill').style.width = pct + '%';
-            
+
             let desc = 'Weak';
             let color = 'var(--red)';
-            if (sig > -60) { desc = 'Excellent'; color = 'var(--green)'; }
-            else if (sig > -70) { desc = 'Good'; color = 'var(--blue)'; }
-            else if (sig > -85) { desc = 'Fair'; color = 'var(--yellow)'; }
-            
+            if (sig > -60) {
+              desc = 'Excellent';
+              color = 'var(--green)';
+            } else if (sig > -70) {
+              desc = 'Good';
+              color = 'var(--blue)';
+            } else if (sig > -85) {
+              desc = 'Fair';
+              color = 'var(--yellow)';
+            }
+
             document.getElementById('wifi-signal-desc').textContent = `dBm — ${desc}`;
             document.getElementById('wifi-big-signal').style.color = color;
-            document.getElementById('wifi-cur-fill').className = `pbar-fill ${desc === 'Excellent' ? 'green' : desc === 'Good' ? 'blue' : desc === 'Fair' ? 'yellow' : 'red'}`;
+            document.getElementById('wifi-cur-fill').className =
+              `pbar-fill ${desc === 'Excellent' ? 'green' : desc === 'Good' ? 'blue' : desc === 'Fair' ? 'yellow' : 'red'}`;
           } else if (eth) {
-             // Ethernet Fallback
+            // Ethernet Fallback
             document.getElementById('wifi-cur-ssid').textContent = 'Ethernet Connection';
-            document.getElementById('wifi-cur-band').textContent = (eth.speed || eth.speedMax || '1000') + ' Mbps Link';
+            document.getElementById('wifi-cur-band').textContent =
+              (eth.speed || eth.speedMax || '1000') + ' Mbps Link';
             document.getElementById('wifi-cur-channel').textContent = 'Wired';
             document.getElementById('wifi-cur-bssid').textContent = eth.mac || '—';
             document.getElementById('wifi-cur-security').textContent = 'Physical (802.3)';
             document.getElementById('wifi-cur-signal-text').textContent = 'Connected (Wired)';
-            document.getElementById('wifi-cur-speed').textContent = eth.speed ? `${eth.speed} Mbps` : '—';
-            
+            document.getElementById('wifi-cur-speed').textContent = eth.speed
+              ? `${eth.speed} Mbps`
+              : '—';
+
             document.getElementById('wifi-big-signal').textContent = 'ETH';
             document.getElementById('wifi-big-signal').style.color = 'var(--blue)';
-            document.getElementById('wifi-signal-desc').textContent = 'Ethernet - No Wireless Signal';
+            document.getElementById('wifi-signal-desc').textContent =
+              'Ethernet - No Wireless Signal';
             document.getElementById('wifi-cur-percent').textContent = '100%';
             document.getElementById('wifi-cur-fill').style.width = '100%';
             document.getElementById('wifi-cur-fill').className = 'pbar-fill blue';
@@ -4361,15 +4747,23 @@
           // Nearby stays the same (can still scan even if on ethernet)
           const list = document.getElementById('wifi-nearby-list');
           if (data.nearby && data.nearby.length) {
-            list.innerHTML = data.nearby.map(n => {
-              const sig = n.signalLevel || 0;
-              let sText = 'Weak';
-              let sClass = 'gray';
-              if (sig > -60) { sText = 'Excellent'; sClass = 'green'; }
-              else if (sig > -70) { sText = 'Good'; sClass = 'blue'; }
-              else if (sig > -85) { sText = 'Fair'; sClass = 'yellow'; }
+            list.innerHTML = data.nearby
+              .map(n => {
+                const sig = n.signalLevel || 0;
+                let sText = 'Weak';
+                let sClass = 'gray';
+                if (sig > -60) {
+                  sText = 'Excellent';
+                  sClass = 'green';
+                } else if (sig > -70) {
+                  sText = 'Good';
+                  sClass = 'blue';
+                } else if (sig > -85) {
+                  sText = 'Fair';
+                  sClass = 'yellow';
+                }
 
-              return `
+                return `
                 <tr>
                   <td style="font-weight:600">${n.ssid || 'Hidden Network'}</td>
                   <td class="mono">${n.frequency > 4000 ? '5 GHz' : '2.4 GHz'}</td>
@@ -4378,9 +4772,11 @@
                   <td><span class="badge ${sClass}">${sText}</span></td>
                 </tr>
               `;
-            }).join('');
+              })
+              .join('');
           } else {
-            list.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text3)">No other networks found nearby.</td></tr>';
+            list.innerHTML =
+              '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text3)">No other networks found nearby.</td></tr>';
           }
         } catch (e) {
           console.error('WiFi Error:', e);
@@ -5194,19 +5590,22 @@
         }
 
         if (success > 0) showToast(`Successfully purged ${success} profile(s).`, 'success');
-        if (fail > 0) showToast(`${fail} profile(s) failed to delete. Check administrative permissions.`, 'error');
+        if (fail > 0)
+          showToast(
+            `${fail} profile(s) failed to delete. Check administrative permissions.`,
+            'error'
+          );
 
         btn.disabled = false;
         btn.textContent = 'Purge Selected Profiles';
         loadUserProfiles(true);
       }
 
-
       function reloadSpeedtest() {
         const wv = document.getElementById('speed-webview');
         const loader = document.getElementById('speed-loader');
         if (!wv) return;
-        
+
         if (loader) {
           loader.innerHTML = `
             <div class="spinner" style="width: 36px; height: 36px; border: 4px solid var(--blue-soft); border-top-color: var(--blue);"></div>
@@ -5223,7 +5622,7 @@
       if (speedWebview) {
         // Only show error if the MAIN page fails to load
         // Note: isMainFrame is the 5th argument in webview did-fail-load
-        speedWebview.addEventListener('did-fail-load', (e) => {
+        speedWebview.addEventListener('did-fail-load', e => {
           // In webviews, the arguments are passed as part of the event or in specific fields
           // For webview element events, we check e.isMainFrame
           if (e.isMainFrame) {

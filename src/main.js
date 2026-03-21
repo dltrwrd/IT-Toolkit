@@ -71,7 +71,7 @@ function createWindow() {
 
   mainWindow.once('ready-to-show', () => {
     // Show as soon as the window is ready (or wait for data if needed)
-    isMinSplashTimeDone = true; 
+    isMinSplashTimeDone = true;
     tryShowMain();
   });
 
@@ -180,18 +180,21 @@ let cachedGateway = null;
 // Background gateway discovery
 async function refreshGatewayCache() {
   try {
-    exec('powershell -NoProfile -Command "(Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway -ne $null }).IPv4DefaultGateway.NextHop"', (err, stdout) => {
-      if (!err && stdout) {
-        const val = stdout.trim();
-        if (val && val.includes('.') && val.split('.').length === 4) {
-          cachedGateway = val;
-          return;
+    exec(
+      'powershell -NoProfile -Command "(Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway -ne $null }).IPv4DefaultGateway.NextHop"',
+      (err, stdout) => {
+        if (!err && stdout) {
+          const val = stdout.trim();
+          if (val && val.includes('.') && val.split('.').length === 4) {
+            cachedGateway = val;
+            return;
+          }
         }
+        si.networkGateway().then(gw => {
+          if (gw && gw !== '0.0.0.0' && gw.includes('.')) cachedGateway = gw;
+        });
       }
-      si.networkGateway().then(gw => {
-        if (gw && gw !== '0.0.0.0' && gw.includes('.')) cachedGateway = gw;
-      });
-    });
+    );
   } catch (e) {}
 }
 
@@ -199,9 +202,12 @@ ipcMain.handle('get-gateway', async () => {
   if (cachedGateway) return cachedGateway;
   try {
     const psVal = await new Promise(resolve => {
-      exec('powershell -NoProfile -Command "(Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway -ne $null }).IPv4DefaultGateway.NextHop"', (err, stdout) => {
-        resolve(!err && stdout ? stdout.trim() : null);
-      });
+      exec(
+        'powershell -NoProfile -Command "(Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway -ne $null }).IPv4DefaultGateway.NextHop"',
+        (err, stdout) => {
+          resolve(!err && stdout ? stdout.trim() : null);
+        }
+      );
     });
     if (psVal) {
       cachedGateway = psVal;
@@ -216,7 +222,7 @@ ipcMain.handle('get-gateway', async () => {
 ipcMain.handle('open-external-ipconfig', async () => {
   spawn('cmd.exe', ['/c', 'start', 'cmd', '/k', 'ipconfig /all'], {
     detached: true,
-    stdio: 'ignore'
+    stdio: 'ignore',
   }).unref();
   return { success: true };
 });
@@ -234,9 +240,9 @@ ipcMain.handle('get-wifi-data', async () => {
     const [connections, networks, defaultIfaceName] = await Promise.all([
       si.wifiConnections(),
       si.wifiNetworks(),
-      si.networkInterfaceDefault()
+      si.networkInterfaceDefault(),
     ]);
-    
+
     // If no WiFi connection, let's get the default ethernet/other interface
     let ethernet = null;
     if (!connections || connections.length === 0) {
@@ -247,7 +253,7 @@ ipcMain.handle('get-wifi-data', async () => {
     return {
       connected: connections,
       nearby: networks,
-      ethernet: ethernet
+      ethernet: ethernet,
     };
   } catch (e) {
     return { connected: [], nearby: [], ethernet: null };
@@ -263,13 +269,26 @@ ipcMain.handle('get-processes', async () => {
         name: p.name,
         pid: p.pid,
         cpu: p.cpu,
-        mem: p.memRss / 1024 / 1024, // to MB
+        mem: p.memRss / 1024,
         status: p.state,
       }))
       .sort((a, b) => b.cpu - a.cpu)
       .slice(0, 50);
   } catch (e) {
     return [];
+  }
+});
+
+ipcMain.handle('kill-process', async (e, pid) => {
+  try {
+    if (process.platform === 'win32') {
+      exec(`taskkill /F /PID ${pid}`);
+    } else {
+      process.kill(pid, 'SIGKILL');
+    }
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
   }
 });
 
@@ -341,7 +360,7 @@ ipcMain.handle('open-external-ping', async (event, { host, count, continuous }) 
   const cmd = `echo --- CXI PING TOOL --- & echo Target: ${host} & ping ${args} ${host}`;
   spawn('cmd.exe', ['/c', 'start', 'cmd', '/k', `title ${title} & ${cmd}`], {
     detached: true,
-    stdio: 'ignore'
+    stdio: 'ignore',
   }).unref();
   return { success: true };
 });
@@ -350,7 +369,7 @@ ipcMain.handle('open-external-tracert', async (event, { host }) => {
   const cmd = `echo --- CXI TRACERT TOOL --- & echo Target: ${host} & tracert ${host}`;
   spawn('cmd.exe', ['/c', 'start', 'cmd', '/k', `title tracert ${host} & ${cmd}`], {
     detached: true,
-    stdio: 'ignore'
+    stdio: 'ignore',
   }).unref();
   return { success: true };
 });
@@ -502,7 +521,7 @@ ipcMain.handle('scan-port', async (e, { host, port }) => {
 
 // DNS Lookup
 ipcMain.handle('dns-lookup', async (e, host) => {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     // 1. Core lookup for main IPs
     dns.lookup(host, { all: true }, async (err, addrs) => {
       const results = { success: true, addresses: addrs || [], records: [] };

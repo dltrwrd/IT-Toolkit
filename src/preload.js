@@ -44,6 +44,7 @@ contextBridge.exposeInMainWorld('cxi', {
   runIpconfig: () => ipcRenderer.invoke('run-ipconfig'),
   openExternalIpconfig: () => ipcRenderer.invoke('open-external-ipconfig'),
   getWifiData: () => ipcRenderer.invoke('get-wifi-data'),
+  killProcess: pid => ipcRenderer.invoke('kill-process', pid),
   runCmd: cmd => ipcRenderer.invoke('run-cmd', cmd),
   ready: () => ipcRenderer.send('app-ready'),
   onProfileProgress: callback =>

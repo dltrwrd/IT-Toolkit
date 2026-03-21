@@ -577,7 +577,20 @@ async function loadProcesses() {
 
 function renderProcs(procs) {
   const tbody = document.getElementById('proc-tbody');
-  tbody.innerHTML = procs.map(p => `
+  
+  // Sorting logic
+  const sorted = [...procs].sort((a, b) => {
+    let valA = a[procSortKey || 'cpu'];
+    let valB = b[procSortKey || 'cpu'];
+    if (typeof valA === 'string') valA = valA.toLowerCase();
+    if (typeof valB === 'string') valB = valB.toLowerCase();
+    const order = procSortOrder || -1;
+    if (valA < valB) return -1 * order;
+    if (valA > valB) return 1 * order;
+    return 0;
+  });
+
+  tbody.innerHTML = sorted.map(p => `
     <tr>
       <td><span class="font-bold">${p.name}</span></td>
       <td class="mono">${p.pid}</td>
@@ -590,9 +603,17 @@ function renderProcs(procs) {
   `).join('') || '<tr><td colspan="5" class="text-muted">No processes found</td></tr>';
 }
 
-function filterProcs() {
-  const q = document.getElementById('proc-filter').value.toLowerCase();
-  renderProcs(allProcs.filter(p => p.name?.toLowerCase().includes(q)));
+let procSortKey = 'cpu';
+let procSortOrder = -1;
+
+function sortProcs(key) {
+  if (procSortKey === key) {
+    procSortOrder *= -1;
+  } else {
+    procSortKey = key;
+    procSortOrder = (key === 'name' || key === 'status') ? 1 : -1;
+  }
+  renderProcs(allProcs);
 }
 
 async function killProc(pid, name, btn) {
