@@ -3549,8 +3549,8 @@
                 </div>
                 <div class="setting-row">
                   <div class="setting-info">
-                    <h3>Sound Alerts</h3>
-                    <p>Play sound on high CPU/memory</p>
+                    <h3>System Alerts</h3>
+                    <p>Show native notification when thresholds are exceeded</p>
                   </div>
                   <label class="startup-tog"
                     ><input
@@ -4107,7 +4107,43 @@
         );
       }
 
+      let lastAlertTime = 0;
+      function checkResourceAlerts(cpu, mem, disks = []) {
+        if (!window.cxi || !window.cxi.showNotification) return;
+        const isEnabled = document.getElementById('set-sound').checked;
+        if (!isEnabled) return;
+
+        const now = Date.now();
+        if (now - lastAlertTime < 60000) return; // Cooldown 1 minute (per overall system)
+
+        // Read LIVE thresholds from inputs
+        const cpuThreshold = parseInt(document.getElementById('set-cpu').value) || 90;
+        const memThreshold = parseInt(document.getElementById('set-mem').value) || 90;
+        const diskThreshold = parseInt(document.getElementById('set-disk').value) || 85;
+
+        let alertTriggered = false;
+        
+        if (cpu >= cpuThreshold) {
+          window.cxi.showNotification('⚠️ High CPU Usage', `Your system is using ${cpu}% CPU (Threshold: ${cpuThreshold}%).`);
+          alertTriggered = true;
+        } else if (mem >= memThreshold) {
+          window.cxi.showNotification('⚠️ High Memory Usage', `RAM usage is at ${mem}% (Threshold: ${memThreshold}%).`);
+          alertTriggered = true;
+        } else {
+          const mainDisk = disks[0];
+          if (mainDisk && mainDisk.percent >= diskThreshold) {
+            window.cxi.showNotification('💽 Low Disk Space', `${mainDisk.drive} is ${mainDisk.percent}% full (Threshold: ${diskThreshold}%).`);
+            alertTriggered = true;
+          }
+        }
+
+        if (alertTriggered) {
+          lastAlertTime = now;
+        }
+      }
+
       function setMetrics(cpu, mem, memUsed, memTotal, uptime, disks = []) {
+        checkResourceAlerts(cpu, mem, disks);
         // Stat cards
         const cpuEl = document.getElementById('d-cpu');
         if (cpuEl) cpuEl.textContent = cpu + '%';
@@ -5791,12 +5827,12 @@
       let configRefresh = 5000;
 
       const defaultSettings = {
-        startup: false,
+        startup: true,
         tray: true,
-        sound: false,
-        cpuAlert: 85,
-        memAlert: 90,
-        diskAlert: 85,
+        sound: true,
+        cpuAlert: 95,
+        memAlert: 95,
+        diskAlert: 90,
         telemetry: false,
         history: true,
       };

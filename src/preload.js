@@ -61,5 +61,6 @@ contextBridge.exposeInMainWorld('cxi', {
   getStartupItems: () => ipcRenderer.invoke('get-startup-items'),
   toggleStartupItem: (opts) => ipcRenderer.invoke('toggle-startup-item', opts),
   getLinkLatency: () => ipcRenderer.invoke('get-link-latency'),
-  networkReset: () => ipcRenderer.invoke('network-reset')
+  networkReset: () => ipcRenderer.invoke('network-reset'),
+  showNotification: (title, body) => ipcRenderer.invoke('show-notification', { title, body })
 });

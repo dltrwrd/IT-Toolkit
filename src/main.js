@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu, shell, Tray, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, shell, Tray, nativeImage, Notification } = require('electron');
 
 // Silence terminal SSL/handshake errors from webviews (like Speedtest ads)
 app.commandLine.appendSwitch('ignore-certificate-errors');
@@ -10,6 +10,12 @@ const { exec, spawn, spawnSync } = require('child_process');
 const dns = require('dns');
 const net = require('net');
 const si = require('systeminformation');
+
+// Identity & Branding for Windows
+app.name = 'CXI SLT Toolkit';
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.cxi.slt.toolkit');
+}
 
 let mainWindow;
 let splashWindow;
@@ -156,15 +162,24 @@ ipcMain.on('stop-duplicates', () => {
   stopScanRequested = true;
 });
 
-// System info
+// System info with safety timeouts
 ipcMain.handle('get-sysinfo', async () => {
   try {
     const cpus = os.cpus();
+    
+    // Wrap si calls in a timeout to prevent hanging on slow hardware
+    const withTimeout = (promise, fallback, ms = 5000) => {
+      return Promise.race([
+        promise,
+        new Promise(resolve => setTimeout(() => resolve(fallback), ms))
+      ]);
+    };
+
     const [gpu, base, bios, memLayout] = await Promise.all([
-      si.graphics().catch(() => ({ controllers: [] })),
-      si.baseboard().catch(() => ({})),
-      si.bios().catch(() => ({})),
-      si.memLayout().catch(() => []),
+      withTimeout(si.graphics(), { controllers: [] }).catch(() => ({ controllers: [] })),
+      withTimeout(si.baseboard(), {}).catch(() => ({})),
+      withTimeout(si.bios(), {}).catch(() => ({})),
+      withTimeout(si.memLayout(), []).catch(() => []),
     ]);
 
     return {
@@ -184,14 +199,15 @@ ipcMain.handle('get-sysinfo', async () => {
       networkInterfaces: os.networkInterfaces(),
       nodeVersion: process.versions.node,
       electronVersion: process.versions.electron,
-      gpu: gpu.controllers[0]?.model || 'Integrated Graphics',
-      vram: gpu.controllers[0]?.vram || 0,
-      motherboard: `${base.manufacturer || ''} ${base.model || ''}`.trim() || 'Generic Board',
-      biosVersion: bios.version || 'Unknown',
-      ramType: memLayout[0]?.type || 'DDR',
-      ramClock: memLayout[0]?.clockSpeed || '',
+      gpu: gpu?.controllers?.[0]?.model || 'Integrated Graphics',
+      vram: gpu?.controllers?.[0]?.vram || 0,
+      motherboard: `${base?.manufacturer || ''} ${base?.model || ''}`.trim() || 'Generic Board',
+      biosVersion: bios?.version || 'Unknown',
+      ramType: memLayout?.[0]?.type || 'DDR',
+      ramClock: memLayout?.[0]?.clockSpeed || '',
     };
   } catch (e) {
+    console.error('get-sysinfo error:', e);
     return { hostname: os.hostname(), error: 'Partial data' };
   }
 });
@@ -419,6 +435,12 @@ ipcMain.handle('get-link-latency', async () => {
       }
     });
   });
+});
+
+ipcMain.handle('show-notification', (event, { title, body }) => {
+  if (Notification.isSupported()) {
+    new Notification({ title, body }).show();
+  }
 });
 
 // Real Data Handlers
