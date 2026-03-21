@@ -2572,29 +2572,17 @@
                 </div>
               </div>
               <div style="display: flex; gap: 8px; flex-wrap: wrap">
-                <button
-                  class="btn btn-ghost btn-sm"
-                  onclick="document.getElementById('ping-host').value = '8.8.8.8'"
-                >
-                  Google DNS
-                </button>
-                <button
-                  class="btn btn-ghost btn-sm"
-                  onclick="document.getElementById('ping-host').value = '1.1.1.1'"
-                >
-                  Cloudflare
-                </button>
-                <button
-                  class="btn btn-ghost btn-sm"
-                  onclick="document.getElementById('ping-host').value = 'google.com'"
-                >
-                  google.com
-                </button>
-                <button
-                  class="btn btn-ghost btn-sm"
-                  onclick="document.getElementById('ping-host').value = '192.168.1.1'"
-                >
-                  Gateway
+                <button class="btn btn-ghost btn-sm" onclick="quickPing('8.8.8.8', true)">8.8.8.8</button>
+                <button class="btn btn-ghost btn-sm" onclick="quickPing('8.8.4.4', true)">8.8.4.4</button>
+                <button class="btn btn-ghost btn-sm" onclick="quickPing('1.1.1.1', true)">1.1.1.1</button>
+                <button class="btn btn-ghost btn-sm" onclick="quickPing('1.0.0.1', true)">1.0.0.1</button>
+                <button class="btn btn-ghost btn-sm" onclick="quickPing('192.168.1.38', true)">192.168.1.38</button>
+                <button class="btn btn-ghost btn-sm" onclick="quickPing('203.28.66.34', true)">203.28.66.34</button>
+                <button class="btn btn-ghost btn-sm" onclick="pingGateway()">Gateway</button>
+                <button class="btn btn-ghost btn-sm" onclick="quickPing('google.com')">google.com</button>
+                <button class="btn btn-ghost btn-sm" onclick="window.cxi.openExternalIpconfig()" style="border-color:var(--orange); color:var(--orange)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px; height:12px; margin-right:4px"><rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect><path d="M7 2v20"></path><path d="M17 2v20"></path><path d="M2 12h20"></path></svg>
+                  IPConfig
                 </button>
               </div>
             </div>
@@ -3840,6 +3828,43 @@
           window.cxi.openExternalPing({ host, count, continuous });
         } else {
           alert('External CMD only supported in the Toolkit Desktop app.');
+        }
+      }
+
+      function quickPing(host, continuous = false) {
+        const hInput = document.getElementById('ping-host');
+        const cCheck = document.getElementById('ping-continuous');
+        if (hInput) hInput.value = host;
+        if (cCheck) cCheck.checked = continuous;
+        doPing();
+      }
+
+      async function pingGateway() {
+        if (!window.cxi) return;
+        try {
+          const gw = await window.cxi.getGateway();
+          if (gw) {
+            quickPing(gw, true); // Quick ping gateway with -t
+          } else {
+            showToast('Could not detect default gateway', 'warn');
+          }
+        } catch (e) {
+          showToast('Failed to fetch gateway', 'error');
+        }
+      }
+
+      async function runToolkitIpconfig() {
+        if (!window.cxi) return;
+        const out = document.getElementById('ping-output');
+        if (out) out.innerHTML += '<div class="t-line" style="color:var(--orange)">[System] Running ipconfig /all...</div>';
+        try {
+          const result = await window.cxi.runIpconfig();
+          if (out) {
+            out.innerHTML += `<div class="t-line" style="white-space:pre-wrap; font-size:11px; opacity:0.8">${result}</div>`;
+            out.scrollTop = out.scrollHeight;
+          }
+        } catch (e) {
+           if (out) out.innerHTML += '<div class="t-err">[Error] Failed to run ipconfig</div>';
         }
       }
 

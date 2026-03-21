@@ -96,6 +96,7 @@ ipcMain.on('app-ready', () => {
 app.whenReady().then(() => {
   showSplash();
   createWindow();
+  refreshGatewayCache(); // Pre-fetch gateway for faster tools
 });
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
@@ -172,6 +173,60 @@ ipcMain.handle('get-metrics', async () => {
       uptime: os.uptime(),
     };
   }
+});
+
+let cachedGateway = null;
+
+// Background gateway discovery
+async function refreshGatewayCache() {
+  try {
+    exec('powershell -NoProfile -Command "(Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway -ne $null }).IPv4DefaultGateway.NextHop"', (err, stdout) => {
+      if (!err && stdout) {
+        const val = stdout.trim();
+        if (val && val.includes('.') && val.split('.').length === 4) {
+          cachedGateway = val;
+          return;
+        }
+      }
+      si.networkGateway().then(gw => {
+        if (gw && gw !== '0.0.0.0' && gw.includes('.')) cachedGateway = gw;
+      });
+    });
+  } catch (e) {}
+}
+
+ipcMain.handle('get-gateway', async () => {
+  if (cachedGateway) return cachedGateway;
+  try {
+    const psVal = await new Promise(resolve => {
+      exec('powershell -NoProfile -Command "(Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway -ne $null }).IPv4DefaultGateway.NextHop"', (err, stdout) => {
+        resolve(!err && stdout ? stdout.trim() : null);
+      });
+    });
+    if (psVal) {
+      cachedGateway = psVal;
+      return psVal;
+    }
+    return await si.networkGateway();
+  } catch (e) {
+    return null;
+  }
+});
+
+ipcMain.handle('open-external-ipconfig', async () => {
+  spawn('cmd.exe', ['/c', 'start', 'cmd', '/k', 'ipconfig /all'], {
+    detached: true,
+    stdio: 'ignore'
+  }).unref();
+  return { success: true };
+});
+
+ipcMain.handle('run-ipconfig', async () => {
+  return new Promise(resolve => {
+    exec('ipconfig /all', (err, stdout) => {
+      resolve(err ? 'Error running ipconfig' : stdout);
+    });
+  });
 });
 
 // Real Data Handlers
@@ -256,22 +311,23 @@ ipcMain.handle('get-disk-health', async () => {
 });
 
 ipcMain.handle('open-external-ping', async (event, { host, count, continuous }) => {
-  let args = continuous ? '-t' : `-n ${count}`;
-  const cmd = `start cmd.exe /k "echo --- CXI PING TOOL --- & echo Target: ${host} & ping ${args} ${host}"`;
-  return new Promise(resolve => {
-    exec(cmd, err => {
-      resolve({ success: !err, error: err ? err.message : null });
-    });
-  });
+  const args = continuous ? '-t' : `-n ${count}`;
+  const title = `ping -t ${host}`;
+  const cmd = `echo --- CXI PING TOOL --- & echo Target: ${host} & ping ${args} ${host}`;
+  spawn('cmd.exe', ['/c', 'start', 'cmd', '/k', `title ${title} & ${cmd}`], {
+    detached: true,
+    stdio: 'ignore'
+  }).unref();
+  return { success: true };
 });
 
 ipcMain.handle('open-external-tracert', async (event, { host }) => {
-  const cmd = `start cmd.exe /k "echo --- CXI TRACERT TOOL --- & echo Target: ${host} & tracert ${host}"`;
-  return new Promise(resolve => {
-    exec(cmd, err => {
-      resolve({ success: !err, error: err ? err.message : null });
-    });
-  });
+  const cmd = `echo --- CXI TRACERT TOOL --- & echo Target: ${host} & tracert ${host}`;
+  spawn('cmd.exe', ['/c', 'start', 'cmd', '/k', `title tracert ${host} & ${cmd}`], {
+    detached: true,
+    stdio: 'ignore'
+  }).unref();
+  return { success: true };
 });
 
 ipcMain.handle('open-speedtest', async () => {

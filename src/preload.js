@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('cxi', {
   // System
   getSysInfo: () => ipcRenderer.invoke('get-sysinfo'),
   getMetrics: () => ipcRenderer.invoke('get-metrics'),
+  getGateway: () => ipcRenderer.invoke('get-gateway'),
 
   // Tools
   pingHost: opts => ipcRenderer.send('ping-host', opts),
@@ -40,6 +41,8 @@ contextBridge.exposeInMainWorld('cxi', {
   deleteUserProfile: sid => ipcRenderer.invoke('delete-user-profile', sid),
   deleteFile: path => ipcRenderer.invoke('delete-file', path),
   getDefaults: () => ipcRenderer.invoke('get-defaults'),
+  runIpconfig: () => ipcRenderer.invoke('run-ipconfig'),
+  openExternalIpconfig: () => ipcRenderer.invoke('open-external-ipconfig'),
   runCmd: cmd => ipcRenderer.invoke('run-cmd', cmd),
   ready: () => ipcRenderer.send('app-ready'),
   onProfileProgress: callback =>
