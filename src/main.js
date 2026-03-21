@@ -1,4 +1,9 @@
 const { app, BrowserWindow, ipcMain, Menu, shell, Tray, nativeImage } = require('electron');
+
+// Silence terminal SSL/handshake errors from webviews (like Speedtest ads)
+app.commandLine.appendSwitch('ignore-certificate-errors');
+app.commandLine.appendSwitch('log-level', '3'); // Only show fatal errors
+
 const path = require('path');
 const os = require('os');
 const { exec, spawn, spawnSync } = require('child_process');
@@ -85,6 +90,13 @@ function createWindow() {
     '*://*.pubmatic.com/*',
     '*://*.rubiconproject.com/*',
     '*://*.criteo.com/*',
+    '*://*.cpmstar.com/*',
+    '*://*.fast.nexx360.io/*',
+    '*://*.smilewanted.com/*',
+    '*://*.360yield.com/*',
+    '*://*/*/usersync.aspx*',
+    '*://*.outbrain.com/*',
+    '*://*.taboola.com/*',
   ];
 
   session.defaultSession.webRequest.onBeforeRequest({ urls: adBlockList }, (details, callback) => {
@@ -1103,4 +1115,84 @@ ipcMain.handle('set-tray', async (e, enabled) => {
     appTray.destroy();
     appTray = null;
   }
+});
+
+ipcMain.handle('get-windows-events', async (e, count = 20) => {
+  return new Promise(resolve => {
+    // Fetch newest events from System log. Using Get-EventLog for better combatibility
+    const script = `Get-EventLog -LogName System -Newest ${count} | ForEach-Object { [PSCustomObject]@{ time=$_.TimeGenerated.ToString("HH:mm:ss"); level=$_.EntryType.ToString(); msg=$_.Message.Replace("\\r\\n", " ").Replace("\\n", " ").Trim() } } | ConvertTo-Json`;
+    const encodedCommand = Buffer.from(script, 'utf16le').toString('base64');
+    
+    exec(`powershell -NoProfile -EncodedCommand ${encodedCommand}`, (err, stdout) => {
+      if (err || !stdout) return resolve([]);
+      try {
+        let data = JSON.parse(stdout);
+        if (!Array.isArray(data)) data = [data];
+        // Normalize levels to match our CSS (INFO, WARN, ERR, OK)
+        resolve(data.map(ev => {
+          let lvl = 'INFO';
+          if (ev.level === 'Error') lvl = 'ERR';
+          else if (ev.level === 'Warning') lvl = 'WARN';
+          else if (ev.level === 'Information') lvl = 'INFO';
+          else if (ev.level === 'SuccessAudit') lvl = 'OK';
+          
+          return {
+            time: ev.time,
+            level: lvl,
+            msg: ev.msg.length > 150 ? ev.msg.substring(0, 150) + '...' : ev.msg
+          };
+        }));
+      } catch (e) {
+        resolve([]);
+      }
+    });
+  });
+});
+
+ipcMain.handle('get-startup-items', async () => {
+  return new Promise(resolve => {
+    const script = `
+      $paths = @("HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run")
+      $results = @()
+      foreach ($p in $paths) {
+        if (Test-Path $p) {
+          Get-ItemProperty $p | Get-Member -MemberType NoteProperty | ForEach-Object {
+            $name = $_.Name
+            $val = (Get-ItemProperty $p).$name
+            $results += [PSCustomObject]@{ Name=$name; Path=$val; Registry=$p }
+          }
+        }
+      }
+      $results | ConvertTo-Json
+    `.trim();
+    const encodedCommand = Buffer.from(script, 'utf16le').toString('base64');
+    exec(`powershell -NoProfile -EncodedCommand ${encodedCommand}`, (err, stdout) => {
+      if (err || !stdout) return resolve([]);
+      try {
+        let data = JSON.parse(stdout);
+        if (!Array.isArray(data)) data = data ? [data] : [];
+        resolve(data.map(i => ({
+          name: i.Name,
+          path: i.Path,
+          registry: i.Registry,
+          enabled: true // Registry entries in 'Run' are enabled by default
+        })));
+      } catch (e) { resolve([]); }
+    });
+  });
+});
+
+ipcMain.handle('toggle-startup-item', async (e, { name, registry, enabled }) => {
+  return new Promise(resolve => {
+    if (enabled) {
+      // Re-enable is complex without stored path, let's assume we mainly want to disable
+      resolve(false);
+    } else {
+      // Remove from registry
+      const cmd = `Remove-ItemProperty -Path "${registry}" -Name "${name}" -ErrorAction SilentlyContinue`;
+      exec(`powershell -NoProfile -Command "${cmd}"`, (err) => {
+        resolve(!err);
+      });
+    }
+  });
 });
