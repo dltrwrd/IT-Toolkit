@@ -1,5 +1,6 @@
 {
   "name": "cxi-slt-toolkit",
+  "author": "wrdDEV",
   "version": "3.0.0",
   "description": "CXI SLT — Professional IT Toolkit for Windows",
   "main": "src/main.js",
@@ -16,7 +17,7 @@
       "requestedExecutionLevel": "requireAdministrator",
       "target": [
         { "target": "nsis", "arch": ["x64"] },
-        { "target": "portable", "arch": ["x64"] }
+        { "target": "zip", "arch": ["x64"] }
       ]
     },
     "nsis": {

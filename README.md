@@ -1,61 +1,83 @@
-# CXI SLT Toolkit
+# CXI SLT Toolkit — Professional IT Diagnostics (v3.0)
 
-A professional Windows desktop app for IT admins — built with Electron.
+A powerful, all-in-one Windows desktop utility designed for IT Administrators and Power Users. Built with Electron, it combines low-level system access with a modern, high-performance interface.
 
-## Features
-- **Dashboard** — Live CPU/RAM gauges, CPU history chart, health alerts
-- **System Info** — Full hardware & OS details, network interfaces
-- **Storage Tools** — Disk Analyzer, SMART Health, Partition View, Duplicate Finder
-- **Network Tools** — Ping, Port Scanner, DNS Lookup, Speed Test, WiFi Monitor
-- **Process Manager** — Live process list with CPU/RAM usage
-- **Startup Manager** — Enable/disable startup programs
-- **Event Log** — Live streaming system events
-- **Security Scanner** — Security posture score and checks
-- **Settings** — Thresholds, alerts, preferences
+---
 
-## Build Instructions
+## 🛰️ Key Features (v3.0)
+
+### 📈 Real-Time Network Monitoring
+- **High-Precision Data**: 5-second polling interval for real-time throughput accuracy.
+- **Latency Tracking**: Built-in 8.8.8.8 ICMP monitor (Purple Line) to detect lag spikes and connection drops instantly.
+- **Dual Speed View**: Track Inbound vs. Outbound metrics with live "Average Consumption" data.
+- **Integrated Speedtest**: Full webview integration for rapid bandwidth verification.
+
+### 🪚 User Profile Purger (Advanced)
+- **Deep System Scan**: Detects and calculates the **Literal Disk Footprint** of every user profile on the machine (System & Admin profiles included).
+- **Size Accuracy**: Detects hidden `AppData`, browser caches, and temp storage that Windows often under-reports.
+- **Permanent Removal**: Safely and completely purges unused profiles to reclaim hidden GBs of disk space.
+
+### 🛡️ System Health & Diagnostics
+- **Live Performance Gauges**: Modern visualizers for CPU, RAM, and Disk Space usage.
+- **Active Uptime Tracker**: Real-time system boot duration monitoring.
+- **Hardware Profile**: Deep detection of GPU, RAM Type (DDR), Motherboard, and BIOS information.
+- **Network Reset Tool**: One-click cleanup (`Flush DNS`, `IP Release`, `IP Renew`) with native CMD feedback.
+
+### 🔔 Smart System Alerts
+- **Native OS Notifications**: Receive critical Windows alerts when hardware thresholds are hit.
+- **User-Defined Thresholds**: Set your own warning limits for CPU, Memory, and Disk Usage percentage.
+- **Cooldown Logic**: Smart 1-minute alert cooldown to prevent notification spam during sustained loads.
+
+### 🚀 Privacy & Performance
+- **Built-in Ad-Blocker**: Prevents tracking and intrusive ads from slowing down embedded network tools.
+- **Single Instance Lock**: Ensures only one copy of the Toolkit runs at a time, preventing CPU/RAM overlap.
+- **Admin-First**: Manifest-protected to ensure the app always launches with necessary system privileges.
+
+---
+
+## 🛠️ Build & Installation
 
 ### Prerequisites
-- [Node.js](https://nodejs.org) v18 or higher
-- npm (comes with Node.js)
+- [Node.js](https://nodejs.org) v18 or higher (LTS recommended)
+- Administrator privileges for system-level metrics collection
 
-### Step 1 — Install dependencies
+### Development Mode
+Test the app instantly without building:
 ```bash
-cd "CXI SLT Toolkit"
 npm install
-```
-
-### Step 2 — Run in development (no .exe, just preview)
-```bash
 npm start
 ```
 
-### Step 3 — Build the Windows .exe installer
+### Production Build
+Generate your own branded installer or portable package:
 ```bash
 npm run build
 ```
+The output will be in the `dist/` folder:
+- **Installer**: `CXI SLT Toolkit Setup 3.0.0.exe` (Full NSIS setup)
+- **Portable**: `CXI SLT Toolkit-3.0.0-win.zip` (No installation needed)
 
-> [!IMPORTANT]
-> **Windows Users**: You MUST run your terminal as **Administrator** or enable **Developer Mode** in Windows Settings. 
-> Otherwise, `electron-builder` will fail when creating symbolic links (`A required privilege is not held by the client`).
+---
 
-The installer will be in the `dist/` folder:
-- `CXI SLT Toolkit Setup 1.0.0.exe` — full installer
-- `CXI SLT Toolkit 1.0.0.exe` — portable (no install needed)
-
-## Folder Structure
+## 📂 Project Structure
 ```
 CXI SLT Toolkit/
 ├── src/
-│   ├── main.js       ← Electron main process (Node.js backend)
-│   ├── preload.js    ← Secure bridge between UI and Node.js
-│   └── index.html    ← Full UI (HTML/CSS/JS)
-├── assets/           ← Icons go here
-├── package.json      ← Dependencies and build config
+│   ├── main.js       ← Node.js Backend (IPC, SysUtils, Single Instance)
+│   ├── preload.js    ← Secure IPC Bridge
+│   ├── index.html    ← Frontend (v3.0 UI / App Logic)
+│   └── assets/       ← Branded Logo & Icons
+├── package.json      ← v3.0 Metadata & Build Config (wrdDEV)
 └── README.md
 ```
 
-## Notes
-- Real system metrics (CPU, RAM, hostname, network) are pulled live via Node.js `os` module
-- Ping and Port Scanner use real OS commands and TCP sockets
-- Some features show simulated data (Disk, WiFi) — you can extend with `systeminformation` npm package for full hardware data
+---
+
+## 👨‍💻 Developer Notes
+- **Author**: wrdDEV
+- **Platform**: Optimized specifically for Windows 10/11 Architecture.
+- **Performance**: Uses `systeminformation` npm engine for hardware benchmarks.
+- **Security**: Context Isolation and Preload-based IPC are strictly enforced.
+
+---
+*CXI SLT — Empowering IT Administrators with Real-Time Control.*
