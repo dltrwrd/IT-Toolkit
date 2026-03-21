@@ -219,6 +219,22 @@ ipcMain.handle('get-gateway', async () => {
   }
 });
 
+let cachedIspInfo = null;
+ipcMain.handle('get-isp-info', async () => {
+  if (cachedIspInfo) return cachedIspInfo;
+  try {
+    const res = await fetch('http://ip-api.com/json/');
+    const data = await res.json();
+    if (data.status === 'success') {
+      cachedIspInfo = data.isp;
+      return cachedIspInfo;
+    }
+    return null;
+  } catch(e) {
+    return null;
+  }
+});
+
 ipcMain.handle('open-external-ipconfig', async () => {
   spawn('cmd.exe', ['/c', 'start', 'cmd', '/k', 'ipconfig /all'], {
     detached: true,
@@ -258,6 +274,92 @@ ipcMain.handle('get-wifi-data', async () => {
   } catch (e) {
     return { connected: [], nearby: [], ethernet: null };
   }
+});
+
+let prevNetStats = null;
+let lastNetTime = Date.now();
+
+// Pre-warm stats during splash screen to establish a baseline early
+exec('netstat -e', (err, stdout) => {
+  if (!err && stdout) {
+    const lines = stdout.split('\n');
+    for (const line of lines) {
+      const match = line.trim().match(/^[A-Za-z]+\s+(\d+)\s+(\d+)/);
+      if (match) {
+        prevNetStats = { rx: parseInt(match[1], 10), tx: parseInt(match[2], 10) };
+        lastNetTime = Date.now();
+        break;
+      }
+    }
+  }
+});
+
+ipcMain.handle('get-network-stats', async () => {
+  return new Promise((resolve) => {
+    // We use netstat -e because it bypasses Windows Performance Counters entirely.
+    // Performance counters are often corrupted on Windows 10/11, causing libraries to return 0.
+    exec('netstat -e', (error, stdout) => {
+      if (error || !stdout) {
+        return resolve({ rx: 0, tx: 0, total: 0 });
+      }
+
+      // Output of netstat -e has a line like: "Bytes       12345678   98765432"
+      const lines = stdout.split('\n');
+      let currentRx = 0;
+      let currentTx = 0;
+
+      for (const line of lines) {
+        // Flexible Regex to match "Letters Spaces Number Spaces Number" regardless of OS Language
+        const match = line.trim().match(/^[A-Za-z]+\s+(\d+)\s+(\d+)/);
+        if (match) {
+          currentRx = parseInt(match[1], 10);
+          currentTx = parseInt(match[2], 10);
+          break; // The first matching line is always Bytes/Octets
+        }
+      }
+
+      const now = Date.now();
+      const deltaSec = (now - lastNetTime) / 1000;
+      let rxKbps = 0;
+      let txKbps = 0;
+
+      if (prevNetStats && deltaSec > 0.5) {
+        let rxDelta = currentRx - prevNetStats.rx;
+        let txDelta = currentTx - prevNetStats.tx;
+        
+        // Handle 32-bit wrap around of netstat counters
+        if (rxDelta < 0) rxDelta += 4294967296; 
+        if (txDelta < 0) txDelta += 4294967296;
+
+        rxKbps = (rxDelta / 1024) / deltaSec;
+        txKbps = (txDelta / 1024) / deltaSec;
+        
+        // Safety bounds
+        if (rxKbps > 10000000) rxKbps = prevNetStats.lastRxKbps || 0;
+        if (txKbps > 10000000) txKbps = prevNetStats.lastTxKbps || 0;
+      } else if (prevNetStats && prevNetStats.lastRxKbps !== undefined) {
+        return resolve({ 
+          rx: prevNetStats.lastRxKbps, 
+          tx: prevNetStats.lastTxKbps, 
+          total: prevNetStats.lastRxKbps + prevNetStats.lastTxKbps 
+        });
+      }
+
+      prevNetStats = { 
+        rx: currentRx, 
+        tx: currentTx,
+        lastRxKbps: rxKbps,
+        lastTxKbps: txKbps
+      };
+      lastNetTime = now;
+
+      resolve({
+        rx: rxKbps,
+        tx: txKbps,
+        total: rxKbps + txKbps
+      });
+    });
+  });
 });
 
 // Real Data Handlers

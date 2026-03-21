@@ -8,7 +8,6 @@ let metricsInterval = null;
 let refreshRate = 5000;
 let cpuHistory = Array(60).fill(0);
 let ramHistory = Array(60).fill(0);
-let wifiHistory = Array(60).fill(-70);
 let allLogs = [];
 let allProcs = [];
 
@@ -38,7 +37,10 @@ function navigate(id, el) {
   if (id === 'startup') loadStartupItems();
   if (id === 'dns') loadIpInfo();
   if (id === 'partitions') loadPartitions();
-  if (id === 'wifi') initWifiChart();
+  if (id === 'wifi') {
+    if (typeof loadWifiMonitor === 'function') loadWifiMonitor();
+    else if (typeof initWifiChart === 'function') initWifiChart();
+  }
 }
 
 function toggleDropdown(id, el) {

@@ -52,4 +52,6 @@ contextBridge.exposeInMainWorld('cxi', {
   onProfileData: callback => ipcRenderer.on('profile-data-stream', (event, data) => callback(data)),
   openDiskCleanup: () => ipcRenderer.invoke('open-disk-cleanup'),
   openDefrag: () => ipcRenderer.invoke('open-defrag'),
+  getNetworkStats: () => ipcRenderer.invoke('get-network-stats'),
+  getIspInfo: () => ipcRenderer.invoke('get-isp-info'),
 });

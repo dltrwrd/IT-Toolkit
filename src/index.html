@@ -3118,29 +3118,44 @@
                 </div>
               </div>
             </div>
-            <div class="card">
-              <div class="card-title">
-                <div class="dot"></div>
-                Nearby Networks
+            <div class="card" style="margin-top: 16px">
+              <div class="card-title" style="display: flex; justify-content: space-between; align-items: center">
+                <div style="display: flex; align-items: center; gap: 7px">
+                  <div class="dot"></div>
+                  Network Performance History
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <div id="wifi-graph-legend" style="display: flex; gap: 15px; font-size: 10px; font-family: var(--mono); color: var(--text3); margin-right: 15px; opacity: 0.8">
+                    <div style="display: flex; align-items: center; gap: 4px"><span style="width: 7px; height: 7px; border-radius: 50%; background: var(--blue)"></span>Inbound</div>
+                    <div style="display: flex; align-items: center; gap: 4px"><span style="width: 7px; height: 7px; border-radius: 50%; background: var(--yellow)"></span>Outbound</div>
+                    <div style="display: flex; align-items: center; gap: 4px"><span style="width: 7px; height: 7px; border-radius: 50%; background: var(--green)"></span>Total</div>
+                  </div>
+                  <span id="graph-isp-badge" class="badge gray" style="font-size: 10px; font-family: var(--mono); max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: none" title="Internet Provider"></span>
+                  <span id="graph-stat-badge" class="badge blue" style="font-size: 10px; font-family: var(--mono)">Monitoring Live</span>
+                  <select id="wifi-graph-range" class="btn-ghost" style="padding: 4px 10px; font-size: 11px; height: 30px; border-radius: 6px; border: 1.5px solid var(--border); background: var(--surface2); color: var(--text2); outline: none" onchange="updateWifiGraphRange()">
+                    <option value="1" selected>Last 1 Hour</option>
+                    <option value="3">Last 3 Hours</option>
+                    <option value="6">Last 6 Hours</option>
+                    <option value="12">Last 12 Hours</option>
+                    <option value="24">Last 24 Hours</option>
+                    <option value="48">Last 48 Hours</option>
+                  </select>
+                </div>
               </div>
-              <table class="proc-table">
-                <thead>
-                  <tr>
-                    <th>SSID</th>
-                    <th>Band</th>
-                    <th>Channel</th>
-                    <th>Security</th>
-                    <th>Signal</th>
-                  </tr>
-                </thead>
-                <tbody id="wifi-nearby-list">
-                  <tr>
-                    <td colspan="5" style="text-align: center; padding: 40px; color: var(--text3)">
-                      Scanning for networks...
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <div id="wifi-graph-container" style="height: 280px; position: relative; padding: 20px 10px 25px; background: linear-gradient(to bottom, var(--surface), var(--surface2)); border-radius: 0 0 var(--r) var(--r)">
+                <canvas id="wifi-net-graph" style="width: 100%; height: 100%"></canvas>
+                <div id="wifi-graph-tooltip" style="position: absolute; display: none; background: var(--surface); border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 6px; padding: 10px; font-size: 11px; z-index: 10; pointer-events: none; white-space: nowrap; font-family: var(--mono); min-width: 140px; color: var(--text)"></div>
+                <div id="wifi-graph-hover-line" style="position: absolute; display: none; width: 1px; background: var(--text3); opacity: 0.5; top: 20px; bottom: 25px; pointer-events: none; z-index: 5"></div>
+                <div id="graph-y-axis" style="position: absolute; left: 15px; top: 15px; bottom: 45px; display: flex; flex-direction: column; justify-content: space-between; font-size: 10px; color: var(--text3); font-family: var(--mono); pointer-events: none">
+                  <span id="y-label-4">100k</span>
+                  <span id="y-label-3">75k</span>
+                  <span id="y-label-2">50k</span>
+                  <span id="y-label-1">25k</span>
+                  <span style="color: var(--blue); font-weight: 700">KB/s</span>
+                </div>
+                <div id="wifi-graph-x-labels" style="position: absolute; left: 10px; right: 10px; bottom: 4px; display: flex; justify-content: space-between; font-size: 9px; color: var(--text3); font-family: var(--mono); pointer-events: none">
+                </div>
+              </div>
             </div>
           </div>
 
@@ -4677,15 +4692,268 @@
       }
 
       // ── WIFI MONITOR ─────────────────────────────────────────
+      let wifiHistory = []; // { time, signal, speed }
+      let wifiGraphRange = 1;
+      let wifiInterval = null;
+      let wifiHoverCtx = { data: [], cutoff: 0, duration: 1, maxVal: 1, getX: null };
+      let wifiHoverAttached = false;
+      let networkMonitorTimer = null;
+
+      function updateWifiGraphRange() {
+        wifiGraphRange = parseFloat(document.getElementById('wifi-graph-range').value);
+        applyNetworkMonitorInterval();
+        renderWifiGraph();
+      }
+
+      function applyNetworkMonitorInterval() {
+        if (networkMonitorTimer) clearInterval(networkMonitorTimer);
+        let delayMs = 60 * 1000; // default 1 min for 1 hr range
+        if (wifiGraphRange >= 48) delayMs = 120 * 60 * 1000; // 2 hrs
+        else if (wifiGraphRange >= 24) delayMs = 60 * 60 * 1000;  // 1 hr
+        else if (wifiGraphRange >= 12) delayMs = 30 * 60 * 1000;  // 30 mins
+        else if (wifiGraphRange >= 6) delayMs = 10 * 60 * 1000;   // 10 mins
+        else if (wifiGraphRange >= 3) delayMs = 5 * 60 * 1000;    // 5 mins
+
+        networkMonitorTimer = setInterval(monitorBackgroundNetwork, delayMs);
+      }
+
+      function renderWifiGraph() {
+        const canvas = document.getElementById('wifi-net-graph');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const W = canvas.offsetWidth;
+        const H = canvas.offsetHeight;
+        canvas.width = W;
+        canvas.height = H;
+
+        ctx.clearRect(0, 0, W, H);
+        
+        const now = Date.now();
+        const duration = wifiGraphRange * 60 * 60 * 1000;
+        const cutoff = now - duration;
+        const filtered = wifiHistory.filter(h => h.time >= cutoff);
+        
+        // Dynamic Max Y (with buffer)
+        let maxVal = Math.max(...wifiHistory.map(h => Math.max(h.rx||0, h.tx||0, h.total||0)), 100);
+        maxVal = Math.ceil((maxVal * 1.3) / 10) * 10; 
+        
+        // Update Y labels
+        for(let i=1; i<=4; i++) {
+          const val = (maxVal / 4) * i;
+          document.getElementById(`y-label-${i}`).textContent = val >= 1000 ? Math.round(val/1000) + 'k' : Math.round(val);
+        }
+
+        if (filtered.length < 1) {
+          ctx.fillStyle = 'var(--text3)';
+          ctx.font = '12px var(--font)';
+          ctx.textAlign = 'center';
+          ctx.fillText('Waiting for network traffic...', W/2, H/2);
+          return;
+        }
+
+        const data = filtered;
+        const getX = (t) => ((t - cutoff) / duration) * W;
+        const getY = (v) => H - (v / maxVal) * H;
+
+        // Draw X Axis
+        const xContainer = document.getElementById('wifi-graph-x-labels');
+        xContainer.innerHTML = '';
+        let numLabels = 6;
+        if (wifiGraphRange <= 1) numLabels = 12;
+        else if (wifiGraphRange <= 3) numLabels = 6;
+        else numLabels = 8;
+        for (let i = 0; i <= numLabels; i++) {
+          const t = cutoff + (i / numLabels) * duration;
+          const d = new Date(t);
+          const timeStr = d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+          const span = document.createElement('span');
+          span.textContent = i === numLabels ? 'Now' : timeStr;
+          xContainer.appendChild(span);
+        }
+
+        // Draw Grid
+        ctx.strokeStyle = 'rgba(220, 228, 240, 0.4)';
+        ctx.setLineDash([5, 5]);
+        for (let i = 1; i < 4; i++) {
+          const y = (H / 4) * i;
+          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+        }
+        ctx.setLineDash([]);
+
+        // Helper to resolve CSS vars or fallback
+        const resolveColor = (c) => {
+          if (c.includes('green')) return '#10b981';
+          if (c.includes('blue')) return '#3b82f6';
+          if (c.includes('yellow')) return '#f59e0b';
+          return c;
+        };
+
+        function drawLine(key, color, lineWidth = 2, fill = false) {
+          const actualColor = resolveColor(color);
+          
+          if (data.length < 2) {
+            ctx.beginPath();
+            ctx.arc(getX(data[0].time), getY(data[0][key] || 0), 4, 0, Math.PI*2);
+            ctx.fillStyle = actualColor;
+            ctx.fill();
+            return;
+          }
+
+          if (fill) {
+            ctx.beginPath();
+            ctx.moveTo(getX(data[0].time), H);
+            data.forEach(h => ctx.lineTo(getX(h.time), getY(h[key] || 0)));
+            ctx.lineTo(getX(data[data.length - 1].time), H);
+            ctx.closePath();
+            
+            const fillHex = color.includes('blue') ? 'rgba(59, 130, 246, 0.15)' : 
+                            color.includes('yellow') ? 'rgba(245, 158, 11, 0.15)' : 
+                            'rgba(16, 185, 129, 0.15)';
+            ctx.fillStyle = fillHex;
+            ctx.fill();
+          }
+
+          ctx.beginPath();
+          ctx.lineWidth = lineWidth;
+          ctx.strokeStyle = actualColor;
+          ctx.lineJoin = 'round';
+          data.forEach((h, i) => {
+            const x = getX(h.time);
+            const y = getY(h[key] || 0);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          });
+          ctx.stroke();
+        }
+
+        // Render Inbound, Outbound, Total
+        drawLine('total', 'var(--green)', 3, true);
+        drawLine('rx', 'var(--blue)', 2);
+        drawLine('tx', 'var(--yellow)', 2);
+
+        // Highlight last point on total
+        const last = data[data.length-1];
+        ctx.beginPath();
+        ctx.arc(getX(last.time), getY(last.total || 0), 5, 0, Math.PI * 2);
+        ctx.fillStyle = 'var(--green)';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        wifiHoverCtx = { data, cutoff, duration, maxVal, getX, H };
+
+        if (!wifiHoverAttached) {
+          wifiHoverAttached = true;
+          const tooltip = document.getElementById('wifi-graph-tooltip');
+          const hoverLine = document.getElementById('wifi-graph-hover-line');
+          
+          canvas.addEventListener('mousemove', (e) => {
+            if (!wifiHoverCtx.data || wifiHoverCtx.data.length < 1) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            
+            const tParam = (x / rect.width) * wifiHoverCtx.duration + wifiHoverCtx.cutoff;
+            let closest = wifiHoverCtx.data[0];
+            let minDiff = Math.abs(closest.time - tParam);
+            for(let i=1; i<wifiHoverCtx.data.length; i++) {
+              const d = Math.abs(wifiHoverCtx.data[i].time - tParam);
+              if(d < minDiff) { minDiff = d; closest = wifiHoverCtx.data[i]; }
+            }
+            
+            const pointX = wifiHoverCtx.getX(closest.time);
+            
+            hoverLine.style.display = 'block';
+            hoverLine.style.left = (pointX + 10) + 'px';
+            
+            tooltip.style.display = 'block';
+            const date = new Date(closest.time);
+            const timeStr = date.getHours().toString().padStart(2,'0') + ':' + date.getMinutes().toString().padStart(2,'0') + ':' + date.getSeconds().toString().padStart(2,'0');
+            
+            tooltip.innerHTML = `
+              <div style="color:var(--text2); margin-bottom:6px; font-weight:600">${timeStr}</div>
+              <div style="display:flex; justify-content:space-between; gap:15px; margin-bottom:4px">
+                <div style="display:flex; align-items:center; gap:4px"><span style="width:6px; height:6px; border-radius:50%; background:var(--blue)"></span>Inbound</div><div style="font-family:var(--mono)">${Math.round(closest.rx || 0).toLocaleString()} KB/s</div>
+              </div>
+              <div style="display:flex; justify-content:space-between; gap:15px; margin-bottom:4px">
+                <div style="display:flex; align-items:center; gap:4px"><span style="width:6px; height:6px; border-radius:50%; background:var(--yellow)"></span>Outbound</div><div style="font-family:var(--mono)">${Math.round(closest.tx || 0).toLocaleString()} KB/s</div>
+              </div>
+              <div style="display:flex; justify-content:space-between; gap:15px; border-top:1px solid var(--border); padding-top:4px; margin-top:4px; font-weight:600">
+                <div style="display:flex; align-items:center; gap:4px"><span style="width:6px; height:6px; border-radius:50%; background:var(--green)"></span>Total</div><div style="font-family:var(--mono)">${Math.round(closest.total || 0).toLocaleString()} KB/s</div>
+              </div>
+            `;
+            
+            let tLeft = pointX + 10 + 15;
+            if (tLeft + tooltip.offsetWidth > rect.width) {
+               tLeft = pointX + 10 - 15 - tooltip.offsetWidth;
+            }
+            tooltip.style.left = tLeft + 'px';
+            tooltip.style.top = Math.max(20, e.clientY - rect.top - 20) + 'px';
+          });
+          
+          canvas.addEventListener('mouseleave', () => {
+             tooltip.style.display = 'none';
+             hoverLine.style.display = 'none';
+          });
+        }
+      }
+
+      let lastKnownWifiSpeed = 0;
+      let lastKnownWifiSignal = 0;
+
+      async function monitorBackgroundNetwork() {
+        if (!window.cxi) return;
+        try {
+          const stats = await window.cxi.getNetworkStats();
+          wifiHistory.push({ 
+            time: Date.now(), 
+            signal: lastKnownWifiSignal, 
+            speed: lastKnownWifiSpeed,
+            rx: stats.rx || 0,
+            tx: stats.tx || 0,
+            total: stats.total || 0 
+          });
+          if (wifiHistory.length > 5000) wifiHistory.shift();
+
+          const pg = document.getElementById('page-wifi-monitor');
+          if (pg && pg.classList.contains('active')) {
+            renderWifiGraph();
+          }
+        } catch(e) {}
+      }
+
+      // Start background network tracking immediately, runs across all pages
+      monitorBackgroundNetwork();
+      applyNetworkMonitorInterval(); // Starts interval based on current range (e.g., 1 min)
+      
+      // Silently pre-fetch Wi-Fi data once after app launch to prevent UI hyphen delay
+      setTimeout(loadWifiMonitor, 1500);
+
       async function loadWifiMonitor() {
         if (!window.cxi) return;
 
+        // Fetch ISP info in background
+        window.cxi.getIspInfo().then(isp => {
+          const badge = document.getElementById('graph-isp-badge');
+          if (badge && isp) {
+            badge.style.display = 'inline-block';
+            badge.textContent = isp;
+            badge.title = 'Internet Provider: ' + isp;
+          }
+        });
+
         try {
           const data = await window.cxi.getWifiData();
+          const stats = await window.cxi.getNetworkStats();
           const hasWifi = data.connected && data.connected.length > 0;
           const cur = hasWifi ? data.connected[0] : null;
           const eth = data.ethernet;
 
+          let currentSignal = 0;
+          let currentRX = stats.rx || 0;
+          let currentTX = stats.tx || 0;
+          let currentTotal = stats.total || 0; 
+          
           if (cur) {
             document.getElementById('wifi-cur-ssid').textContent = cur.ssid || 'Unknown';
             document.getElementById('wifi-cur-band').textContent =
@@ -4693,35 +4961,32 @@
             document.getElementById('wifi-cur-channel').textContent = cur.channel || '—';
             document.getElementById('wifi-cur-bssid').textContent = cur.bssid || '—';
             document.getElementById('wifi-cur-security').textContent = cur.security || '—';
-            document.getElementById('wifi-cur-speed').textContent = cur.bitRate
-              ? `${cur.bitRate} Mbps`
+            
+            const mbps = cur.bitRate || 0;
+            const kbps = mbps * 125; 
+            document.getElementById('wifi-cur-speed').textContent = mbps
+              ? `${mbps} Mbps Link`
               : '—';
 
             const sig = cur.signalLevel || -100;
             const pct = Math.min(100, Math.max(0, (sig + 100) * 2));
+            currentSignal = pct;
 
             document.getElementById('wifi-big-signal').textContent = sig;
             document.getElementById('wifi-cur-signal-text').textContent = `${sig} dBm`;
             document.getElementById('wifi-cur-percent').textContent = pct + '%';
             document.getElementById('wifi-cur-fill').style.width = pct + '%';
-
+            
             let desc = 'Weak';
             let color = 'var(--red)';
-            if (sig > -60) {
-              desc = 'Excellent';
-              color = 'var(--green)';
-            } else if (sig > -70) {
-              desc = 'Good';
-              color = 'var(--blue)';
-            } else if (sig > -85) {
-              desc = 'Fair';
-              color = 'var(--yellow)';
-            }
+            if (sig > -60) { desc = 'Excellent'; color = 'var(--green)'; }
+            else if (sig > -70) { desc = 'Good'; color = 'var(--blue)'; }
+            else if (sig > -85) { desc = 'Fair'; color = 'var(--yellow)'; }
 
             document.getElementById('wifi-signal-desc').textContent = `dBm — ${desc}`;
             document.getElementById('wifi-big-signal').style.color = color;
-            document.getElementById('wifi-cur-fill').className =
-              `pbar-fill ${desc === 'Excellent' ? 'green' : desc === 'Good' ? 'blue' : desc === 'Fair' ? 'yellow' : 'red'}`;
+            document.getElementById('wifi-cur-fill').className = `pbar-fill ${desc.toLowerCase() === 'excellent' ? 'green' : desc.toLowerCase() === 'good' ? 'blue' : desc.toLowerCase() === 'fair' ? 'yellow' : 'red'}`;
+
           } else if (eth) {
             // Ethernet Fallback
             document.getElementById('wifi-cur-ssid').textContent = 'Ethernet Connection';
@@ -4731,9 +4996,11 @@
             document.getElementById('wifi-cur-bssid').textContent = eth.mac || '—';
             document.getElementById('wifi-cur-security').textContent = 'Physical (802.3)';
             document.getElementById('wifi-cur-signal-text').textContent = 'Connected (Wired)';
-            document.getElementById('wifi-cur-speed').textContent = eth.speed
-              ? `${eth.speed} Mbps`
-              : '—';
+            
+            const mbps = eth.speed || eth.speedMax || 1000;
+            const kbps = mbps * 125;
+            currentSpeed = kbps;
+            document.getElementById('wifi-cur-speed').textContent = `${mbps} Mbps`;
 
             document.getElementById('wifi-big-signal').textContent = 'ETH';
             document.getElementById('wifi-big-signal').style.color = 'var(--blue)';
@@ -4742,42 +5009,25 @@
             document.getElementById('wifi-cur-percent').textContent = '100%';
             document.getElementById('wifi-cur-fill').style.width = '100%';
             document.getElementById('wifi-cur-fill').className = 'pbar-fill blue';
+            currentSignal = 100;
+          }
+          // Save last known values for the background network poller
+          lastKnownWifiSignal = currentSignal;
+          lastKnownWifiSpeed = currentSpeed;
+          
+          // Render graph
+          renderWifiGraph();
+
+          // Auto-Refresh (Slower poll for detailed wifi data to prevent UI stutter/locking)
+          if (!wifiInterval) {
+            wifiInterval = setInterval(() => {
+              const pg = document.getElementById('page-wifi-monitor');
+              if (pg && pg.classList.contains('active')) {
+                loadWifiMonitor();
+              }
+            }, 10000);
           }
 
-          // Nearby stays the same (can still scan even if on ethernet)
-          const list = document.getElementById('wifi-nearby-list');
-          if (data.nearby && data.nearby.length) {
-            list.innerHTML = data.nearby
-              .map(n => {
-                const sig = n.signalLevel || 0;
-                let sText = 'Weak';
-                let sClass = 'gray';
-                if (sig > -60) {
-                  sText = 'Excellent';
-                  sClass = 'green';
-                } else if (sig > -70) {
-                  sText = 'Good';
-                  sClass = 'blue';
-                } else if (sig > -85) {
-                  sText = 'Fair';
-                  sClass = 'yellow';
-                }
-
-                return `
-                <tr>
-                  <td style="font-weight:600">${n.ssid || 'Hidden Network'}</td>
-                  <td class="mono">${n.frequency > 4000 ? '5 GHz' : '2.4 GHz'}</td>
-                  <td class="mono">${n.channel}</td>
-                  <td><span class="badge gray" style="font-size:10px">${n.security && n.security.length ? n.security[0] : 'Open'}</span></td>
-                  <td><span class="badge ${sClass}">${sText}</span></td>
-                </tr>
-              `;
-              })
-              .join('');
-          } else {
-            list.innerHTML =
-              '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text3)">No other networks found nearby.</td></tr>';
-          }
         } catch (e) {
           console.error('WiFi Error:', e);
         }
