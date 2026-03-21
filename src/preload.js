@@ -54,4 +54,7 @@ contextBridge.exposeInMainWorld('cxi', {
   openDefrag: () => ipcRenderer.invoke('open-defrag'),
   getNetworkStats: () => ipcRenderer.invoke('get-network-stats'),
   getIspInfo: () => ipcRenderer.invoke('get-isp-info'),
+  setStartup: (enabled) => ipcRenderer.invoke('set-startup', enabled),
+  setTray: (enabled) => ipcRenderer.invoke('set-tray', enabled),
+  openLogsFolder: () => ipcRenderer.invoke('open-logs-folder')
 });

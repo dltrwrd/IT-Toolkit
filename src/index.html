@@ -1724,7 +1724,7 @@
             <div class="sb-sub" data-page="port-scanner">Port Scanner</div>
             <div class="sb-sub" data-page="dns-lookup">IP & DNS Lookup</div>
 
-            <div class="sb-sub" data-page="wifi-monitor">WiFi Monitor</div>
+            <div class="sb-sub" data-page="wifi-monitor">Network Monitor</div>
           </div>
         </div>
 
@@ -3026,11 +3026,11 @@
             </div>
           </div>
 
-          <!-- ══════════════════ WIFI MONITOR ══════════════════ -->
+          <!-- ══════════════════ Network MONITOR ══════════════════ -->
           <div class="page" id="page-wifi-monitor">
             <div class="page-hdr">
               <div style="flex: 1">
-                <h1>WiFi Monitor</h1>
+                <h1>Network Monitor</h1>
                 <p>Wireless network signal and details</p>
               </div>
               <button class="btn btn-ghost" onclick="loadWifiMonitor()">
@@ -3119,20 +3119,91 @@
               </div>
             </div>
             <div class="card" style="margin-top: 16px">
-              <div class="card-title" style="display: flex; justify-content: space-between; align-items: center">
+              <div
+                class="card-title"
+                style="display: flex; justify-content: space-between; align-items: center"
+              >
                 <div style="display: flex; align-items: center; gap: 7px">
                   <div class="dot"></div>
                   Network Performance History
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px">
-                  <div id="wifi-graph-legend" style="display: flex; gap: 15px; font-size: 10px; font-family: var(--mono); color: var(--text3); margin-right: 15px; opacity: 0.8">
-                    <div style="display: flex; align-items: center; gap: 4px"><span style="width: 7px; height: 7px; border-radius: 50%; background: var(--blue)"></span>Inbound</div>
-                    <div style="display: flex; align-items: center; gap: 4px"><span style="width: 7px; height: 7px; border-radius: 50%; background: var(--yellow)"></span>Outbound</div>
-                    <div style="display: flex; align-items: center; gap: 4px"><span style="width: 7px; height: 7px; border-radius: 50%; background: var(--green)"></span>Total</div>
+                  <div
+                    id="wifi-graph-legend"
+                    style="
+                      display: flex;
+                      gap: 15px;
+                      font-size: 10px;
+                      font-family: var(--mono);
+                      color: var(--text3);
+                      margin-right: 15px;
+                      opacity: 0.8;
+                    "
+                  >
+                    <div style="display: flex; align-items: center; gap: 4px">
+                      <span
+                        style="width: 7px; height: 7px; border-radius: 50%; background: var(--blue)"
+                      ></span
+                      >Inbound
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px">
+                      <span
+                        style="
+                          width: 7px;
+                          height: 7px;
+                          border-radius: 50%;
+                          background: var(--yellow);
+                        "
+                      ></span
+                      >Outbound
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px">
+                      <span
+                        style="
+                          width: 7px;
+                          height: 7px;
+                          border-radius: 50%;
+                          background: var(--green);
+                        "
+                      ></span
+                      >Total
+                    </div>
                   </div>
-                  <span id="graph-isp-badge" class="badge gray" style="font-size: 10px; font-family: var(--mono); max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: none" title="Internet Provider"></span>
-                  <span id="graph-stat-badge" class="badge blue" style="font-size: 10px; font-family: var(--mono)">Monitoring Live</span>
-                  <select id="wifi-graph-range" class="btn-ghost" style="padding: 4px 10px; font-size: 11px; height: 30px; border-radius: 6px; border: 1.5px solid var(--border); background: var(--surface2); color: var(--text2); outline: none" onchange="updateWifiGraphRange()">
+                  <span
+                    id="graph-isp-badge"
+                    class="badge gray"
+                    style="
+                      font-size: 10px;
+                      font-family: var(--mono);
+                      max-width: 150px;
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                      display: none;
+                    "
+                    title="Internet Provider"
+                  ></span>
+                  <span
+                    id="graph-stat-badge"
+                    class="badge blue"
+                    style="font-size: 10px; font-family: var(--mono)"
+                    >Monitoring Live</span
+                  >
+                  <select
+                    id="wifi-graph-range"
+                    class="btn-ghost"
+                    style="
+                      padding: 4px 10px;
+                      font-size: 11px;
+                      height: 30px;
+                      border-radius: 6px;
+                      border: 1.5px solid var(--border);
+                      background: var(--surface2);
+                      color: var(--text2);
+                      outline: none;
+                    "
+                    onchange="updateWifiGraphRange()"
+                  >
                     <option value="1" selected>Last 1 Hour</option>
                     <option value="3">Last 3 Hours</option>
                     <option value="6">Last 6 Hours</option>
@@ -3142,19 +3213,87 @@
                   </select>
                 </div>
               </div>
-              <div id="wifi-graph-container" style="height: 280px; position: relative; padding: 20px 10px 25px; background: linear-gradient(to bottom, var(--surface), var(--surface2)); border-radius: 0 0 var(--r) var(--r)">
+              <div
+                id="wifi-graph-container"
+                style="
+                  height: 280px;
+                  position: relative;
+                  padding: 20px 10px 25px;
+                  background: linear-gradient(to bottom, var(--surface), var(--surface2));
+                  border-radius: 0 0 var(--r) var(--r);
+                "
+              >
                 <canvas id="wifi-net-graph" style="width: 100%; height: 100%"></canvas>
-                <div id="wifi-graph-tooltip" style="position: absolute; display: none; background: var(--surface); border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 6px; padding: 10px; font-size: 11px; z-index: 10; pointer-events: none; white-space: nowrap; font-family: var(--mono); min-width: 140px; color: var(--text)"></div>
-                <div id="wifi-graph-hover-line" style="position: absolute; display: none; width: 1px; background: var(--text3); opacity: 0.5; top: 20px; bottom: 25px; pointer-events: none; z-index: 5"></div>
-                <div id="graph-y-axis" style="position: absolute; left: 15px; top: 15px; bottom: 45px; display: flex; flex-direction: column; justify-content: space-between; font-size: 10px; color: var(--text3); font-family: var(--mono); pointer-events: none">
+                <div
+                  id="wifi-graph-tooltip"
+                  style="
+                    position: absolute;
+                    display: none;
+                    background: var(--surface);
+                    border: 1px solid var(--border);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    border-radius: 6px;
+                    padding: 10px;
+                    font-size: 11px;
+                    z-index: 10;
+                    pointer-events: none;
+                    white-space: nowrap;
+                    font-family: var(--mono);
+                    min-width: 140px;
+                    color: var(--text);
+                  "
+                ></div>
+                <div
+                  id="wifi-graph-hover-line"
+                  style="
+                    position: absolute;
+                    display: none;
+                    width: 1px;
+                    background: var(--text3);
+                    opacity: 0.5;
+                    top: 20px;
+                    bottom: 25px;
+                    pointer-events: none;
+                    z-index: 5;
+                  "
+                ></div>
+                <div
+                  id="graph-y-axis"
+                  style="
+                    position: absolute;
+                    left: 15px;
+                    top: 15px;
+                    bottom: 45px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    font-size: 10px;
+                    color: var(--text3);
+                    font-family: var(--mono);
+                    pointer-events: none;
+                  "
+                >
                   <span id="y-label-4">100k</span>
                   <span id="y-label-3">75k</span>
                   <span id="y-label-2">50k</span>
                   <span id="y-label-1">25k</span>
                   <span style="color: var(--blue); font-weight: 700">KB/s</span>
                 </div>
-                <div id="wifi-graph-x-labels" style="position: absolute; left: 10px; right: 10px; bottom: 4px; display: flex; justify-content: space-between; font-size: 9px; color: var(--text3); font-family: var(--mono); pointer-events: none">
-                </div>
+                <div
+                  id="wifi-graph-x-labels"
+                  style="
+                    position: absolute;
+                    left: 10px;
+                    right: 10px;
+                    bottom: 4px;
+                    display: flex;
+                    justify-content: space-between;
+                    font-size: 9px;
+                    color: var(--text3);
+                    font-family: var(--mono);
+                    pointer-events: none;
+                  "
+                ></div>
               </div>
             </div>
           </div>
@@ -3170,11 +3309,41 @@
                 <table class="proc-table" id="proc-table">
                   <thead>
                     <tr>
-                      <th data-key="name" onclick="sortProcs('name')" style="cursor: pointer; user-select: none; padding: 12px 15px">Name</th>
-                      <th data-key="pid" onclick="sortProcs('pid')" style="cursor: pointer; user-select: none; padding: 12px 15px">PID</th>
-                      <th data-key="cpu" onclick="sortProcs('cpu')" style="cursor: pointer; user-select: none; padding: 12px 15px">CPU %</th>
-                      <th data-key="mem" onclick="sortProcs('mem')" style="cursor: pointer; user-select: none; padding: 12px 15px">Memory</th>
-                      <th data-key="status" onclick="sortProcs('status')" style="cursor: pointer; user-select: none; padding: 12px 15px">Status</th>
+                      <th
+                        data-key="name"
+                        onclick="sortProcs('name')"
+                        style="cursor: pointer; user-select: none; padding: 12px 15px"
+                      >
+                        Name
+                      </th>
+                      <th
+                        data-key="pid"
+                        onclick="sortProcs('pid')"
+                        style="cursor: pointer; user-select: none; padding: 12px 15px"
+                      >
+                        PID
+                      </th>
+                      <th
+                        data-key="cpu"
+                        onclick="sortProcs('cpu')"
+                        style="cursor: pointer; user-select: none; padding: 12px 15px"
+                      >
+                        CPU %
+                      </th>
+                      <th
+                        data-key="mem"
+                        onclick="sortProcs('mem')"
+                        style="cursor: pointer; user-select: none; padding: 12px 15px"
+                      >
+                        Memory
+                      </th>
+                      <th
+                        data-key="status"
+                        onclick="sortProcs('status')"
+                        style="cursor: pointer; user-select: none; padding: 12px 15px"
+                      >
+                        Status
+                      </th>
                       <th style="padding: 12px 15px">Action</th>
                     </tr>
                   </thead>
@@ -3320,20 +3489,20 @@
                 <div class="setting-row">
                   <div class="setting-info">
                     <h3>Start with Windows</h3>
-                    <p>Launch SysForge on startup</p>
+                    <p>Launch CXI SLT Toolkit on startup</p>
                   </div>
                   <label class="startup-tog"
-                    ><input type="checkbox" />
+                    ><input type="checkbox" id="set-startup" onchange="updateSetting('startup', this)" />
                     <div class="tog-slider"></div
                   ></label>
                 </div>
                 <div class="setting-row">
                   <div class="setting-info">
-                    <h3>System Tray Icon</h3>
-                    <p>Minimize to tray instead of taskbar</p>
+                    <h3>Close to System Tray</h3>
+                    <p>Clicking close (X) hides the app to tray</p>
                   </div>
                   <label class="startup-tog"
-                    ><input type="checkbox" checked />
+                    ><input type="checkbox" id="set-tray" onchange="updateSetting('tray', this)" />
                     <div class="tog-slider"></div
                   ></label>
                 </div>
@@ -3343,7 +3512,7 @@
                     <p>Play sound on high CPU/memory</p>
                   </div>
                   <label class="startup-tog"
-                    ><input type="checkbox" />
+                    ><input type="checkbox" id="set-sound" onchange="updateSetting('sound', this)" />
                     <div class="tog-slider"></div
                   ></label>
                 </div>
@@ -3359,7 +3528,7 @@
                     <p>Warn when CPU exceeds this %</p>
                   </div>
                   <div style="display: flex; align-items: center; gap: 6px">
-                    <input type="number" value="85" style="width: 70px; flex: none" />
+                    <input type="number" id="set-cpu" value="85" style="width: 70px; flex: none" onchange="updateSetting('cpuAlert', this)" />
                     <span style="color: var(--text3)">%</span>
                   </div>
                 </div>
@@ -3369,7 +3538,7 @@
                     <p>Warn when RAM exceeds this %</p>
                   </div>
                   <div style="display: flex; align-items: center; gap: 6px">
-                    <input type="number" value="90" style="width: 70px; flex: none" />
+                    <input type="number" id="set-mem" value="90" style="width: 70px; flex: none" onchange="updateSetting('memAlert', this)" />
                     <span style="color: var(--text3)">%</span>
                   </div>
                 </div>
@@ -3379,7 +3548,7 @@
                     <p>Warn when drive is this % full</p>
                   </div>
                   <div style="display: flex; align-items: center; gap: 6px">
-                    <input type="number" value="85" style="width: 70px; flex: none" />
+                    <input type="number" id="set-disk" value="85" style="width: 70px; flex: none" onchange="updateSetting('diskAlert', this)" />
                     <span style="color: var(--text3)">%</span>
                   </div>
                 </div>
@@ -3387,7 +3556,7 @@
               <div class="card">
                 <div class="card-title">
                   <div class="dot"></div>
-                  About SysForge
+                  About CXI SLT Toolkit
                 </div>
                 <table class="info-table">
                   <tr>
@@ -3412,7 +3581,7 @@
                   </tr>
                 </table>
                 <div style="margin-top: 14px; display: flex; gap: 8px">
-                  <button class="btn btn-primary btn-sm">
+                  <button class="btn btn-primary btn-sm" onclick="showToast('You are on the latest version.', 'success')">
                     <svg
                       viewBox="0 0 24 24"
                       style="
@@ -3429,7 +3598,7 @@
                     </svg>
                     Check for Updates
                   </button>
-                  <button class="btn btn-ghost btn-sm">
+                  <button class="btn btn-ghost btn-sm" onclick="window.cxi.openLogsFolder()">
                     <svg
                       viewBox="0 0 24 24"
                       style="
@@ -3457,10 +3626,10 @@
                 <div class="setting-row">
                   <div class="setting-info">
                     <h3>Anonymous Telemetry</h3>
-                    <p>Help improve SysForge (no personal data)</p>
+                    <p>Help improve CXI SLT Toolkit (no personal data)</p>
                   </div>
                   <label class="startup-tog"
-                    ><input type="checkbox" />
+                    ><input type="checkbox" id="set-telemetry" onchange="updateSetting('telemetry', this)" />
                     <div class="tog-slider"></div
                   ></label>
                 </div>
@@ -3470,12 +3639,12 @@
                     <p>Store ping/port scan results locally</p>
                   </div>
                   <label class="startup-tog"
-                    ><input type="checkbox" checked />
+                    ><input type="checkbox" id="set-history" onchange="updateSetting('history', this)" />
                     <div class="tog-slider"></div
                   ></label>
                 </div>
                 <div style="margin-top: 12px">
-                  <button class="btn btn-danger btn-sm">
+                  <button class="btn btn-danger btn-sm" onclick="clearSettings()">
                     <svg
                       viewBox="0 0 24 24"
                       style="
@@ -3595,7 +3764,7 @@
         ping: 'Ping / Latency',
         'port-scanner': 'Port Scanner',
         'dns-lookup': 'IP & DNS Lookup',
-        'wifi-monitor': 'WiFi Monitor',
+        'wifi-monitor': 'Network Monitor',
         processes: 'Process Manager',
         startup: 'Startup Manager',
         eventlog: 'Event Log',
@@ -4575,7 +4744,7 @@
           CACHE.processes = procs;
 
           renderProcsUI(procs);
-          
+
           // Initial sort indicator for CPU
           if (ALL_PROCS.length > 0 && procSortKey === 'cpu') {
             const cpuTh = document.querySelector('#proc-table th[data-key="cpu"]');
@@ -4611,16 +4780,16 @@
         } else {
           procSortKey = key;
           // Default to DESC for numbers/pct, ASC for strings
-          procSortOrder = (key === 'name' || key === 'status') ? 1 : -1;
+          procSortOrder = key === 'name' || key === 'status' ? 1 : -1;
         }
-        
+
         // Update header UI
         document.querySelectorAll('#proc-table th[data-key]').forEach(th => {
           const k = th.getAttribute('data-key');
           let label = k.charAt(0).toUpperCase() + k.slice(1);
           if (k === 'cpu') label = 'CPU %';
           if (k === 'mem') label = 'Memory';
-          
+
           if (k === procSortKey) {
             th.innerHTML = `${label} <span style="font-size: 14px; margin-left: 4px">${procSortOrder === 1 ? '▴' : '▾'}</span>`;
             th.style.color = 'var(--blue)';
@@ -4644,10 +4813,10 @@
         const sorted = [...procs].sort((a, b) => {
           let valA = a[procSortKey];
           let valB = b[procSortKey];
-          
+
           if (typeof valA === 'string') valA = valA.toLowerCase();
           if (typeof valB === 'string') valB = valB.toLowerCase();
-          
+
           if (valA < valB) return -1 * procSortOrder;
           if (valA > valB) return 1 * procSortOrder;
           return 0;
@@ -4691,7 +4860,7 @@
         }
       }
 
-      // ── WIFI MONITOR ─────────────────────────────────────────
+      // ── Network MONITOR ─────────────────────────────────────────
       let wifiHistory = []; // { time, signal, speed }
       let wifiGraphRange = 1;
       let wifiInterval = null;
@@ -4708,11 +4877,15 @@
       function applyNetworkMonitorInterval() {
         if (networkMonitorTimer) clearInterval(networkMonitorTimer);
         let delayMs = 60 * 1000; // default 1 min for 1 hr range
-        if (wifiGraphRange >= 48) delayMs = 120 * 60 * 1000; // 2 hrs
-        else if (wifiGraphRange >= 24) delayMs = 60 * 60 * 1000;  // 1 hr
-        else if (wifiGraphRange >= 12) delayMs = 30 * 60 * 1000;  // 30 mins
-        else if (wifiGraphRange >= 6) delayMs = 10 * 60 * 1000;   // 10 mins
-        else if (wifiGraphRange >= 3) delayMs = 5 * 60 * 1000;    // 5 mins
+        if (wifiGraphRange >= 48)
+          delayMs = 120 * 60 * 1000; // 2 hrs
+        else if (wifiGraphRange >= 24)
+          delayMs = 60 * 60 * 1000; // 1 hr
+        else if (wifiGraphRange >= 12)
+          delayMs = 30 * 60 * 1000; // 30 mins
+        else if (wifiGraphRange >= 6)
+          delayMs = 10 * 60 * 1000; // 10 mins
+        else if (wifiGraphRange >= 3) delayMs = 5 * 60 * 1000; // 5 mins
 
         networkMonitorTimer = setInterval(monitorBackgroundNetwork, delayMs);
       }
@@ -4727,33 +4900,37 @@
         canvas.height = H;
 
         ctx.clearRect(0, 0, W, H);
-        
+
         const now = Date.now();
         const duration = wifiGraphRange * 60 * 60 * 1000;
         const cutoff = now - duration;
         const filtered = wifiHistory.filter(h => h.time >= cutoff);
-        
+
         // Dynamic Max Y (with buffer)
-        let maxVal = Math.max(...wifiHistory.map(h => Math.max(h.rx||0, h.tx||0, h.total||0)), 100);
-        maxVal = Math.ceil((maxVal * 1.3) / 10) * 10; 
-        
+        let maxVal = Math.max(
+          ...wifiHistory.map(h => Math.max(h.rx || 0, h.tx || 0, h.total || 0)),
+          100
+        );
+        maxVal = Math.ceil((maxVal * 1.3) / 10) * 10;
+
         // Update Y labels
-        for(let i=1; i<=4; i++) {
+        for (let i = 1; i <= 4; i++) {
           const val = (maxVal / 4) * i;
-          document.getElementById(`y-label-${i}`).textContent = val >= 1000 ? Math.round(val/1000) + 'k' : Math.round(val);
+          document.getElementById(`y-label-${i}`).textContent =
+            val >= 1000 ? Math.round(val / 1000) + 'k' : Math.round(val);
         }
 
         if (filtered.length < 1) {
           ctx.fillStyle = 'var(--text3)';
           ctx.font = '12px var(--font)';
           ctx.textAlign = 'center';
-          ctx.fillText('Waiting for network traffic...', W/2, H/2);
+          ctx.fillText('Waiting for network traffic...', W / 2, H / 2);
           return;
         }
 
         const data = filtered;
-        const getX = (t) => ((t - cutoff) / duration) * W;
-        const getY = (v) => H - (v / maxVal) * H;
+        const getX = t => ((t - cutoff) / duration) * W;
+        const getY = v => H - (v / maxVal) * H;
 
         // Draw X Axis
         const xContainer = document.getElementById('wifi-graph-x-labels');
@@ -4765,7 +4942,10 @@
         for (let i = 0; i <= numLabels; i++) {
           const t = cutoff + (i / numLabels) * duration;
           const d = new Date(t);
-          const timeStr = d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+          const timeStr =
+            d.getHours().toString().padStart(2, '0') +
+            ':' +
+            d.getMinutes().toString().padStart(2, '0');
           const span = document.createElement('span');
           span.textContent = i === numLabels ? 'Now' : timeStr;
           xContainer.appendChild(span);
@@ -4776,12 +4956,15 @@
         ctx.setLineDash([5, 5]);
         for (let i = 1; i < 4; i++) {
           const y = (H / 4) * i;
-          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(W, y);
+          ctx.stroke();
         }
         ctx.setLineDash([]);
 
         // Helper to resolve CSS vars or fallback
-        const resolveColor = (c) => {
+        const resolveColor = c => {
           if (c.includes('green')) return '#10b981';
           if (c.includes('blue')) return '#3b82f6';
           if (c.includes('yellow')) return '#f59e0b';
@@ -4790,10 +4973,10 @@
 
         function drawLine(key, color, lineWidth = 2, fill = false) {
           const actualColor = resolveColor(color);
-          
+
           if (data.length < 2) {
             ctx.beginPath();
-            ctx.arc(getX(data[0].time), getY(data[0][key] || 0), 4, 0, Math.PI*2);
+            ctx.arc(getX(data[0].time), getY(data[0][key] || 0), 4, 0, Math.PI * 2);
             ctx.fillStyle = actualColor;
             ctx.fill();
             return;
@@ -4805,10 +4988,12 @@
             data.forEach(h => ctx.lineTo(getX(h.time), getY(h[key] || 0)));
             ctx.lineTo(getX(data[data.length - 1].time), H);
             ctx.closePath();
-            
-            const fillHex = color.includes('blue') ? 'rgba(59, 130, 246, 0.15)' : 
-                            color.includes('yellow') ? 'rgba(245, 158, 11, 0.15)' : 
-                            'rgba(16, 185, 129, 0.15)';
+
+            const fillHex = color.includes('blue')
+              ? 'rgba(59, 130, 246, 0.15)'
+              : color.includes('yellow')
+                ? 'rgba(245, 158, 11, 0.15)'
+                : 'rgba(16, 185, 129, 0.15)';
             ctx.fillStyle = fillHex;
             ctx.fill();
           }
@@ -4832,7 +5017,7 @@
         drawLine('tx', 'var(--yellow)', 2);
 
         // Highlight last point on total
-        const last = data[data.length-1];
+        const last = data[data.length - 1];
         ctx.beginPath();
         ctx.arc(getX(last.time), getY(last.total || 0), 5, 0, Math.PI * 2);
         ctx.fillStyle = 'var(--green)';
@@ -4847,29 +5032,37 @@
           wifiHoverAttached = true;
           const tooltip = document.getElementById('wifi-graph-tooltip');
           const hoverLine = document.getElementById('wifi-graph-hover-line');
-          
-          canvas.addEventListener('mousemove', (e) => {
+
+          canvas.addEventListener('mousemove', e => {
             if (!wifiHoverCtx.data || wifiHoverCtx.data.length < 1) return;
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
-            
+
             const tParam = (x / rect.width) * wifiHoverCtx.duration + wifiHoverCtx.cutoff;
             let closest = wifiHoverCtx.data[0];
             let minDiff = Math.abs(closest.time - tParam);
-            for(let i=1; i<wifiHoverCtx.data.length; i++) {
+            for (let i = 1; i < wifiHoverCtx.data.length; i++) {
               const d = Math.abs(wifiHoverCtx.data[i].time - tParam);
-              if(d < minDiff) { minDiff = d; closest = wifiHoverCtx.data[i]; }
+              if (d < minDiff) {
+                minDiff = d;
+                closest = wifiHoverCtx.data[i];
+              }
             }
-            
+
             const pointX = wifiHoverCtx.getX(closest.time);
-            
+
             hoverLine.style.display = 'block';
-            hoverLine.style.left = (pointX + 10) + 'px';
-            
+            hoverLine.style.left = pointX + 10 + 'px';
+
             tooltip.style.display = 'block';
             const date = new Date(closest.time);
-            const timeStr = date.getHours().toString().padStart(2,'0') + ':' + date.getMinutes().toString().padStart(2,'0') + ':' + date.getSeconds().toString().padStart(2,'0');
-            
+            const timeStr =
+              date.getHours().toString().padStart(2, '0') +
+              ':' +
+              date.getMinutes().toString().padStart(2, '0') +
+              ':' +
+              date.getSeconds().toString().padStart(2, '0');
+
             tooltip.innerHTML = `
               <div style="color:var(--text2); margin-bottom:6px; font-weight:600">${timeStr}</div>
               <div style="display:flex; justify-content:space-between; gap:15px; margin-bottom:4px">
@@ -4882,18 +5075,18 @@
                 <div style="display:flex; align-items:center; gap:4px"><span style="width:6px; height:6px; border-radius:50%; background:var(--green)"></span>Total</div><div style="font-family:var(--mono)">${Math.round(closest.total || 0).toLocaleString()} KB/s</div>
               </div>
             `;
-            
+
             let tLeft = pointX + 10 + 15;
             if (tLeft + tooltip.offsetWidth > rect.width) {
-               tLeft = pointX + 10 - 15 - tooltip.offsetWidth;
+              tLeft = pointX + 10 - 15 - tooltip.offsetWidth;
             }
             tooltip.style.left = tLeft + 'px';
             tooltip.style.top = Math.max(20, e.clientY - rect.top - 20) + 'px';
           });
-          
+
           canvas.addEventListener('mouseleave', () => {
-             tooltip.style.display = 'none';
-             hoverLine.style.display = 'none';
+            tooltip.style.display = 'none';
+            hoverLine.style.display = 'none';
           });
         }
       }
@@ -4905,13 +5098,13 @@
         if (!window.cxi) return;
         try {
           const stats = await window.cxi.getNetworkStats();
-          wifiHistory.push({ 
-            time: Date.now(), 
-            signal: lastKnownWifiSignal, 
+          wifiHistory.push({
+            time: Date.now(),
+            signal: lastKnownWifiSignal,
             speed: lastKnownWifiSpeed,
             rx: stats.rx || 0,
             tx: stats.tx || 0,
-            total: stats.total || 0 
+            total: stats.total || 0,
           });
           if (wifiHistory.length > 5000) wifiHistory.shift();
 
@@ -4919,13 +5112,13 @@
           if (pg && pg.classList.contains('active')) {
             renderWifiGraph();
           }
-        } catch(e) {}
+        } catch (e) {}
       }
 
       // Start background network tracking immediately, runs across all pages
       monitorBackgroundNetwork();
       applyNetworkMonitorInterval(); // Starts interval based on current range (e.g., 1 min)
-      
+
       // Silently pre-fetch Wi-Fi data once after app launch to prevent UI hyphen delay
       setTimeout(loadWifiMonitor, 1500);
 
@@ -4952,8 +5145,8 @@
           let currentSignal = 0;
           let currentRX = stats.rx || 0;
           let currentTX = stats.tx || 0;
-          let currentTotal = stats.total || 0; 
-          
+          let currentTotal = stats.total || 0;
+
           if (cur) {
             document.getElementById('wifi-cur-ssid').textContent = cur.ssid || 'Unknown';
             document.getElementById('wifi-cur-band').textContent =
@@ -4961,9 +5154,9 @@
             document.getElementById('wifi-cur-channel').textContent = cur.channel || '—';
             document.getElementById('wifi-cur-bssid').textContent = cur.bssid || '—';
             document.getElementById('wifi-cur-security').textContent = cur.security || '—';
-            
+
             const mbps = cur.bitRate || 0;
-            const kbps = mbps * 125; 
+            const kbps = mbps * 125;
             document.getElementById('wifi-cur-speed').textContent = mbps
               ? `${mbps} Mbps Link`
               : '—';
@@ -4976,17 +5169,24 @@
             document.getElementById('wifi-cur-signal-text').textContent = `${sig} dBm`;
             document.getElementById('wifi-cur-percent').textContent = pct + '%';
             document.getElementById('wifi-cur-fill').style.width = pct + '%';
-            
+
             let desc = 'Weak';
             let color = 'var(--red)';
-            if (sig > -60) { desc = 'Excellent'; color = 'var(--green)'; }
-            else if (sig > -70) { desc = 'Good'; color = 'var(--blue)'; }
-            else if (sig > -85) { desc = 'Fair'; color = 'var(--yellow)'; }
+            if (sig > -60) {
+              desc = 'Excellent';
+              color = 'var(--green)';
+            } else if (sig > -70) {
+              desc = 'Good';
+              color = 'var(--blue)';
+            } else if (sig > -85) {
+              desc = 'Fair';
+              color = 'var(--yellow)';
+            }
 
             document.getElementById('wifi-signal-desc').textContent = `dBm — ${desc}`;
             document.getElementById('wifi-big-signal').style.color = color;
-            document.getElementById('wifi-cur-fill').className = `pbar-fill ${desc.toLowerCase() === 'excellent' ? 'green' : desc.toLowerCase() === 'good' ? 'blue' : desc.toLowerCase() === 'fair' ? 'yellow' : 'red'}`;
-
+            document.getElementById('wifi-cur-fill').className =
+              `pbar-fill ${desc.toLowerCase() === 'excellent' ? 'green' : desc.toLowerCase() === 'good' ? 'blue' : desc.toLowerCase() === 'fair' ? 'yellow' : 'red'}`;
           } else if (eth) {
             // Ethernet Fallback
             document.getElementById('wifi-cur-ssid').textContent = 'Ethernet Connection';
@@ -4996,7 +5196,7 @@
             document.getElementById('wifi-cur-bssid').textContent = eth.mac || '—';
             document.getElementById('wifi-cur-security').textContent = 'Physical (802.3)';
             document.getElementById('wifi-cur-signal-text').textContent = 'Connected (Wired)';
-            
+
             const mbps = eth.speed || eth.speedMax || 1000;
             const kbps = mbps * 125;
             currentSpeed = kbps;
@@ -5014,7 +5214,7 @@
           // Save last known values for the background network poller
           lastKnownWifiSignal = currentSignal;
           lastKnownWifiSpeed = currentSpeed;
-          
+
           // Render graph
           renderWifiGraph();
 
@@ -5027,7 +5227,6 @@
               }
             }, 10000);
           }
-
         } catch (e) {
           console.error('WiFi Error:', e);
         }
@@ -5470,6 +5669,47 @@
 
       // ── SETTINGS ──────────────────────────────────────────────
       let configRefresh = 5000;
+      
+      const defaultSettings = {
+        startup: false,
+        tray: true,
+        sound: false,
+        cpuAlert: 85,
+        memAlert: 90,
+        diskAlert: 85,
+        telemetry: false,
+        history: true
+      };
+
+      function getSettings() {
+        try {
+          const s = localStorage.getItem('cxi_settings');
+          return s ? { ...defaultSettings, ...JSON.parse(s) } : defaultSettings;
+        } catch(e) { return defaultSettings; }
+      }
+
+      function updateSetting(key, el) {
+        const settings = getSettings();
+        if (el.type === 'checkbox') settings[key] = el.checked;
+        else settings[key] = parseFloat(el.value);
+        localStorage.setItem('cxi_settings', JSON.stringify(settings));
+        
+        // Handle immediate effects
+        if (key === 'startup' && window.cxi && window.cxi.setStartup) {
+          window.cxi.setStartup(settings.startup);
+        }
+        if (key === 'tray' && window.cxi && window.cxi.setTray) {
+          window.cxi.setTray(settings.tray);
+        }
+      }
+
+      function clearSettings() {
+        if (confirm('Are you sure you want to revert all settings back to their default state?')) {
+           localStorage.removeItem('cxi_settings');
+           loadSettingsInfo();
+           showToast('All data cleared', 'success');
+        }
+      }
 
       function updateRefresh() {
         const el = document.getElementById('set-refresh');
@@ -5496,12 +5736,32 @@
           const info = await window.cxi.getSysInfo();
           const el = document.getElementById('set-node');
           if (el) el.textContent = info.nodeVersion;
+          
+          if (window.cxi.setTray) {
+            window.cxi.setTray(getSettings().tray);
+          }
         }
+        
+        const s = getSettings();
+        const sc = (id, val) => { const el=document.getElementById(id); if(el) el.checked=val; };
+        const sv = (id, val) => { const el=document.getElementById(id); if(el) el.value=val; };
+        
+        sc('set-startup', s.startup);
+        sc('set-tray', s.tray);
+        sc('set-sound', s.sound);
+        sv('set-cpu', s.cpuAlert);
+        sv('set-mem', s.memAlert);
+        sv('set-disk', s.diskAlert);
+        sc('set-telemetry', s.telemetry);
+        sc('set-history', s.history);
       }
 
       // ── INIT ─────────────────────────────────────────────────
       async function init() {
         try {
+          // Initialize Settings
+          loadSettingsInfo();
+          
           // Parallelize EVERY module's initial data fetch
           const pHealth = updateHealth();
           const pMetrics = updateMetrics();

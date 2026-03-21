@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, shell, Tray, nativeImage } = require('electron');
 const path = require('path');
 const os = require('os');
 const { exec, spawn, spawnSync } = require('child_process');
@@ -12,6 +12,30 @@ let isDataReady = false;
 let isMinSplashTimeDone = false;
 let stopScanRequested = false;
 const activeProcesses = new Map();
+
+let appTray = null;
+let closeToTray = true;
+
+function setupTray() {
+  if (appTray) return;
+  // Fallback to a plain app icon base64 if no external file is loaded
+  const iconBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAKElEQVR42mNkYPhfz0AEYBxVSF+NhvQ0DMOoQvpqNKSnYRhGVQ/xUQB8+xX/iY/u8wAAAABJRU5ErkJggg==';
+  const iconInfo = nativeImage.createFromDataURL(iconBase64);
+  
+  appTray = new Tray(iconInfo);
+  appTray.setToolTip('CXI SLT Toolkit');
+  
+  const ctxMenu = Menu.buildFromTemplate([
+    { label: 'Open GUI', click: () => { if (mainWindow) { mainWindow.show(); mainWindow.focus(); } } },
+    { type: 'separator' },
+    { label: 'Exit Application', click: () => { app.isQuiting = true; app.quit(); } }
+  ]);
+  
+  appTray.setContextMenu(ctxMenu);
+  appTray.on('click', () => {
+    if (mainWindow) { mainWindow.show(); mainWindow.focus(); }
+  });
+}
 
 function showSplash() {
   splashWindow = new BrowserWindow({
@@ -73,6 +97,14 @@ function createWindow() {
     // Show as soon as the window is ready (or wait for data if needed)
     isMinSplashTimeDone = true;
     tryShowMain();
+  });
+
+  mainWindow.on('close', (e) => {
+    if (closeToTray && !app.isQuiting) {
+      e.preventDefault();
+      mainWindow.hide();
+      return false;
+    }
   });
 
   mainWindow.on('closed', () => {
@@ -367,6 +399,7 @@ ipcMain.handle('get-processes', async () => {
   try {
     const list = await si.processes();
     return list.list
+      .filter(p => p.pid !== 0 && p.name.toLowerCase() !== 'system idle process') // Hide System Idle Process to act like Windows Task Manager
       .map(p => ({
         name: p.name,
         pid: p.pid,
@@ -1050,3 +1083,24 @@ ipcMain.handle('run-cmd', async (e, cmd) => {
 });
 
 ipcMain.on('open-url', (e, url) => shell.openExternal(url));
+
+ipcMain.handle('set-startup', async (e, enabled) => {
+  app.setLoginItemSettings({
+    openAtLogin: enabled === true,
+    openAsHidden: true
+  });
+});
+
+ipcMain.handle('open-logs-folder', async () => {
+  shell.openPath(app.getPath('userData'));
+});
+
+ipcMain.handle('set-tray', async (e, enabled) => {
+  closeToTray = enabled === true;
+  if (closeToTray) {
+    setupTray();
+  } else if (appTray) {
+    appTray.destroy();
+    appTray = null;
+  }
+});
