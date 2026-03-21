@@ -229,6 +229,31 @@ ipcMain.handle('run-ipconfig', async () => {
   });
 });
 
+ipcMain.handle('get-wifi-data', async () => {
+  try {
+    const [connections, networks, defaultIfaceName] = await Promise.all([
+      si.wifiConnections(),
+      si.wifiNetworks(),
+      si.networkInterfaceDefault()
+    ]);
+    
+    // If no WiFi connection, let's get the default ethernet/other interface
+    let ethernet = null;
+    if (!connections || connections.length === 0) {
+      const ifaces = await si.networkInterfaces();
+      ethernet = ifaces.find(i => i.iface === defaultIfaceName);
+    }
+
+    return {
+      connected: connections,
+      nearby: networks,
+      ethernet: ethernet
+    };
+  } catch (e) {
+    return { connected: [], nearby: [], ethernet: null };
+  }
+});
+
 // Real Data Handlers
 ipcMain.handle('get-processes', async () => {
   try {
