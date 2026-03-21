@@ -29,9 +29,18 @@ let closeToTray = true;
 
 function setupTray() {
   if (appTray) return;
-  // Fallback to a plain app icon base64 if no external file is loaded
-  const iconBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAKElEQVR42mNkYPhfz0AEYBxVSF+NhvQ0DMOoQvpqNKSnYRhGVQ/xUQB8+xX/iY/u8wAAAABJRU5ErkJggg==';
-  const iconInfo = nativeImage.createFromDataURL(iconBase64);
+  
+  const iconPath = path.join(__dirname, 'assets', 'logo.png');
+  let iconInfo;
+  
+  try {
+    iconInfo = nativeImage.createFromPath(iconPath);
+    if (iconInfo.isEmpty()) throw new Error('Icon empty');
+  } catch (e) {
+    // Fallback if file missing
+    const iconBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAKElEQVR42mNkYPhfz0AEYBxVSF+NhvQ0DMOoQvpqNKSnYRhGVQ/xUQB8+xX/iY/u8wAAAABJRU5ErkJggg==';
+    iconInfo = nativeImage.createFromDataURL(iconBase64);
+  }
   
   appTray = new Tray(iconInfo);
   appTray.setToolTip('CXI SLT Toolkit');
@@ -80,7 +89,9 @@ function createWindow() {
       nodeIntegration: false,
       webviewTag: true,
     },
+    icon: path.join(__dirname, 'assets', 'logo.png'),
     show: false,
+    title: 'CXI SLT Toolkit',
   });
 
   // Global ad-blocking to speed up embedded views and stop terminal errors
