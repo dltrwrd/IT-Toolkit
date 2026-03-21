@@ -1,6 +1,6 @@
 {
   "name": "cxi-slt-toolkit",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "CXI SLT — Professional IT Toolkit for Windows",
   "main": "src/main.js",
   "scripts": {

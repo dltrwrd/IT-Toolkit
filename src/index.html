@@ -5909,6 +5909,9 @@
         };
 
         sc('set-startup', s.startup);
+        if (window.cxi && window.cxi.setStartup) {
+          window.cxi.setStartup(s.startup);
+        }
         sc('set-tray', s.tray);
         sc('set-sound', s.sound);
         sv('set-cpu', s.cpuAlert);
